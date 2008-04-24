@@ -83,4 +83,12 @@ e00-06
 e00-10
     - left "/ect/init" typo
 --------------------
+e10-01
+e10-02
+   - I used tabs for the first tab stop and spaced out to the next step.
+   - Per discussions with Brantley Coile it appears that the origianl
+     source probably used tabs, and that the printout has a tab stop
+     after 8 characters and another after 7 characters.  The spaces
+     between opcode and operands are probably due to a tab, as can be
+     seen in later assembly code we have in machine readable form.
 
