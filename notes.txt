@@ -44,7 +44,7 @@ e09-01 to e09-08 (8) - u9 -
    assigned:
    reviewed:
 e10-01 to e10-02 (2) - ux -
-   assigned:
+   assigned: tim newsham
    reviewed:
 e11-01 to e11-07 (7) - sh
    we have a binary for the sh already I think.  this may be optional
