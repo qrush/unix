@@ -29,7 +29,7 @@ e04-01 to e04-07 (7) - u4 -
    assigned: Alex Garbutt
    reviewed:
 e05-01 to e05-06 (6) - u5 -
-   assigned:
+   assigned: Ralph Logan
    reviewed:
 e06-01 to e06-06 (6) - u6 -
    assigned:
