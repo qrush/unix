@@ -22,7 +22,7 @@ rtssyms:
 	br     1f
 5:
 	mov     r5,r1
-	bf     1f
+	br     1f
 7:
 	mov    8.(sp),r1
 1:
