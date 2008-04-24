@@ -1,3 +1,8 @@
+Original Source:
+http://www.bitsavers.org/pdf/bellLabs/unix/PreliminaryUnixImplementationDocument_Jun72.pdf
+
+
+------
 I started with the pdf, using Preview in mac I selected regions and
 copied and created new doc, saved it as jpeg and then used
 the online OCR program: http://asv.aso.ecei.tohoku.ac.jp/tesseract/
