@@ -38,7 +38,7 @@ e07-01 to e07-08 (8) - u7 -
    assigned:
    reviewed:
 e08-01 to e08-09 (9) - u8 -
-   assigned:
+   assigned: Christian David
    reviewed:
 e09-01 to e09-08 (8) - u9 -
    assigned:
