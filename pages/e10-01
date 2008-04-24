@@ -20,7 +20,7 @@ inode:
 	i.dskp: .=.+16.
 	i.ctim: .=.+4
 	i.mtim: .=.+4
-	. : inode+32.
+	. = inode+32.
 mount:	.=.+1024.
 proc:
 	p.pid:  .=.+[2*nproc]
