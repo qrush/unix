@@ -1,0 +1,54 @@
+	mov    $idata,r0 / r0=base addr. of assembled directories.
+	mov    $u.off,u.fofp / pointer to u.off in u.fofp (holds file
+                             / offset)
+1:
+	mov    (r0)+,r1/r1=41.,...,47; "0" in the assembled directory
+                       / header signals last
+	beq    1f      / assembled directory has been written onto drum
+	jsr    r0,imap / locate the inode map bit for i-node 'r1'
+	bisb   mq,(r2) / set the bit to indicate the i-node is not
+                       / available
+	jsr    r0,iget / read inode 'r1' from disk into inode area of
+                       / core and write modified i-node on drum (if any)
+	mov    (r0)+,i.flgs / set flags in core image of inode from
+                            / assembled directories header
+	movb   (r0)+,i.nlks / set no. of links from header
+	movb   (r0)+,i.uid / set user id of owner from header
+	jsr    r0,setimod / set imod=1 to indicate inode modified: also,
+                          / stuff time of modification into i-node
+	mov    (r0)+,u.count / set byte count for write call equal to
+                             / size of directory
+	mov    r0,u.base / set buffer address for write to top of directory
+	clr    u.off / clear file offset used in 'seek' and 'tell'
+	add    u.count,r0 / r0 polnts to the header of the next directory
+	jsr    r0,writei / write the directory and i-node onto drum
+	br     1b / do next directory
+	.endif
+
+/ next 2 instructions not executed during cold boot.
+	bis    $2000,sb0 / sb0 I/O queue entry for superblock on drum;
+                         / set blt 10 to 1
+	jsr    r0,ppoke / read drum superblock
+1:
+	tstb   sb0+1 / has I/O request been honored (for drum)?
+	bne    1b / no, continue to idle.
+1:
+	decb   sysflg / mormally sysflag=0, indicates executing in system
+	sys    exec; 2f; 1f / generates trap interrupt; trap vector =
+                            / sysent; 0
+	br     panic / execute file/etc/init
+
+1 :
+	2f;0
+2:
+	</etc/init\0> / UNIX looks for strings term, noted by nul\0
+
+panic:
+	clr    ps
+1:
+	dec    $0
+	bne    1b
+	dec    $5
+	bne    1b
+	jmp    *$173700 / rom loader address
+

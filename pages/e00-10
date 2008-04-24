@@ -1,0 +1,28 @@
+	mov    r2,r0
+	sys    write; 9f-8b+core; 0:..
+	sub    r0,r5
+	br     2b
+2:
+	mov    r2,r0
+	sys    close
+	br     1b
+1:
+	mov    r1,r0
+	sys    close
+	sys    exec; 5f-8b+core; 4f-8b+core
+	sys    exit
+4:
+	5f-8b+core; 0
+5:
+	</ect/init\0>
+6:
+	</dev/tap0\0>
+	.even
+9:
+
+/ end of initialization data
+
+	0
+
+	.endif
+

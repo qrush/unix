@@ -1,0 +1,57 @@
+/ free rest of drum
+
+	.if cold
+	mov    $128.,systm / inltialize word 1 of drum superblock image;
+                           / number of bytes in free storage map=128.
+	mov    $64.,systm+2+128. / init. wd 66. of superblock image; # of
+                                 / bytes in i-node map=64.
+1:
+	dec    r1 / r1=687.,...,34.
+	jsr    r0,free / free block 'r1', i.e., set bit 'r1' in free
+                       / storage map in core
+	cmp    r1,$34. / first drum address not in i list
+	bgt    1b / if block 34 has been freed, zero i list
+
+/ zero 1 list
+
+1:
+	dec    r0 / r0=33.,...,1
+	jsr    r0,c1ear / zero block 'r1' on fixed head disk
+	tst    r1
+	bgt    1b / if blocks 33,...,1 have all been zeroed, done.
+	.endif
+
+/ make current program a user
+
+	mov    $41.,r0 / rootdir set to 41 and never changed
+	mov    r0,rootdir / rootdir is i-number of root directory
+	mov    r0,u.cd1r / u.cd1r 1s i-number of process current directory
+	mov    $1,r0
+	movb   r0,u.uno / set process table index for this process to 1
+	mov    r0,mpid / initialize mpid to 1
+	mov    r0,p.p1d / p.pid identifies process
+	movb   r0,p.stat / process status = 1 i.e., active
+                         /                = 0 free
+	.if cold         /                = 2 waiting for a child to die
+                         /                = 3 terminated but not yet waited
+                         /                  for
+
+/ initialize inodes for special files (inodes 1 to 40.)
+
+	mov    $40.,r1 / set r1=i-node-number 40.
+1:
+	jsr    r0,iget / read i-node 'r1' from disk into inode area of
+                       / core and write modified inode out (if any)
+	mov    $100017,i.flgs / set flags in core image of inode to indi-
+                              / cate allocated, read (owner, non-owner),
+                              / write (owner, non-owner)
+	movb   $1,i.nlks / set no. of links = 1
+	movb   $1,i.uid / set user id of owner = 1
+	jsr    r0,setimod / set imod=1 to indicate i-node modified, also
+                          / stuff time of modification into i-node
+	dec    r1 / next i-node no. = present i-node no.-1
+	bgt    1b / has i-node 1 been initialized; no, branch
+
+/ initialize i-nodes r1.,...,47. and wr1te the root device, binary, etc.,
+/ directories onto fixed head disk. user temporary, initialization prog.
+

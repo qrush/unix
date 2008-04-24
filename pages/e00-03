@@ -1,0 +1,56 @@
+	mov    $bufp,r1
+1:
+	mov    r0,(r1)+
+	add    $8,r0
+	mov    r0,-2(r0)             / bus address
+	mov    $-256.,-4(r0)         / word count
+	add    $512.,r0              / buffer space
+	cmp    r1,$bufp+nbuf+nbuf
+	blo    1b
+	mov    $sb0,(r1)+            / I/O queue entry drum
+	mov    $sb1,(r1)+ / I/O queue entry disk (mounted device)
+	mov    $swp,(r1)+ / I/O queue entry core image being swapped
+	mov    $[systm-inode]\/2,sb0+4 / sets up initial buffers per
+                                       / format given in
+	mov    $systm,sb0+6 / memory map
+	mov    $-512.,sb1+4
+	mov    $mount,sb1+6
+	mov    $user,swp+6
+
+/ set devices to interrupt
+
+	mov    $100,*$lks / put 100 into clock status register;
+                           / enables clock interrupt
+
+/ set up time out subroutines
+
+	mov    $touts,r0
+	mov    $startty,(r0)+ / if toutt = 0 call startty
+	mov    $pptito,(r0)+ / if toutt+1 = 0 call pptito
+	tst    (r0)+ / add 2 to r0
+	mov    $ntty-1,r1
+1 :
+	mov    $xmtto,(r0)+ / if toutt+2 thru toutt+2+ntty=0 call xmtto
+	dec    r1
+	bne    1b
+
+/ free all character blocks; see H.0 for description
+
+	mov    $510.,r2
+	mov    $-1,r1
+1:
+	jsr    r0,put
+	sub    $2,r2
+	bgt    1b
+
+/ set up drum swap addresses; see H.0 for description
+
+	mov    $1024.,-64.,r1 / highest drum address; high 64 blks allocated
+                              / to UNIX
+	mov    $p.dska,r2 / p.dska contains dis addresses for processes
+1 :
+	sub    $17.,r1 / 17 blocks per process
+	mov    r1,(r2)+
+	cmp    r2,$p.dska+nproc+nproc
+	bne    1b
+

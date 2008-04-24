@@ -1,0 +1,55 @@
+/ u0 -- unix
+
+cold = 0 
+orig = 0 . / orig = 0. relocatable
+
+rkda = 177412 / disk address reg            rk03/rk11
+rkds = 177400 / driv status reg             rk03/rk11
+rkcs = 177404 / control status reg          rk03/rk11
+rcsr = 174000 / receiver status reg         dc-11
+rcbr = 174002 / receiver buffer reg         dc-11
+tcsr = 174004 / xmtr status reg             dc-11
+tcbr = 174006 / xmtr buffer req             dc-11
+tcst = 177340 / dec tape control status     tc11/tu56
+tccm = 177342 / dec tape command reg        tc11/tu56
+tcwc = 177344 /          word count         tc11/tu56
+tcba = 177346 /          bus addr           tc11/tu56
+tcdt = 177350 /          data reg           tc11/tu56
+dcs  = 177460 / drum control status         rf11/rs11
+dae  = 177470 / drum address extension      rf11/rs11
+lks  = 177546 / clock status reg            kw11-l
+prs  = 177550 / papertape reader status     pc11
+prb  = 177552 /                  buffer     pc11
+pps  = 177554 /            punch status     pc11
+ppb  = 177556 /            punch buffer     pc11
+/lps = 177514   line printer status         (future)
+/lpb = 177516   line printer buffer         (future)
+tks  = 177560 / console read status         asr-33
+tkb  = 177562 /         read buffer         asr-33
+tps  = 177564 /         punch status        asr-33
+tpb  = 177566 /         punch buffer        asr-33
+ps   = 177776 / processor status
+
+halt = 0
+wait = 1
+rti  = 2
+
+nproc = 16. / number of processes
+nfilcs = 50.
+ntty = 8+1
+nbuf = 6
+ .if cold / ignored if cold = 0
+nbuf = 2
+.endif
+
+core = orig+40000  / specifies beginning of user's core
+ecore = core+20000 / specifies end of user's core (4096 words)
+
+/      4;4     init by copy
+/      unkni;0 " error
+/      fpsym;0 " illg in tr
+       unkni;0 / trace and trap (see Sec. B.1 page  )
+       unkni;0 / trap
+       panic;0 / pwr
+       rtssym;0 / emt
+       sysent;0 / sys

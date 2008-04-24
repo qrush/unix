@@ -1,0 +1,81 @@
+I started with the pdf, using Preview in mac I selected regions and
+copied and created new doc, saved it as jpeg and then used
+the online OCR program: http://asv.aso.ecei.tohoku.ac.jp/tesseract/
+I then manually edited each file.
+
+The files are named according to the page index in the pdf and the
+section and page given in the page footer.  Page headers and footers
+were not captured.
+------------------
+
+e00-01 to e00-10 (10) - u0 -
+   assigned: tim newsham, complete
+   reviewed:
+e01-01 to e01-10 (10) - u1 - 
+   assigned: Hellwig Geisse
+   reviewed:
+e02-01 to e02-10 (10) - u2 -
+   assigned: Brantley Coile
+   reviewed:
+e03-01 to e03-04 (4) - u3 -
+   assigned:
+   reviewed:
+e04-01 to e04-07 (7) - u4 -
+   assigned:
+   reviewed:
+e05-01 to e05-06 (6) - u5 -
+   assigned:
+   reviewed:
+e06-01 to e06-06 (6) - u6 -
+   assigned:
+   reviewed:
+e07-01 to e07-08 (8) - u7 -
+   assigned:
+   reviewed:
+e08-01 to e08-09 (9) - u8 -
+   assigned:
+   reviewed:
+e09-01 to e09-08 (8) - u9 -
+   assigned:
+   reviewed:
+e10-01 to e10-02 (2) - ux -
+   assigned:
+   reviewed:
+e11-01 to e11-07 (7) - sh
+   we have a binary for the sh already I think.  this may be optional
+   assigned:
+   reviewed:
+e12-01 to e12-04 (4) - init 
+   we have a binary for init already
+   assigned:
+   reviewed:
+
+
+
+------------------
+e00-01 
+    - I used spaces to line up the comment columns, not tabs.  I
+      picked the column distance arbitrarily.
+    - the bottom section looks like it could be tabbed but my tabstops
+      didnt line up with the values given so I used spaces
+
+e00-02
+    - I used tabs for the start of each asm command but not for the
+      separation between mnemonic and arguments since these didnt line up.
+      with my tab stops.
+
+e00-03
+    - left "dis addresses" typo in per original
+
+e00-05
+    - cant tell if the "O" in quotes after 1: is a O or a 0.
+    - left mispelled "mormally" in comment
+    - left "file/etc/init" without space.
+
+e00-06
+    - left mis-spacing on 5: move r5,r1.
+
+e00-10
+    - left "/ect/init" typo
+--------------------
+

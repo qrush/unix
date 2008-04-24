@@ -1,0 +1,56 @@
+rtssyms:
+	mov    r0,-(sp)
+	mov    r1,-(sp)
+	mov    4(sp),r0
+	mov    -(r0),r0
+	bic    $!7,r0
+	asl    r0
+	jmp    *1f(r0)
+1:
+	0f;1f;2f;3f;4f;5f;badrts;7f
+0:
+	mov    2(sp),r0
+	br     1f
+2:
+	mov    r2,r1
+	br     1f
+3:
+	mov    r3,r1
+	br     1f
+4:
+	mov    r4,r1
+	br     1f
+5:
+	mov     r5,r1
+	bf     1f
+7:
+	mov    8.(sp),r1
+1:
+	cmp    r1,$core
+	blo    badrts
+	cmp    r1,$ecore
+	bhis   badrts
+	bit    $1,r1
+	bne    badrts
+	tst    (r1)
+	beq    badrts
+	add    $1f,r0
+	mov    r0,4(sp)
+	mov    (sp)+,r1
+	mov    (sp)+,r0
+	rti
+1:
+	rts    r0
+	rts    r1
+	rts    r2
+	tts    r3
+	rts    r4
+	rts    r5
+	rts    sp
+	rts    pc
+
+badrts:
+	mov    (sp)+,r1
+	mov    (sp)+,r0
+rpsym:
+

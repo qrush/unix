@@ -1,0 +1,57 @@
+/ user directory
+
+	45.
+	140016
+	.byte 2,1
+	9f-.-2
+	41.
+	<..\0\0\0\0\0\0>
+	45.
+	<.\0\0\0\0\0\0\0>
+9:
+
+/ temporary directory
+
+	46.
+	140017
+	.byte 2,1
+	9f-.-2
+	41.
+	<..\0\0\0\0\0\0>
+	46.
+	<.\0\0\0\0\0\0\0>
+9:
+
+/ initialization program
+
+	47.
+	100036
+	.byte 1,3
+	9f-.-2
+8:
+	sys    break; 0
+	sys    open; 6f-8b+core; 0
+	mov    r0,r1
+	sys    seek; 65.; 0
+1:
+	mov    r1,r0
+	sys    read; 9f-8b+core; 512.
+	mov    9f,r5            / size
+	beq    1f
+	sys    creat; 9f-8b+core+4; 0
+	mov    r0,r2
+	movb   9f+2,0f
+	sys    chmod; 9f-8b+core+4; 0:..
+	movb   9f+3,0f
+	sys    chown; 9f-8b+core+4; 0:..
+2:
+	tst    r5
+	beq    2f
+	mov    r1,r0
+	sys    read; 9f-8b+core; 512.
+	mov    $512.,0f
+	cmp    r5,$512.
+	bhi.   3f
+	mov    r5,0f
+3:
+
