@@ -42,7 +42,7 @@
 	.endif
 
 	jsr    r0,copyz; systm; ecore / clear locations systm to ecore
-	mov    $s,chrgt+2,clockp / intlalize clockp
+	mov    $s.chrgt+2,clockp / intialize clockp
 / allocate tty buffers; see H.0 for description
 	mov    $buffer,r0
 	mov    $tty+6,r1

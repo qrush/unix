@@ -45,7 +45,7 @@
 
 / set up drum swap addresses; see H.0 for description
 
-	mov    $1024.,-64.,r1 / highest drum address; high 64 blks allocated
+	mov    $1024.-64.,r1 / highest drum address; high 64 blks allocated
                               / to UNIX
 	mov    $p.dska,r2 / p.dska contains dis addresses for processes
 1 :
