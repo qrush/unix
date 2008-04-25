@@ -94,7 +94,15 @@ e09-02
 e09-03
     - hard to tell due to hand written correction, but I believe
       the line before "rts r0" reads "mov (sp)+,r0"
-   - comment "ASC11" (one instead of I) left as is.
+    - comment "ASC11" (one instead of I) left as is.
+e09-04
+    - text comment says a label was lost!  leaving it out for now.
+    - correction "if count >=0" obscures original text in comment.
+      no choice but to use new text.
+    - "ASC11" sic
+e09-05
+    - 5th to last "byte" line 2nd column is uneadable.  pattern suggests
+      the value "000"
 
 --------------------
 e10-01

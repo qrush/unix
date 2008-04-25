@@ -1,55 +1,57 @@
-beq 3f / no
-lncb (r2) / increment column count
-bltb $7,(r2) / are bits D, 1 and 2 set at col GEF
-beq 1f / no
-movb $11,1(r2) / yes, place ht in another tab next time
-br if / grdubyte of tty area (character left over after
-/ 1f .)
+	beq	3f / no
+	incb	(r2) / increment column count
+	bitb	$7,(r2) / are bits 0, 1 and 2 set at col 0%8
+	beq	1f / no
+	movb	$11,1(r2) / yes, place ht in another tab next time
+	br	1f / 3rd byte of tty area (character left over after
+		   / "lf")
 3:
-movb (r2),r3 / place column count ln r3
-blsb $7,(r2) / make bits O, 1 and 2 of column count :1
-lncb (r2) / increment column count
-bis $l7,r3 / clear bits 3-15 of r3
-neg r3 / delay e dcol start to determine tout entry for
-/ tty out
-br 2f / by neg r3
+	movb	(r2),r3 / place column count in r3
+	bisb	$7,(r2) / make bits 0, 1 and 2 of column count = 1
+	incb	(r2) / increment column count
+	bis	$!7,r3 / clear bits 3-15 of r3
+	neg	r3 / delay = dcol start to determine tout entry for
+		   / tty out
+	br	2f / by neg r3
 4:
-mov $176.,r3 / delay = lots start to determine tout entry
-br 2f
+	mov	$176.,r3 / delay = lots start to determine tout entry
+	br	2f
 5:
-mov s10.,r3 f cr delay 160ms for tn30D start to determine
-tout
-clrb (r2) / set column count = 0 entry
+	mov	$10.,r3 / cr delay 160ms for tn300 start to determine
+		        / tout
+	clrb	(r2) / set column count = 0 entry
 2:
-add $5,r3 / time for this char increment value for tout
-/ entry by 5 )
-mov (sp),r2 / O%B r2 contains Sxtty number
-asr r2
-asr r2 -
-asr r2 / O%1 r2 contains tty number
-movb r3,toutt+3(r2) / place value for tout entry into tout
-/ table
+	add	$5,r3 / time for this char increment value for tout
+		     / entry by 5
+	mov	(sp),r2 / 0%8 r2 contains 8xtty number
+	asr	r2
+	asr	r2
+	asr	r2 / 0%1 r2 contains tty number
+	movb	r3,toutt+3(r2) / place value for tout entry into tout
+			       / table
 1:
-rts rO / return
-partab: / contains 3 digits for each character; digit 2y1s used
-/ to determine lf 200 is to added to ASC11 code digits 0
-/ and 1 are used to determine value for jump table.
-.byte 002,202,202,002,002,002,002,202
-.byte 204,010,006,212,012,214,202,0¤2 gpl'
-.byte 202,0D2,002,202,002,602,202,002 ]wZV”4” Nut
-.byte 0O2,202,202,002,202,002,0U2,202
-.byte 200,000,000,200,000,200,200,000
-.byte 000,200,200,000,200,000,000,20O
-.byte OOO,200,200,00G,200,000,000,2OO
-.byte 200,000,000,200,000,200,200,000
-.byte 200,000,000,200,000,200,200,000
-.byte 000,200,200,000,200,000,000,200
-.byte OOO,200,200,000,200,000,000,200
-.byte ZOO,'U0,000,200,000,200,200,000
-.byte OOC,¥OO,ZO0,000,200,000,00U,2OO
-.byte 200,000,000,200,000,200,200,000
-.byte 200,000,000,200,DO0,200,200,000
-.byte OOO,200,200,000,200,000,000,2D2
-xmtt: *
-jar r0,cpass / get next character from user buffer area
+	rts	r0 / return
+
+partab:	/ contains 3 digits for each character; digit 2 is used
+	/ to determine if 200 is to added to ASC11 code digits 0
+	/ and 1 are used to determine value for jump table.
+	.byte 002,202,202,002,002,002,002,202
+	.byte 204,010,006,212,012,214,202,002
+	.byte 202,002,002,202,002,002,202,002
+	.byte 002,202,202,002,202,002,002,202
+	.byte 200,000,000,200,000,200,200,000
+	.byte 000,200,200,000,200,000,000,200
+	.byte 000,200,200,000,200,000,000,200
+	.byte 200,000,000,200,000,200,200,000
+	.byte 200,000,000,200,000,200,200,000
+	.byte 000,200,200,000,200,000,000,200
+	.byte 000,200,200,000,200,000,000,200
+	.byte 200,000,000,200,000,200,200,000
+	.byte 000,200,200,000,200,000,000,200
+	.byte 200,000,000,200,000,200,200,000
+	.byte 200,000,000,200,000,200,200,000
+	.byte 000,200,200,000,200,000,000,202
+
+xmtt:
+	jsr	r0,cpass / get next character from user buffer area
 

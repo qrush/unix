@@ -1,56 +1,58 @@
-blc $I177,r3 / to make it teletype code and then clear
-/ bits 7-15 of r3
+	blc	$!177,r3 / to make it teletype code and then clear
+			 / bits 7-15 of r3
+
 3:
-mov (sp),r2 / rz contains Bxtty number
-blt $4,1.·czr(r2) / 1s carrier present for tty
-beq starxmt / no carrler flush
-mov :1,-(sp) ,/ yes, place character to be output on stack
-cmp r1,$11 / is character ht
-bne 3f / no
-bltb $2,tty+4(r2) / ls tab to space flag_for_tty set
-/ (blt 1 of byte 5 in tty buffer area)
-beq 3f / no
-mov $240,(sp) / yes, change character to space
+	mov	(sp),r2 / r2 contains 8xtty number
+	bit	$4,rcsr(r2) / is carrier present for tty
+	beq	starxmt / no carrler flush
+	mov	r1,-(sp) / yes, place character to be output on stack
+	cmp	r1,$11 / is character "ht"
+	bne	3f / no
+	bitb	$2,tty+4(r2) / is tab to space flag for tty set
+			     / (bit 1 of byte 5 in "tty" buffer area)
+	beq	3f / no
+	mov	$240,(sp) / yes, change character to space
 3:
-mov (sp)+,tcbr(r2) / place char to be output in tty output
-/ buffer __ _
-add $tty+1,r2 / place addr of 2nd byte of tty buf
-jmp 1f-2(r3) ; area in r2 (which is the column count) and
-then
-lncb (r2) / normal / jmp to location determined by digits
-/ 0 and 1 of character's entry in partab which
-I, / / is now in r3
-, rts r0 non—pr:Lntlng
-br 1f / bs  
-br 2f / nl (llne feed)  
-br 3f / tab (horizontal tab)
-br 4f / vert (vertical tab)
-br 5f / cr
-1: __ _
-decb (r2) f col decrement column count ln byte 2 of tty
-area
-bge 1f / if count >O return to calllnq routine
-clrb (r2) / col set column count = 0
-br 1f
+	mov	(sp)+,tcbr(r2) / place char to be output in tty output
+			       / buffer
+	add	$tty+1,r2 / place addr of 2nd byte of "tty" buf
+	jmp	1f-2(r3) / area in r2 (which is the column count) and
+			 / then
+	incb	(r2) / normal / jmp to location determined by digits
+		     / 0 and 1 of character's entry in "partab" which
+		     / is now in r3
+	rts	r0 / non-printing
+	br	1f / bs  
+	br	2f / nl (line feed)  
+	br	3f / tab (horizontal tab)
+	br	4f / vert (vertical tab)
+	br	5f / cr
+
+1:
+	decb	(r2) / col decrement column count in byte 2 of "tty"
+		     / area
+	bge	1f / if count >=O return to calling routine
+	clrb	(r2) / col set column count = 0
+	br	1f
 2:
-blt $1,r1 / is bit 0 of ASC11 char = 1 (char = lf)
-bne 2f / es __
-bitb $20,3(r2) / cr flag is blt 4 of Sth byte of "tty
-/ area = 1
-beq 2f / no (only lf to be handled) n __
-movb $15,1(r.‘2) / place cr in 3rd byte of __tty area
-/ (character leftover after lf )
+	blt	$1,r1 / is bit 0 of ASC11 char = 1 (char = lf)
+	bne	2f / yes
+	bitb	$20,3(r2) / cr flag is bit 4 of 5th byte of "tty"
+			  / area = 1
+	beq	2f / no (only if to be handled)
+	movb	$15,1(r2) / place "cr" in 3rd byte of "tty" area
+			  / (character leftover after "lf" )
 2:
-movb (r2),r3 / place present column count in r3
-beq 1f / return to calling routlne if count = 0
-clrb (r2) / col clear column count
-asr r3
-asr r3
-asr r3
-asr r3 / delay = col/16
-add $;,r3 / start to determine tout entry for tty output
-br 2
-3: _ __
-bitb $2,3(r2) / is blt 1 of 5th byte of tty area e 1
-/ (tab to space blt set)
+	movb	(r2),r3 / place present column count in r3
+	beq	1f / return to calling routlne if count = 0
+	clrb	(r2) / col clear column count
+	asr	r3
+	asr	r3
+	asr	r3
+	asr	r3 / delay = col/16
+	add	$3,r3 / start to determine tout entry for tty output
+	br	2f
+3:
+	bitb	$2,3(r2) / is bit 1 of 5th byte of "tty" area = 1
+			 / (tab to space bit set)
 
