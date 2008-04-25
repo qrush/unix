@@ -35,7 +35,7 @@ wait = 1
 rti  = 2
 
 nproc = 16. / number of processes
-nfilcs = 50.
+nfiles = 50.
 ntty = 8+1
 nbuf = 6
  .if cold / ignored if cold = 0

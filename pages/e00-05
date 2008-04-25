@@ -38,7 +38,7 @@
                             / sysent; 0
 	br     panic / execute file/etc/init
 
-1 :
+1:
 	2f;0
 2:
 	</etc/init\0> / UNIX looks for strings term, noted by nul\0
