@@ -4,7 +4,7 @@
 				   / read/write blts
 		asrb		r2
 1:
-		bit		r2,(r0)+ / test read—wr1te flags agalnst argument Ln
+		bit		r2,(r0)+ / test read—write flags against argument in
 					 / access call
 		bne		1f
 		tstb		u.uid
@@ -50,4 +50,4 @@ iget:
 		beq		2f
 1:
 		tstb		imod / has i-node of current file been modified i.e.,
-					 / lmod set
+			       	     / lmod set
