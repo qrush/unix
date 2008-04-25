@@ -30,9 +30,9 @@ e04-01 to e04-07 (7) - u4 -
    reviewed:
 e05-01 to e05-06 (6) - u5 -
    assigned: Ralph Logan, complete
-   reviewed:
+   reviewed: johan beiser
 e06-01 to e06-06 (6) - u6 -
-   assigned: johan beisser
+   assigned: johan beisser, complete
    reviewed:
 e07-01 to e07-08 (8) - u7 -
    assigned: Naoki Hamada
