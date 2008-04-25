@@ -8,8 +8,8 @@
 	jsr	r0,startty / attempt to output character on tty
 	br	wtty
 2:
-	mov	r1,—(sp) / place character on stack
-	jsr	rO,sleep; 1 / put process to sleep
+	mov	r1,-(sp) / place character on stack
+	jsr	r0,sleep; 1 / put process to sleep
 	mov	(sp)+,r1 / remove character from stack
 	br	1b / try again to place character in clist and output
 
@@ -30,7 +30,7 @@ wppt:
 /	br	w1pr
 
 wmem: / transfer characters from a user area of core to memory file
-	jsr	rO,cpass / get next character from users area of core and
+	jsr	r0,cpass / get next character from users area of core and
 		         / put it in r1
 	mov	r1,-(sp) / put character on the stack
 	mov	*u.fofp,r1 / save file offset in r1
@@ -41,10 +41,10 @@ wmem: / transfer characters from a user area of core to memory file
 	br	wmem / continue
 1:
 	jmp	error / ?
-dskw: / write routine for non—special files
+dskw: / write routine for non-special files
 	mov	(sp),r1 / get an i-node number from the stack into r1
-	jsr	r0,iget / write i—node out (if modified), read i-node 'r1'
-		        / into i—node area of core
+	jsr	r0,iget / write i-node out (if modified), read i-node 'r1'
+		        / into i-node area of core
 	 mov	 *u.fofp,r2 / put the file offset [(u.off) or the offset in
 		            / the fsp entry for this file] in r2
 	 add	 u.count,r2 / no. of bytes to be written + file offset is

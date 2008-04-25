@@ -4,7 +4,7 @@
 		   / read/write bits
 	asrb	r2
 1:
-	bit	r2,(r0)+ / test read—write flags against argument in
+	bit	r2,(r0)+ / test read-write flags against argument in
 			 / access call
 	bne	1f
 	tstb	u.uid
@@ -13,14 +13,14 @@
 1:
 	rts	r0
 setimod:
-	movb	$1,imod / set current i—node modified bytes
+	movb	$1,imod / set current i-node modified bytes
 	mov	s.time,i.mtim / put present tlme into file modified time
 	mov	s.time+2,i.mtim+2
 	rts	r0
-imap: / get the byte that has the allocation bit for the i—number contained
+imap: / get the byte that has the allocation bit for the i-number contained
       / in r1
 	mov	$1,mq / put 1 in the mq
-	mov	r1,r2 / r2 now has i—number whose byte in the map we
+	mov	r1,r2 / r2 now has i-number whose byte in the map we
  		      / must find
 	sub	$41.,r2 / r2 has i-41
 	mov	r2,r3 / r3 has i-41
@@ -36,7 +36,7 @@ imap: / get the byte that has the allocation bit for the i—number contained
 			  / block for drum
 	tst	cdev / is the device the disk
 	beg	1f / yes
-	add	$mount—systm,r2 / for mounted device, r2 points to 1st word
+	add	$mount-systm,r2 / for mounted device, r2 points to 1st word
 				/ of its super block
 1:
 	add	(r2)+,(sp) / get byte address of allocation bit

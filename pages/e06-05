@@ -1,13 +1,13 @@
 	 mov	r2,i.size / yes, increase the f11e size to file offset +
 		           / no. of data bytes
-	 jsr	rO,setimod / set imod=1 (1.e., core inode has been
+	 jsr	r0,setimod / set imod=1 (1.e., core inode has been
 		           / modified), stuff tlme of modiflcatlon into
 		           / core image of i-node
 1:
 	jsr	r0,mget / get the block no. in which to write the next data
 		        / byte
 	bit	*u.fofp,$777 / test the lower 9 bits of the file offset
-	bne	2f / if its non-zero, branch; if zero, file offset = O,
+	bne	2f / if its non-zero, branch; if zero, file offset = 0,
 		   / 512, 1024,...(i.e., start of new block)
 	cmp	u.count,$512. / if zero, is there enough data to fill an
 		              / entire block? (i.e., no. of
@@ -19,8 +19,8 @@
 		         / into an I/O buffer
 3:
 	jsr	r0,wslot / set write and inhibit bits in I/O queue, proc.
-		         / status=O, r5 points to 1st word of data
-	jsr	rO,sioreg / r3 = no. of bytes of data, r1 = address of data,
+		         / status=0, r5 points to 1st word of data
+	jsr	r0,sioreg / r3 = no. of bytes of data, r1 = address of data,
 		          / r2 points to location in buffer in which to
 		          / start writing data
 2:
@@ -35,21 +35,21 @@
 cpass: / get next character from user area of core and put it in r1
 	tst	u.count / have all the characters been transferred (i.e.,
 		        / u.count, # of chars. left .
-	beg	1f / to be transferred = O?) yes, branch
+	beg	1f / to be transferred = 0?) yes, branch
 	dec	u.count / no, decrement u.count
 	movb	*u.base,r1 / take the character pointed to by u.base and
-		           / put it ln r1
+		           / put it in r1
 	inc	u.nread / increment no. of bytes transferred
 	inc	u.base / increment the buffer address to point to the
 	rts	r0 / next byte
 1: 
 	mov	(sp)+,r0 / put return address of calling routine into r0
 	mov	(sp)+,r1 / i.-number in r1
-	rts	r0 / non—local return
+	rts	r0 / non-local return
 sioreg:
 	mov	*u.fofp,r2 / file offset (in bytes) is moved to r2
 	mov	r2,r3 / and also to r3
-	bis	$177000,r3 / set bits 9,...,15. of file offset ln r3
+	bis	$177000,r3 / set bits 9,...,15. of file offset in r3
 	blc	$l777,r2 / calculate file offset mod 512.
 	add	r5,r2 / r2 now points to 1st byte in system buffer where
 		      / data is to be placed

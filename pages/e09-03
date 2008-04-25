@@ -42,7 +42,7 @@ starxmt:
 	movb	tty+3(r2),0f / yes, make byte 4 arg of "getc"
 	inc	0f / increment arg to make it tty output list of
 		   / clist
-	jsr	r0,getc; 0:.. / obtain next character ln clist for tty
+	jsr	r0,getc; 0:.. / obtain next character in clist for tty
 			      / out and place in r1
 		br 1f / if no entry in clist to be output, return to
 		      / calling routine

@@ -20,7 +20,7 @@
                              / size of directory
 	mov    r0,u.base / set buffer address for write to top of directory
 	clr    u.off / clear file offset used in 'seek' and 'tell'
-	add    u.count,r0 / r0 polnts to the header of the next directory
+	add    u.count,r0 / r0 points to the header of the next directory
 	jsr    r0,writei / write the directory and i-node onto drum
 	br     1b / do next directory
 	.endif

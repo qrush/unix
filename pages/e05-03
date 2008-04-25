@@ -4,7 +4,7 @@
 	br	2f
 free:
 	mov	r2,-(sp) / save r2, r3
-	mov	r3,—(sp)
+	mov	r3,-(sp)
 	jsr	r0,3f / set up bit mask and word no. in free storage map
 		      / for block
 	bis	r3,(r2) / set free storage block bit; indicates free block
@@ -39,7 +39,7 @@ free:
 	add	$systm+2,r2 / address of word of free storage map for drum
 	    		    / with block bit in it
 	tst	cdev
-	beq	1f / cdev = O indicates device is drum
+	beq	1f / cdev = 0 indicates device is drum
 	add	$mount-systm,r2 / address of word of free storage map for
 				/ mountable device with bit of block to be
 				/ freed

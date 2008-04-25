@@ -44,7 +44,7 @@
 			  / (character leftover after "lf" )
 2:
 	movb	(r2),r3 / place present column count in r3
-	beq	1f / return to calling routlne if count = 0
+	beq	1f / return to calling routine if count = 0
 	clrb	(r2) / col clear column count
 	asr	r3
 	asr	r3

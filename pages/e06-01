@@ -4,9 +4,9 @@ read:
 	tst	u.count / is number of bytes to be read greater than 0
 	bgt	1f / yes, branch
 	rts	r0 / no, nothing to read; return to caller
-1: ·
-	mov	r1,-(sp) / save 1—number on stack
-	cmp	r1,$40. / want to read a special file (1—nodes 1,...,40 are
+1:
+	mov	r1,-(sp) / save i-number on stack
+	cmp	r1,$40. / want to read a special file (i-nodes 1,...,40 are
 		    / for special files)
 	ble	1f / yes, branch
 	jmp	dskr / no, jmp to dskr; read file with 1.-node number (:1)
@@ -31,14 +31,14 @@ read:
 	rcvt / tty0
 	rcvt / tty1
 	rcvt / tty2
-	rcvt / tty3 ‘
+	rcvt / tty3
 	rcvt / tty4
 	rcvt / tty5
 	rcvt / tty6
 	zcvt / ety7
 	rcrd/ crd
 rtty: / read from console tty
-	mov	tty+[8*ntty]—8+6,r5 / r5 is the address of the 4th word of
+	mov	tty+[8*ntty]-8+6,r5 / r5 is the address of the 4th word of
 				    / of the control and status block _
 	tst	2(r5) / for the console tty; this word points to the console
 		      / tty bufTer

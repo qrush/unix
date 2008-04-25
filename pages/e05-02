@@ -1,5 +1,5 @@
 	mov	r1,i.dskp(r2) / put block number of new block in i-node
-	jsr	r0,setimod / set i—node modified byte
+	jsr	r0,setimod / set i-node modified byte
 	jsr	r0,clear / clear new block
 2:
 	jsr	r0,dskrd / read in indirect block
@@ -11,10 +11,10 @@
 	                / sought in r1
 	bne	2f / if no block exists
 	jsr	r0,alloc / allocate a new block
-	mov	r1,(r2) / put new block number into proper location ln
+	mov	r1,(r2) / put new block number into proper location in
 	                / indirect block
 	mov	(sp)+,r1 / get block number of indirect block
-	mov	(r2),—(sp) / save block number of new block
+	mov	(r2),-(sp) / save block number of new block
 	jsr	r0,wslot
 	jsr	r0,dskwr / write newly modified indirect block back out
 	                 / on disk
@@ -24,8 +24,8 @@
 	tst	(sp)+ / bump stack pointer
 	rts	r0
 alloc:
-	mov	r2,—(sp) / save r2, r3 on stack
-	mov	r3,—(sp)
+	mov	r2,-(sp) / save r2, r3 on stack
+	mov	r3,-(sp)
 	mov	$systm,r2 / start of inode and free storage map for drum
 	tst	cdev
 	beq	1f / drum ls device

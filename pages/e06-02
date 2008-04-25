@@ -8,7 +8,7 @@ rppt: / read paper tape`
 			 / places
 		br ret / it 1n r1; 1f there 1s no problem with reader, it
 		       / also enables read bit Ln prs
-	jsr	rO,passc / place character in users buffer area
+	jsr	r0,passc / place character in users buffer area
 	br	rppt
 
 rmem: / transfer characters from memory to a user area of core
@@ -17,7 +17,7 @@ rmem: / transfer characters from memory to a user area of core
 	inc	*u.fofp / increment file offset to point to 'next' char 1n
 		        / memory file
 	movb	(r1),r1 / get character from memory file, put it in r1
-	jsr	rO,passc / move this character to the next byte of the
+	jsr	r0,passc / move this character to the next byte of the
 		         / users core area
 	br	 mem / continue
 1:
@@ -26,8 +26,8 @@ rcrd:
 
 dskr:
 	mov	(sp),r1 / i-number in r1
-	jsr	r0,iget / get i-node (r1) into i—node section of core
-	mov	i.size,r2 / file size ln bytes in r2
+	jsr	r0,iget / get i-node (r1) into i-node section of core
+	mov	i.size,r2 / file size in bytes in r2
 	sub	*u.fofp,r2 / subtract file offset
 	blos	ret
 	cmp	r2,u.count / are enough bytes left in file to carry out read
