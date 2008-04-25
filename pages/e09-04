@@ -31,7 +31,7 @@
 1:
 	decb	(r2) / col decrement column count in byte 2 of "tty"
 		     / area
-	bge	1f / if count >=O return to calling routine
+	bge	1f / if count >=0 return to calling routine
 	clrb	(r2) / col set column count = 0
 	br	1f
 2:

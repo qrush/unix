@@ -6,7 +6,7 @@
 	add	$40,r1
 3:
 	movb	tty+3(r0),0f
-	jsr	rO,putc; 0:.. / put char on input clist
+	jsr	r0,putc; 0:.. / put char on input clist
 		br 2f
 	bitb	$10,tty+4(r0) / echo
 	bne	4f / branch echo bit set

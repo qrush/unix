@@ -4,7 +4,7 @@
 
 xmtto:
 	mov	r0,-(sp)
-	mov	2(sp),rO / 0%2+6
+	mov	2(sp),r0 / 0%2+6
 	sub	$6,r0
 	asl	r0
 	asl	r0 / 0%8
@@ -24,14 +24,14 @@ starxmt:
 	jsr	r0,wakeup; runq+2; 0:.. / wakeup process identified
 					/ by wlist
 1: / entry specified by argument in 0:
-	mov	(sp),r1 / O%8 / r1 contains tty number
+	mov	(sp),r1 / 0%8 / r1 contains tty number
 	asr	r1
 	asr	r1
 	asr	r1 / 0%1 r1 contalns tty number
 	tstb	toutt+3(r1) / is tout entry for tty output = 0
 	bne	1f / no, return to calling routine
 	mov	(sp),r2 / yes, place (8xtty number) into r2
-	tstb	tcsr(r2) / does tty's tcsr register = O (is ready
+	tstb	tcsr(r2) / does tty's tcsr register = 0 (is ready
 			 / bit = 0)
 	bge	1f / yes, return to calling routine
 	movb	tty+2(r2),r1 / no, place third byte of "tty" buf
@@ -39,7 +39,7 @@ starxmt:
 	clrb	tty+2(r2) / clear third byte
 	tst	r1 / is third byte = 0
 	bne	3f / no, r1 contains a non nul character
-	movb	tty+3(r2),Of / yes, make byte 4 arg of "getc"
+	movb	tty+3(r2),0f / yes, make byte 4 arg of "getc"
 	inc	0f / increment arg to make it tty output list of
 		   / clist
 	jsr	r0,getc; 0:.. / obtain next character ln clist for tty

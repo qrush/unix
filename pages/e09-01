@@ -1,14 +1,14 @@
 / u9 -- unix
 
 trcv:
-	jsr	rO,1f
-	jsr	rO,1f
-	jsr	rO,1f
-	jsr	rO,1f
-	jsr	rO,1f
-	jsr	rO,1f
-	jsr	rO,1f
-	jsr	rO,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
 1:
 	mov	r1,-(sp)
 	mov	r2,-(sp)
@@ -40,7 +40,7 @@ trcv:
 	cmp	r1,$34
 	bne	3f
 5:
-	mov	tty+6(rO),r0
+	mov	tty+6(r0),r0
 	beq	2f
 	movb	r1,6(r0) / interrupt or quit
 	jsr	r0,wakeall
