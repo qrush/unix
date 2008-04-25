@@ -1,55 +1,57 @@
-asl r0 / 0%8
-jsr r0,starxmt
-jmp retisp
-xmttoz
-mov r0,—(sp)
-mov 2(sp),:O / O%2+6
-sub $5,rO
-asl r0
-asl ro / 09622
-jsr r0,starxmt
-mov (sp)+,20
-rts rO
+	asl	r0 / 0%8
+	jsr	r0,starxmt
+	jmp	retisp
+
+xmtto:
+	mov	r0,-(sp)
+	mov	2(sp),rO / 0%2+6
+	sub	$6,r0
+	asl	r0
+	asl	r0 / 0%8
+	jsr	r0,starxmt
+	mov	(sp)+,r0
+	rts	r0
+
 starxmt:
-mov (sp),r1 / 0%8 r1 contains Bxtty number _ _
-movb tty+3(r1),r1 / place contents of 4th byte of tty
-/ buf in r1 (cc,cf,cl offset)
-cmpb cc+1(r1),$10. / is char count for tty output greater
-/ than or equal to 10
-bbl 1f / yes N N
-mov r1,0f / no, make offset an arg of wakeup
-inc Of / increment arg of wakeup
-jsr rO,wakeup; runq+2; 0:.. / wakeup process identified
-/ by wlist
-1: / entry specified by argument in O:
-mov (sp),r1 / O%B / r1 contains Bxtty number
-asr r1
-asr r1
-asr r1 / OZ1 r1 contalns tty number
-tstb toutt+3(r1) / is tout entry for tty output e 0
-bne 1f / no, return to calling routine
-mov (sp),r2 / yes, place (Bxtty number) lnto r2
-tstb tcsr(r2) / does tt 's tcsr register = O (ls ready
-/ mt e 0{
-bge 1f / yes, return to calling routine _ "
-movb tty+2(r2),r1 / no, place third byte of tty buf
-/ into r1 (char left over after lf)
-clrb tty+2(r2) / clear third byte
-tst r1 / is third byte = 0
-bne 3f / no, r1 contains a non nul character “
-movb tty+3(r2),O£ / yes, make byte 4 arg of getc
-inc Of / increment arg to make it tty output list of
-/ clist
-jsr r0,getc; 0:.. / obtain next character ln cllst for tty
-/ out and place in r1
-br 1f / if no entry in cllst to be output, return to
-/ calling routine
+	mov	(sp),r1 / 0%8 r1 contains 8xtty number
+	movb	tty+3(r1),r1 / place contents of 4th byte of "tty"
+			     / buf in r1 (cc,cf,cl offset)
+	cmpb	cc+1(r1),$10. / is char count for tty output greater
+			      / than or equal to 10
+	bbl	1f / yes
+	mov	r1,0f / no, make offset an arg of "wakeup"
+	inc	0f / increment arg of wakeup
+	jsr	r0,wakeup; runq+2; 0:.. / wakeup process identified
+					/ by wlist
+1: / entry specified by argument in 0:
+	mov	(sp),r1 / O%8 / r1 contains tty number
+	asr	r1
+	asr	r1
+	asr	r1 / 0%1 r1 contalns tty number
+	tstb	toutt+3(r1) / is tout entry for tty output = 0
+	bne	1f / no, return to calling routine
+	mov	(sp),r2 / yes, place (8xtty number) into r2
+	tstb	tcsr(r2) / does tty's tcsr register = O (is ready
+			 / bit = 0)
+	bge	1f / yes, return to calling routine
+	movb	tty+2(r2),r1 / no, place third byte of "tty" buf
+			     / into r1 (char left over after lf)
+	clrb	tty+2(r2) / clear third byte
+	tst	r1 / is third byte = 0
+	bne	3f / no, r1 contains a non nul character
+	movb	tty+3(r2),Of / yes, make byte 4 arg of "getc"
+	inc	0f / increment arg to make it tty output list of
+		   / clist
+	jsr	r0,getc; 0:.. / obtain next character ln clist for tty
+			      / out and place in r1
+		br 1f / if no entry in clist to be output, return to
+		      / calling routine
 3:
-bic $!177,r1 / zero out blts 7-1§ of r1
-movb partab(r1),r3 / move partab entry (identified by
-/ r1) into r3
-bge 3f / if entry 1s greater than or equal to 0 (digit
-/ 2, far left digit : 0) branch
-bisb 200,r1 / lf entry is less than O add 128 to ASC11
-/ code for char to be output
+	bic	$!177,r1 / zero out blts 7-15 of r1
+	movb	partab(r1),r3 / move "partab" entry (identified by
+			      / r1) into r3
+	bge	3f / if entry 1s greater than or equal to 0 (digit
+		   / 2, far left digit = 0) branch
+	bisb	200,r1 / if entry is less than 0 add 128 to ASC11
+		       / code for char to be output
 
