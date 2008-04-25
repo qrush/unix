@@ -20,11 +20,11 @@ mget:
 		rts		rO
 3: / adding on block which changes small file to a large file
 		jsr		rD,alloc / allocate a new block for this file; block number
-			             /in r1
+			                 /in r1
 		jsr		r0,wslot / set up I/0 buffer for write, r5 points to first
-						 / data word in buffer
+					 / data word in buffer
 		mov		$8.,r3 / next 6 instructions transfer old physical block
-					   / pointers
+				       / pointers
 		mov		$i.dskp,r2 / into new indirect block for the new large file
 1:
 		mov		(r2),(r5)+
@@ -44,7 +44,7 @@ mget:
 4: / large file
 		mov		9-8,lsh / divide byte number by 256.
 		blc		$!776,r2 / zero all bits but 1,2,3,4,5,6,7,8; gives offset
-						 / in indirect block
+					 / in indirect block
 		mov		r2,-(sp) / save on stack
 		mov		mq,r2 / calculate offset in i-node for pointer to proper
 					  / indirect block
