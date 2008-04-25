@@ -1,54 +1,54 @@
-		tst		(sp)+ / bump sp
-		jsr		r0,3f / have found a free block
-		bic		r3,(r2) / set bit for this block .e. assign block
-		br		2f
+	tst	(sp)+ / bump sp
+	jsr	r0,3f / have found a free block
+	bic	r3,(r2) / set bit for this block .e. assign block
+	br	2f
 free:
-		mov		r2,-(sp) / save r2, r3
-		mov		r3,—(sp)
-		jsr		r0,3f / set up bit mask and word no. in free storage map
-				      / for block
-		bis		r3,(r2) / set free storage block bit; indicates free block
+	mov	r2,-(sp) / save r2, r3
+	mov	r3,—(sp)
+	jsr	r0,3f / set up bit mask and word no. in free storage map
+		      / for block
+	bis	r3,(r2) / set free storage block bit; indicates free block
 2:
-		mov		(sp)+,r3 / restore r2, r3
-		mov		(sp)+,r2
-		tst		cdev / cdev = 0, block structured, drum; cdev = 1
-				     / mountable device
-		bne		1f
-		incb		smod / set super block modified for drum
-		rts		r0
+	mov	(sp)+,r3 / restore r2, r3
+	mov	(sp)+,r2
+	tst	cdev / cdev = 0, block structured, drum; cdev = 1
+		     / mountable device
+	bne	1f
+	incb	smod / set super block modified for drum
+	rts	r0
 1:
-		incb		mmod / set super block modified for mountable device
-		rts		r0
+	incb	mmod / set super block modified for mountable device
+	rts	r0
 3:
-		mov		r1,r2 / block number, k, = 1
-		me		$!7,r2 / clear all bits but 0,1,2; r2 = (k) mod (8)
-		clr		r3
-		bisb		2f(r2),r3 / use mask to set bit in r3 corresponding to
-					  / (k) mod 8
-		mov		r1,1r2 / divide block number by 16
-		asr		r2
-		asr		r2
-		asr		r2
-		asr		r2
-		bcc		1f / branch if bit 3 in r1 was 0 i.e., bit for block is in
-				   / lower half of word
-		swab	r3 / swap bytes in r3; bit in upper half of word in free
-			   / storage map
+	mov	r1,r2 / block number, k, = 1
+	me	$!7,r2 / clear all bits but 0,1,2; r2 = (k) mod (8)
+	clr	r3
+	bisb	2f(r2),r3 / use mask to set bit in r3 corresponding to
+			  / (k) mod 8
+	mov	r1,1r2 / divide block number by 16
+	asr	r2
+	asr	r2
+	asr	r2
+	asr	r2
+	bcc	1f / branch if bit 3 in r1 was 0 i.e., bit for block is in
+		   / lower half of word
+	swab	r3 / swap bytes in r3; bit in upper half of word in free
+		   / storage map
 1:
-		asl		r2 / multiply block number by 2; r2 = k/8
-		add		$systm+2,r2 / address of word of free storage map for drum
-			    		    / with block bit in it
-		tst		cdev
-		beq		1f / cdev = O indicates device is drum
-		add		$mount-systm,r2 / address of word of free storage map for
-						/ mountable device with bit of block to be
-						/ freed
+	asl	r2 / multiply block number by 2; r2 = k/8
+	add	$systm+2,r2 / address of word of free storage map for drum
+	    		    / with block bit in it
+	tst	cdev
+	beq	1f / cdev = O indicates device is drum
+	add	$mount-systm,r2 / address of word of free storage map for
+				/ mountable device with bit of block to be
+				/ freed
 1:
-		rts		r0 / return to 'free'
+	rts	r0 / return to 'free'
 2:
-		.byte	1,2,4,10,20,40,100,200 / masks for bits 0,...,7
+	.byte	1,2,4,10,20,40,100,200 / masks for bits 0,...,7
 access:
-		jsr		r0,iget / read in i-node for current directory (i-number
-					/ passed in r1)
-		mov		i.flgs,r2
+	jsr	r0,iget / read in i-node for current directory (i-number
+			/ passed in r1)
+	mov	i.flgs,r2
 

@@ -1,44 +1,44 @@
-		rts		r0
+	rts	r0
 2:
-		mov		(r5)+,(r1)+ / read new i-node into "inode" area of core
-		dec		r3
-		bgt		2b
-		rts		r0
+	mov	(r5)+,(r1)+ / read new i-node into "inode" area of core
+	dec	r3
+	bgt	2b
+	rts	r0
 itrunc:
-		jsr		r0,iget
-		mov		$i.dskp,r2 / address of block pointers in r2
+	jsr	r0,iget
+	mov	$i.dskp,r2 / address of block pointers in r2
 1:
-		mov		(r2)+,r1 / move physical block number into r1
-		beg		5f
-		mov		r2,-(sp)
-		blt		$10000,i.flgs / test large file bit?
-		beq		4f / if clear, branch
-		mov		r1,-(sp) / save block number of indirect block
-		jsr		r0,dskrd / read in block, 1st data word pointed to by r5
-		mov		$256.,r3 / move word count into r3
+	mov	(r2)+,r1 / move physical block number into r1
+	beg	5f
+	mov	r2,-(sp)
+	blt	$10000,i.flgs / test large file bit?
+	beq	4f / if clear, branch
+	mov	r1,-(sp) / save block number of indirect block
+	jsr	r0,dskrd / read in block, 1st data word pointed to by r5
+	mov	$256.,r3 / move word count into r3
 2:
-		mov		(r5)+,r1 / put 1st data word in r1; physical block number
-		beq		3f / branch if zero
-		mov		r3,-(sp) / save r3, r5 on stack
-		mov		r5,-(sp)
-		jsr		r0,free / free block in free storage map
-		mov		(sp)+,r5
-		mov		(sp)+,r3
+	mov	(r5)+,r1 / put 1st data word in r1; physical block number
+	beq	3f / branch if zero
+	mov	r3,-(sp) / save r3, r5 on stack
+	mov	r5,-(sp)
+	jsr	r0,free / free block in free storage map
+	mov	(sp)+,r5
+	mov	(sp)+,r3
 3:
-		dec		r3 / decrement word count
-		bgt		2b / branch if positive
-		mov		(sp)+,r1 / put physical block number of indirect block
+	dec	r3 / decrement word count
+	bgt	2b / branch if positive
+	mov	(sp)+,r1 / put physical block number of indirect block
 4:
-		jsr		rO,free / free indirect block
-		mov		(sp)+,r2
+	jsr	rO,free / free indirect block
+	mov	(sp)+,r2
 5:
-		cmp		r2,$i.dskp+16.
-		bne		1b / branch until all i.dskp entries check
-		bic		$10000,iflgs / clear large file bit
-		cl.r	i.size / zero file size
-		jsr		r0,copyz; i.dskp; i.dskp+16. / zero block pointers
-		jsr		rO,setimod / set i-node modified flag
-		mov		ii,r1
-		rts		r0
+	cmp	r2,$i.dskp+16.
+	bne	1b / branch until all i.dskp entries check
+	bic	$10000,iflgs / clear large file bit
+	cl.r	i.size / zero file size
+	jsr	r0,copyz; i.dskp; i.dskp+16. / zero block pointers
+	jsr	rO,setimod / set i-node modified flag
+	mov	ii,r1
+	rts	r0
 
 

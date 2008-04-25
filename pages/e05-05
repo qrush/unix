@@ -1,57 +1,57 @@
-		beq		1f
-		clrb		imod / if it has, we must write the new i-node out on disk
-		mov		r1 ,-(sp)
-		mov		cdev,-(sp)
-		mov		ii,r1
-		mov		idev,cdev
-		jsr		rO,icalc; 1
-		mov		(sp)+,cdev
-		mov		(sp)+,r1
+	beq	1f
+	clrb	imod / if it has, we must write the new i-node out on disk
+	mov	r1 ,-(sp)
+	mov	cdev,-(sp)
+	mov	ii,r1
+	mov	idev,cdev
+	jsr	rO,icalc; 1
+	mov	(sp)+,cdev
+	mov	(sp)+,r1
 1:
-		tst		r1 / is new i-number non zero
-		beq		2f / branch if r1=0
-		tst		cdev / is the current device number non zero (i.e., device
-					 / =/ drum)
-		une		1f / branch 1f cdev =/ 0
-		cmp		r1 ,mnti / mnti is the i-number of the cross devlce
-						 / file (root directory of mounted devlce)
-		bne		1f
-		mov		mntd,cdev / make mounted device the current device
-		mov		rootdir,r1
+	tst	r1 / is new i-number non zero
+	beq	2f / branch if r1=0
+	tst	cdev / is the current device number non zero (i.e., device
+	       	     / =/ drum)
+	une	1f / branch 1f cdev =/ 0
+	cmp	r1 ,mnti / mnti is the i-number of the cross devlce
+			 / file (root directory of mounted devlce)
+	bne	1f
+	mov	mntd,cdev / make mounted device the current device
+	mov	rootdir,r1
 1:
-		mov		r1 ,ii
-		mov		cdev,idev
-		jsr		r0,1calc; 0 / read 1n i-node ii
+	mov	r1 ,ii
+	mov	cdev,idev
+	jsr	r0,1calc; 0 / read 1n i-node ii
 2:
-		mov		ii,r1
-		rts		r0
+	mov	ii,r1
+	rts	r0
 icalc: / i-node i is located in block (i+31.)/16. and begins 32.*
        / (i+31)mod16 bytes from its start
-		add		$31.,r1 / add 31. to i-number
-		mov		r1,—(sp) / save i+.31. on stack
-		asr		r1 / divide by 16.
-		asr		r1
-		asr		r1
-		asr		r1 / r1 contains block number of block in which
-				   / i-node exists
-		jsr		r0,dskrd / read in block containing i-node i.
-		tst		r0
-		beg		1f / branch to wslot when argument in icalc call = 1
-		jsr		r0,wslot / set up data buffer for write (will be same buffer
-						 / as dskrd got)
+	add	$31.,r1 / add 31. to i-number
+	mov	r1,—(sp) / save i+.31. on stack
+	asr	r1 / divide by 16.
+	asr	r1
+	asr	r1
+	asr	r1 / r1 contains block number of block in which
+		   / i-node exists
+	jsr	r0,dskrd / read in block containing i-node i.
+	tst	r0
+	beg	1f / branch to wslot when argument in icalc call = 1
+	jsr	r0,wslot / set up data buffer for write (will be same buffer
+			 / as dskrd got)
 1:
-		bic		$!17,(sp) / zero all but last 4 bits; gives (i+31.) mod 16
-		mov		(sp)+,mq / calculate offset in data buffer; 32.*(i+31.)mod16
-		mov		$5,lsh / for i-node i.
-		add		mq,r5 / r5 points to flrst word ln i-node i.
-		mov		$inode,r1 / inode is address of first word of current i-node
-		mov		$16.,r3
-		tst		(r0)+ / branch to 2f when argument in icalc call = 0
-		beq		2f / r0 now contains proper return address for rts r0
+	bic	$!17,(sp) / zero all but last 4 bits; gives (i+31.) mod 16
+	mov	(sp)+,mq / calculate offset in data buffer; 32.*(i+31.)mod16
+	mov	$5,lsh / for i-node i.
+	add	mq,r5 / r5 points to flrst word ln i-node i.
+	mov	$inode,r1 / inode is address of first word of current i-node
+	mov	$16.,r3
+	tst	(r0)+ / branch to 2f when argument in icalc call = 0
+	beq	2f / r0 now contains proper return address for rts r0
 1:
-		mov		(r1 )+,(r5)+ / over write old i-node
-		dec		r3
-		bgt		1b
-		jsr		r0,dskwr / write inode out on device
+	mov	(r1 )+,(r5)+ / over write old i-node
+	dec	r3
+	bgt	1b
+	jsr	r0,dskwr / write inode out on device
 
 

@@ -1,53 +1,53 @@
-		cmpb		i.uid,u.uid / is user same as owner of file
-		hne		1f / no, then branch
-		asrb		r2 / shlft owner read write bits into non owner
-				   / read/write blts
-		asrb		r2
+	cmpb	i.uid,u.uid / is user same as owner of file
+	hne	1f / no, then branch
+	asrb	r2 / shlft owner read write bits into non owner
+		   / read/write blts
+	asrb	r2
 1:
-		bit		r2,(r0)+ / test read—write flags against argument in
-					 / access call
-		bne		1f
-		tstb		u.uid
-		beq		1f
-		jmp		error
+	bit	r2,(r0)+ / test read—write flags against argument in
+			 / access call
+	bne	1f
+	tstb	u.uid
+	beq	1f
+	jmp	error
 1:
-		rts		r0
+	rts	r0
 setimod:
-		movb		$1,imod / set current i—node modified bytes
-		mov		s.time,i.mtim / put present tlme into file modified time
-		mov		s.time+2,i.mtim+2
-		rts		r0
+	movb	$1,imod / set current i—node modified bytes
+	mov	s.time,i.mtim / put present tlme into file modified time
+	mov	s.time+2,i.mtim+2
+	rts	r0
 imap: / get the byte that has the allocation bit for the i—number contained
       /in r1
-		mov		$1,mq / put 1 in the mq
-		mov		r1,r2 / r2 now has i—number whose byte in the map we
- 				      / must find
-		sub		$41.,r2 / r2 has i-41
-		mov		r2,r3 / r3 has i-41
-		blc		$!7,r3 / r3 has (i-41) mod 8 to get the bit position
-		mov		r3,lsh / move the 1 over (i-41) mod 8 positions to the left
-				       / to mask the correct bit
-		asr		r2
-		asr		r2
-		asr		r2 / r2 has (i-41) base 8 of the byte no. from the start of
-				   / the map
-		mov		r2,-(sp) / put (i-41) base 8 on the stack
-		mov		$systm,r2 / r2 points to the in-core image of the super
-					  / block for drum
-		tst		cdev / is the device the disk
-		beg		1f / yes
-		add		$mount—systm,r2 / for mounted device, r2 points to 1st word
-						/ of its super block
+	mov	$1,mq / put 1 in the mq
+	mov	r1,r2 / r2 now has i—number whose byte in the map we
+ 		      / must find
+	sub	$41.,r2 / r2 has i-41
+	mov	r2,r3 / r3 has i-41
+	blc	$!7,r3 / r3 has (i-41) mod 8 to get the bit position
+	mov	r3,lsh / move the 1 over (i-41) mod 8 positions to the left
+		       / to mask the correct bit
+	asr	r2
+	asr	r2
+	asr	r2 / r2 has (i-41) base 8 of the byte no. from the start of
+		   / the map
+	mov	r2,-(sp) / put (i-41) base 8 on the stack
+	mov	$systm,r2 / r2 points to the in-core image of the super
+			  / block for drum
+	tst	cdev / is the device the disk
+	beg	1f / yes
+	add	$mount—systm,r2 / for mounted device, r2 points to 1st word
+				/ of its super block
 1:
-		add		(r2)+,(sp) / get byte address of allocation bit
-		add		(sp)+,r2 / ?
-		add		$2,r2 / ?
-		rts		r0
+	add	(r2)+,(sp) / get byte address of allocation bit
+	add	(sp)+,r2 / ?
+	add	$2,r2 / ?
+	rts	r0
 iget:
-		cmp		r1, ii / r1 = i-number of current flle
-		bne		1f
-		cmp		idev,cdev / ls device number of i-node = current device
-		beq		2f
+	cmp	r1, ii / r1 = i-number of current flle
+	bne	1f
+	cmp	idev,cdev / ls device number of i-node = current device
+	beq	2f
 1:
-		tstb		imod / has i-node of current file been modified i.e.,
-			       	     / lmod set
+	tstb	imod / has i-node of current file been modified i.e.,
+	       	     / lmod set
