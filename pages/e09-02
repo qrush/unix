@@ -1,0 +1,56 @@
+	beq	3f
+	cmp	r1,$'A
+	blo	3f
+	cmp	r1,$'Z
+	bhi	3f
+	add	$40,r1
+3:
+	movb	tty+3(r0),0f
+	jsr	rO,putc; 0:.. / put char on input clist
+		br 2f
+	bitb	$10,tty+4(r0) / echo
+	bne	4f / branch echo bit set
+	cmp	r1,$12
+	bne	3f
+	bitb	$20,tty+4(r0) / cr
+	beq	3f
+4:
+	cmp	r1,$4 / is char input an eot
+	beq	1f
+	mov	r1,-(sp) / put char on stack
+	movb	tty+3(r0),0f
+	inc	0f
+	jsr	r0,putc; 0:.. / put char just input on output clist
+		bx: .+2
+	jsr	r0,starxmt
+	mov	(sp)+,r1
+3:
+	bitb	$40,tty+4(r0) / raw
+	bne	1f / branch if raw bit set
+	cmp	r1,$12
+	beq	1f
+	movb	tty+38r0),r1
+	cmpb	cc(r1),$15.
+	blo	2f
+1:
+	movb	tty+3(r0),0f
+	jsr	r0,wakeup; runq; 0:.. / call wakeup for process
+2:
+	jmp	retisp  
+txmt:
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+	jsr	r0,1f
+1:
+	mov	r1,-(sp)
+	mov	r2,-(sp)
+	mov	r3,-(sp)
+	mov	clockp,-(sp)
+	mov	$s.syst+2,clockp
+	sub	$txmt+4,r0 / 0%4 / offset in cc
+

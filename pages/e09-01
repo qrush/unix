@@ -1,0 +1,56 @@
+/ u9 -- unix
+
+trcv:
+	jsr	rO,1f
+	jsr	rO,1f
+	jsr	rO,1f
+	jsr	rO,1f
+	jsr	rO,1f
+	jsr	rO,1f
+	jsr	rO,1f
+	jsr	rO,1f
+1:
+	mov	r1,-(sp)
+	mov	r2,-(sp)
+	mov	r3,-(sp)
+	mov	clockp,-(sp)
+	mov	$s.syst+2,clockp
+	sub	$trcv+4,r0 / 0%4 / calculate offset for tty causing
+	asl	r0 / 0%8 / this interrupt
+	mov	rcsr(r0),r2
+	mov	rcbr(r0),r1
+	tst	r2
+	blt	1f / error
+	tst	tty+6(r0)
+	beq	1f
+	bit	$40,r2 / parlty
+	bne	3f / branch if set
+	tstb	tty+4(r0)
+	blt	4f / 37 parity not allowed
+	br	2f
+3:
+	bitb	$100,tty+4(r0)
+	beq	2f / non-37 parity not allowed
+4:
+	bic	!77,r1
+	bit	$40,tty+4(r0)
+	bne	3f / raw
+	cmp	r1,$177
+	beq	5f
+	cmp	r1,$34
+	bne	3f
+5:
+	mov	tty+6(rO),r0
+	beq	2f
+	movb	r1,6(r0) / interrupt or quit
+	jsr	r0,wakeall
+	br	2f
+3:
+	cmp	r1,$15 / or
+	bne	3f
+	bit	$20,tty+4(r0)
+	beq	3f
+	mov	$12,r1
+3:
+	bitb	$4,tty+4(r0)
+

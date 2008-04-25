@@ -1,0 +1,21 @@
+	bne	1f / if not, branch
+	mov	$511,rcsr(r1) / set control bits for receiver
+	mov	$511,tcsr(r1) / set control bits for transmitter
+	mcvb	$210,tty+4(r1) / put 210 in tty table word 3 / set flags
+1:
+	incb	(r5) / inc first byte of tty buffer
+	tst	(sp)+
+	tst	u.ttyp / is there a process control tty
+	bne	1f / yes, then branch
+	mov	r5,u.ttyp / no, make this tty the process control tty
+	br	1f / return
+
+ccvt:
+	sub	$28.,r1
+	asl	r1 / 0%4
+	asl	r1
+	mov	tty+6(r1),r5
+	decb	(r5)
+1:
+	jmp	sret
+

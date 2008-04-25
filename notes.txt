@@ -83,6 +83,16 @@ e00-06
 e00-10
     - left "/ect/init" typo
 --------------------
+e09-01
+    - I'm using tabs between opcode and operands now
+    - left "bic $!77,r1" although written comment says "? !177"
+e09-02
+    - left "movb    tty+38r0),r1" as is.  There's a write in 
+      correction for "(" instead of "8".  This concerns me as it
+      means there are probably some errors in this listing as
+      the paren is most likely the right character here.
+
+--------------------
 e10-01
 e10-02
    - I used tabs for the first tab stop and spaced out to the next step.
