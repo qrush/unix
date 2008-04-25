@@ -35,7 +35,7 @@ e06-01 to e06-06 (6) - u6 -
    assigned:
    reviewed:
 e07-01 to e07-08 (8) - u7 -
-   assigned:
+   assigned: Naoki Hamada
    reviewed:
 e08-01 to e08-09 (9) - u8 -
    assigned: Christian David
@@ -91,6 +91,10 @@ e09-02
       correction for "(" instead of "8".  This concerns me as it
       means there are probably some errors in this listing as
       the paren is most likely the right character here.
+e09-03
+    - hard to tell due to hand written correction, but I believe
+      the line before "rts r0" reads "mov (sp)+,r0"
+   - comment "ASC11" (one instead of I) left as is.
 
 --------------------
 e10-01
