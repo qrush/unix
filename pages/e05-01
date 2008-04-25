@@ -47,7 +47,7 @@ mget:
 					 / in indirect block
 		mov		r2,-(sp) / save on stack
 		mov		mq,r2 / calculate offset in i-node for pointer to proper
-					  / indirect block
+            			      / indirect block
 		bic		$!16,r2
 		mov		i.dskp(r2),r1
 		bne		2f / if no indirect block exists
