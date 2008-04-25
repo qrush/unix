@@ -23,7 +23,7 @@ trcv:
 	blt	1f / error
 	tst	tty+6(r0)
 	beq	1f
-	bit	$40,r2 / parlty
+	bit	$40,r2 / parity
 	bne	3f / branch if set
 	tstb	tty+4(r0)
 	blt	4f / 37 parity not allowed

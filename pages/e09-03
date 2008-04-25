@@ -27,7 +27,7 @@ starxmt:
 	mov	(sp),r1 / 0%8 / r1 contains tty number
 	asr	r1
 	asr	r1
-	asr	r1 / 0%1 r1 contalns tty number
+	asr	r1 / 0%1 r1 contains tty number
 	tstb	toutt+3(r1) / is tout entry for tty output = 0
 	bne	1f / no, return to calling routine
 	mov	(sp),r2 / yes, place (8xtty number) into r2

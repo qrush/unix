@@ -23,7 +23,7 @@ rcvch:
 1:
 	movb	tty+3(r2),0f / make cc offset arg for "getc"
 	mov	$240,*$ps / set processor priority = 5
-	jsr	r0,qetc; 0:.. / get next character off clist
+	jsr	r0,getc; 0:.. / get next character off clist
 		br 2f / clist empty
 	clr	*$ps / set processor priority = 0
 	rts	r0

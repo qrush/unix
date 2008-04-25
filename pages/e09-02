@@ -21,7 +21,7 @@
 	movb	tty+3(r0),0f
 	inc	0f
 	jsr	r0,putc; 0:.. / put char just input on output clist
-		bx: .+2
+		br: .+2
 	jsr	r0,starxmt
 	mov	(sp)+,r1
 3:
@@ -29,7 +29,7 @@
 	bne	1f / branch if raw bit set
 	cmp	r1,$12
 	beq	1f
-	movb	tty+38r0),r1
+	movb	tty+3(r0),r1
 	cmpb	cc(r1),$15.
 	blo	2f
 1:

@@ -39,7 +39,7 @@
 	bne	2f / yes
 	bitb	$20,3(r2) / cr flag is bit 4 of 5th byte of "tty"
 			  / area = 1
-	beq	2f / no (only if to be handled)
+	beq	2f / no (only lf to be handled)
 	movb	$15,1(r2) / place "cr" in 3rd byte of "tty" area
 			  / (character leftover after "lf" )
 2:
