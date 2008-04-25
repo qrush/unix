@@ -34,7 +34,7 @@ mget:
 		mov		$256.-8.,r3 / clear rest of data buffer
 1:
 		clr		(r5)+
-		dec 	r3
+		dec 		r3
 		bgt		1b
 		jsr		rO,dskwr / write new indirect block on disk
 		mov		r1,i.dskp / put pointer to indirect block ln i—node
