@@ -29,7 +29,7 @@ e04-01 to e04-07 (7) - u4 -
    assigned: Alex Garbutt
    reviewed:
 e05-01 to e05-06 (6) - u5 -
-   assigned: Ralph Logan
+   assigned: Ralph Logan, complete
    reviewed:
 e06-01 to e06-06 (6) - u6 -
    assigned: johan beisser
@@ -82,6 +82,24 @@ e00-06
 
 e00-10
     - left "/ect/init" typo
+
+--------------------
+I noticed that "inode" and "i-node" were used interchangably, which could possibly
+indicate two different people commenting the code.  I left each as the original.
+
+e05-01
+    - line 9 has a crossed out term, so i used the correction "r2"
+
+e05-01
+    - line 48 comment says "panic / found no tres storage" - left it as "tres"
+      no idea whether it is supposed to be "tree", "free", or "tres"
+
+e05-04
+    - some of the latter parts of the code have comments "/ ?", left as is
+
+e05-05
+    - looks like some of the comments contain a "does not equal symbol" manually
+      created by typing =<backspace>/.  I symbolized it with "=/".
 --------------------
 e09-01
     - I'm using tabs between opcode and operands now
@@ -113,4 +131,3 @@ e10-02
      after 8 characters and another after 7 characters.  The spaces
      between opcode and operands are probably due to a tab, as can be
      seen in later assembly code we have in machine readable form.
-
