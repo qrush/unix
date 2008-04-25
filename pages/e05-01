@@ -1,0 +1,54 @@
+/ u5 - unix
+mget:
+		mov		*u.fofp,mq / file offset ln mq
+		clr		ac / later to be high sig
+		mov		$-8,lsh   / divide ac/mq by 256.
+		mov		mq,r2
+		blt		$10000,i.flgs / lg/sm is this a large or small file
+		bne		4f / branch for large file
+		blt		$!17,r2
+		bne		3f / branch if/r2 greater than or equal to 16
+		blc		$!16,r2 / clear all bits but bits 1,2,3
+		mov		1.dskp(r2),r1 / r1 has physical block number
+		bne		2f / lf physical block num is zero then need a new block
+				   / for file
+		jsr		rO,alloc / allocate a new block
+		mov		r1,i.dskp(r2) / physical block number stored in i-node
+		jsr		r0,setimod / set inode modified byte (imod)
+		jsr		r0,clear / zero out disk/drum block just allocated
+2:
+		rts		rO
+3: / adding on block which changes small file to a large file
+		jsr		rD,alloc / allocate a new block for this file; block number
+			             /in r1
+		jsr		r0,wslot / set up I/0 buffer for write, r5 points to first
+						 / data word in buffer
+		mov		$8.,r3 / next 6 instructions transfer old physical block
+					   / pointers
+		mov		$i.dskp,r2 / into new indirect block for the new large file
+1:
+		mov		(r2),(r5)+
+		clr		(r2)+
+		dec		r3
+		bgt		1b
+		mov		$256.-8.,r3 / clear rest of data buffer
+1:
+		clr		(r5)+
+		dec 	r3
+		bgt		1b
+		jsr		rO,dskwr / write new indirect block on disk
+		mov		r1,i.dskp / put pointer to indirect block ln i—node
+		bis		$10000,i.f1gs / set large file blt in i.flgs word of i-node
+		jsr		rO,setlmod / set i-node modified flag
+		br		mget
+4: / large file
+		mov		9-8,lsh / divide byte number by 256.
+		blc		$!776,r2 / zero all bits but 1,2,3,4,5,6,7,8; gives offset
+						 / in indirect block
+		mov		r2,-(sp) / save on stack
+		mov		mq,r2 / calculate offset in i-node for pointer to proper
+					  / indirect block
+		bic		$!16,r2
+		mov		i.dskp(r2),r1
+		bne		2f / if no indirect block exists
+		jsr		r0,alloc / allocate a new block
