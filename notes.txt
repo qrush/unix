@@ -41,8 +41,8 @@ e08-01 to e08-09 (9) - u8 -
    assigned: Christian David
    reviewed:
 e09-01 to e09-08 (8) - u9 -
-   assigned: tim newsham
-   reviewed:
+   assigned: tim newsham, complete
+   reviewed: Ralph Logan
 e10-01 to e10-02 (2) - ux -
    assigned: tim newsham, complete
    reviewed:
