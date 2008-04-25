@@ -1,0 +1,54 @@
+	dec	2(r5) / decrement the character count
+	jsr	r0,passc / move the character to core (user)
+	br	1b / get next character
+ret1:
+	jmp	ret / return to caller via 'ret'
+rppt: / read paper tape`
+	jsr	r0,ppt1c / gets next character in clist for ppt input and
+			 / places
+		br ret / it 1n r1; 1f there 1s no problem with reader, it
+		       / also enables read bit Ln prs
+	jsr	rO,passc / place character in users buffer area
+	br	rppt
+
+rmem: / transfer characters from memory to a user area of core
+	mov	*u.fofp,r1 / save file offset which points to the char to
+		           / be transferred to user
+	inc	*u.fofp / increment file offset to point to 'next' char 1n
+		        / memory file
+	movb	(r1),r1 / get character from memory file, put it in r1
+	jsr	rO,passc / move this character to the next byte of the
+		         / users core area
+	br	 mem / continue
+1:
+rcrd:
+	jmp	error / see 'error' routine
+
+dskr:
+	mov	(sp),r1 / i-number in r1
+	jsr	r0,iget / get i-node (r1) into i—node section of core
+	mov	i.size,r2 / file size ln bytes in r2
+	sub	*u.fofp,r2 / subtract file offset
+	blos	ret
+	cmp	r2,u.count / are enough bytes left in file to carry out read
+	bhis	1f
+	mov	r2,u.count / no, just read to end of file
+1 :
+	jsr	r0,mget / returns physical block number of block in file
+		        / where offset points
+	jsr	r0,dskrd / read in block, r5 points to 1st word of data in
+		         / buffer
+	jsr	r0,sioreg
+2:
+	movb	(r2)+,(r1)+ / move data from buffer into working core
+		            / starting at u.base
+	dec	r3
+	bne	2b / branch until proper number of bytes are transferred
+	tst	u.count / all bytes read off disk
+	bne	dskr
+	br	ret
+passc:
+	movb	r1,*u.base / move a character to the next byte of the
+		           / users buffer
+	inc	u.base / increment the pointer to point to the next byte
+

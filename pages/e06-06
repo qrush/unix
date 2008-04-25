@@ -1,0 +1,20 @@
+	mov	u.base,r1 / address of data is in r1
+	neg	r3 / 512 - file offset (mod512..) in r3 (i.e., the number
+		   / of free bytes in the file block
+	cmp	r3,u.count / compare this with the number of data bytes to
+		           / be written to the f11e
+	blos	2f / if less than branch. Use the number of free bytes
+		   / in the file block as the number to be written
+	mov	u.count,r3 / if greater than, use the number of data bytes
+		           / as the number to be written
+2:
+	add	r3,u.nread / r3 + number of bytes xmitted during write is
+		           / put into u.nread
+	sub	r3,u.count / u.count = no. of bytes that still must be
+		           / written or read
+	add	r3,u.base /  u.base points to the 1st of the remaining data
+		          / bytes
+	add	r3,*u.fofp / new file offset = number of bytes done + old
+		           / file offset
+	rts	r0
+

@@ -1,0 +1,55 @@
+/ u6 -- unix
+read:
+	clr	u.nread / accumulates number of bytes transmitted
+	tst	u.count / is number of bytes to be read greater than 0
+	bgt	1f / yes, branch
+	rts	r0 / no, nothing to read; return to caller
+1: ·
+	mov	r1,-(sp) / save 1—number on stack
+	cmp	r1,$40. / want to read a special file (1—nodes 1,...,40 are
+		    / for special files)
+	ble	1f / yes, branch
+	jmp	dskr / no, jmp to dskr; read file with 1.-node number (:1)
+		     / starting at byte ((u.fofp)), read in u.count bytes
+1:
+	asl	r1 / multiply inode number by 2
+	jmp	*1f-2(r1)
+1:
+	rtty / tty; r1=2
+	rppt / ppt; r1=4
+	rmem / mem; r1=6
+	rrf0 / rf0
+	rrk0 / rk0
+	rtap / tap0
+	rtap / tap1
+	rtap / tap2
+	rtap / tap3
+	rtap / tap4
+	rtap / tap5
+	rtap / tap6
+	rtap / tap7
+	rcvt / tty0
+	rcvt / tty1
+	rcvt / tty2
+	rcvt / tty3 ‘
+	rcvt / tty4
+	rcvt / tty5
+	rcvt / tty6
+	zcvt / ety7
+	rcrd/ crd
+rtty: / read from console tty
+	mov	tty+[8*ntty]—8+6,r5 / r5 is the address of the 4th word of
+				    / of the control and status block _
+	tst	2(r5) / for the console tty; this word points to the console
+		      / tty bufTer
+	bne	1f / 2nd word of console tty buffer contains number
+	           / of chars. Is this number non-zero?
+	jsr	r0,canon; ttych / if 0, call 'canon' to get a line
+			    / (120 chars.)
+1:
+	tst	2(r5) / is the number of characters zero
+	beq	ret1 / yes, return to caller via 'ret1'
+	movb	*4(rS),r1 / no, put character in r1
+	inc	4(r5) / 3rd word of console tty buffer points to byte which
+		      / contains the next char.
+
