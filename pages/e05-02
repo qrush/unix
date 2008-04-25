@@ -29,11 +29,11 @@ alloc:
 		mov		$systm,r2 / start of inode and free storage map for drum
 		tst		cdev
 		beq		1f / drum ls device
-		mov		$mount,r2 / dl k or tape is device, start of inode and free
-		                  / storage map
+		mov		$mount,r2 / disk or tape is device, start of inode and free
+		                          / storage map
 1:
 		mov		(r2)+,r1 / first word contains number of bytes in free
-					     / storage map
+					 / storage map
 		asl		r1 / multiply r1 by eight gives, number of blocks in device
 		asl		r1
 		asl		r1
