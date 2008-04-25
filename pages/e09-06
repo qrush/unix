@@ -1,56 +1,57 @@
-tst r1 / is character nul
-beq xmtt / yes, get next character
+	tst	r1 / is character nul
+	beq	xmtt / yes, get next character
 1:
-mov $240,*sps / set processor priority equal to 5
-mov (sp),r2 / r2 contains 1 node number of file
-asl :2 / O%2+2B / multlply inode number by 2
-sub $21.,::2 / 0%247 / subtract 21 from 2x inumber to
-/ get cc, cf, cl offset
-mov r2,0f / make offset arg of putc
-cmpb cc(r2),$50. / is char count for device greater than
-/ or equal to SO
-bhls 2f / yes
-jsr r0,putc; 0:.. / find locatlcn in freelist to assign to
-/ device and
-br 2f / place char in list, if none available branch
-/ to put process to sleep
-mov :0,-(sp) / place calling routines return address on
-/ stack
-mov Ob,rO / place offset into cc, cl and cf tables in rO
-sub $7,rO / subtract seven from offset
-asl :0 / multiply by 2
-asl r0 / 0%8 / multiply by 2 (r0 contains Bxtty number)
-jar r0,starxmt / attempt to output character
-mov (sp)+,r0 / pop stack
-br xmtt / get next character
+	mov	$240,*$ps / set processor priority equal to 5
+	mov	(sp),r2 / r2 contains i node number of file
+	asl	r2 / 0%2+28 / multlply inode number by 2
+	sub	$21.,r2 / 0%2+7 / subtract 21 from 2x inumber to
+			/ get cc, cf, cl offset
+	mov	r2,0f / make offset arg of putc
+	cmpb	cc(r2),$50. / is char count for device greater than
+			    / or equal to 50
+	bhis	2f / yes
+	jsr	r0,putc; 0:.. / find location in freelist to assign to
+			      / device and
+		br 2f / place char in list, if none available branch
+		      / to put process to sleep
+	mov	r0,-(sp) / place calling routines return address on
+			 / stack
+	mov	0b,r0 / place offset into cc, cl and cf tables in r0
+	sub	$7,r0 / subtract seven from offset
+	asl	r0 / multiply by 2
+	asl	r0 / 0%8 / multiply by 2 (r0 contains 8xtty number)
+	jsr	r0,starxmt / attempt to output character
+	mov	(sp)+,r0 / pop stack
+	br	xmtt / get next character
 2:
-mov r1,—(sp) / place character on stack
-mov Ob,Of / make offset into cc, cf, cl table arg of
-/ sleep (identifies location in wlist)
-jsr rD,sleep; 0:.. / put process to sleep
-mov (sp)+,r1 / remove character from stack
-br 1b / try again
+	mov	r1,-(sp) / place character on stack
+	mov	0b,0f / make offset into cc, cf, cl table arg of
+		      / sleep (identifies location in wlist)
+	jsr	r0,sleep; 0:.. / put process to sleep
+	mov	(sp)+,r1 / remove character from stack
+	br	1b / try again
+
 rcvt: / read tty
-sub $28.,1:*1 / 0962 r1 contains Zxtty number
-asl :1
-asl r1 / r1 contains Bxtty number
-mov r1,—(sp)
-mov tty+6(r1),r5 / r5 contains address of 4th word in
-/ tty area
-tst 2(rS) / is char count e 0
-bne 1f / no
-bltb $40,tty+4(r1) / raw flag set?
-beq 2f / no
-tst —(sp) / yes, decrement sp
-js: rO,rcvch / get character from cllst
-tst (sp)+ / increment sp
-mov (59)+;:*2 / r2 contains Bxtty number
-bltb $4,rcsr(r2) / is carrier detect bit on
-beq 3f / no
-jsr r0,passc / yes, place character in users buffer area
+	sub	$28.,r1 / 0%2 r1 contains 2xtty number
+	asl	r1
+	asl	r1 / r1 contains 8xtty number
+	mov	r1,-(sp)
+	mov	tty+6(r1),r5 / r5 contains address of 4th word in
+			     / tty area
+	tst	2(r5) / is char count = 0
+	bne	1f / no
+	bitb	$40,tty+4(r1) / raw flag set?
+	beq	2f / no
+	tst	-(sp) / yes, decrement sp
+	jsr	r0,rcvch / get character from clist
+	tst	(sp)+ / increment sp
+	mov	(sp)+,r2 / r2 contains 8xtty number
+	bitb	$4,rcsr(r2) / is carrier detect bit on
+	beq	3f / no
+	jsr	r0,passc / yes, place character in users buffer area
 3:
-jmp ret
+	jmp	ret
 2:
-jsr r0,canon; rcvch / process a line of characters in
-/ cllst and place results in tty buffer
+	jsr	r0,canon; rcvch / process a line of characters in
+				/ clist and place results in tty buffer
 
