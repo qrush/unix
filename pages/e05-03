@@ -1,6 +1,6 @@
 	tst	(sp)+ / bump sp
 	jsr	r0,3f / have found a free block
-	bic	r3,(r2) / set bit for this block .e. assign block
+	bic	r3,(r2) / set bit for this block i.e. assign block
 	br	2f
 free:
 	mov	r2,-(sp) / save r2, r3
@@ -21,7 +21,7 @@ free:
 	rts	r0
 3:
 	mov	r1,r2 / block number, k, = 1
-	me	$!7,r2 / clear all bits but 0,1,2; r2 = (k) mod (8)
+	bic	$!7,r2 / clear all bits but 0,1,2; r2 = (k) mod (8)
 	clr	r3
 	bisb	2f(r2),r3 / use mask to set bit in r3 corresponding to
 			  / (k) mod 8

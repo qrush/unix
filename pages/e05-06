@@ -11,7 +11,7 @@ itrunc:
 	mov	(r2)+,r1 / move physical block number into r1
 	beg	5f
 	mov	r2,-(sp)
-	blt	$10000,i.flgs / test large file bit?
+	bit	$10000,i.flgs / test large file bit?
 	beq	4f / if clear, branch
 	mov	r1,-(sp) / save block number of indirect block
 	jsr	r0,dskrd / read in block, 1st data word pointed to by r5
@@ -29,15 +29,15 @@ itrunc:
 	bgt	2b / branch if positive
 	mov	(sp)+,r1 / put physical block number of indirect block
 4:
-	jsr	rO,free / free indirect block
+	jsr	r0,free / free indirect block
 	mov	(sp)+,r2
 5:
 	cmp	r2,$i.dskp+16.
 	bne	1b / branch until all i.dskp entries check
-	bic	$10000,iflgs / clear large file bit
-	cl.r	i.size / zero file size
+	bic	$10000,i.flgs / clear large file bit
+	clr	i.size / zero file size
 	jsr	r0,copyz; i.dskp; i.dskp+16. / zero block pointers
-	jsr	rO,setimod / set i-node modified flag
+	jsr	r0,setimod / set i-node modified flag
 	mov	ii,r1
 	rts	r0
 

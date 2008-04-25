@@ -1,7 +1,7 @@
 	cmpb	i.uid,u.uid / is user same as owner of file
-	hne	1f / no, then branch
-	asrb	r2 / shlft owner read write bits into non owner
-		   / read/write blts
+	bne	1f / no, then branch
+	asrb	r2 / shift owner read write bits into non owner
+		   / read/write bits
 	asrb	r2
 1:
 	bit	r2,(r0)+ / test read—write flags against argument in
@@ -18,13 +18,13 @@ setimod:
 	mov	s.time+2,i.mtim+2
 	rts	r0
 imap: / get the byte that has the allocation bit for the i—number contained
-      /in r1
+      / in r1
 	mov	$1,mq / put 1 in the mq
 	mov	r1,r2 / r2 now has i—number whose byte in the map we
  		      / must find
 	sub	$41.,r2 / r2 has i-41
 	mov	r2,r3 / r3 has i-41
-	blc	$!7,r3 / r3 has (i-41) mod 8 to get the bit position
+	bic	$!7,r3 / r3 has (i-41) mod 8 to get the bit position
 	mov	r3,lsh / move the 1 over (i-41) mod 8 positions to the left
 		       / to mask the correct bit
 	asr	r2

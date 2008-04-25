@@ -1,10 +1,10 @@
 	mov	r1,i.dskp(r2) / put block number of new block in i-node
 	jsr	r0,setimod / set i—node modified byte
-	jsr	rO,clear / clear new block
+	jsr	r0,clear / clear new block
 2:
 	jsr	r0,dskrd / read in indirect block
 	mov	(sp)+,r2 / get offset
-	mov	r1 ,-(sp) / save block number of indirect block on stack
+	mov	r1,-(sp) / save block number of indirect block on stack
 	add	r5,r2 / r5 points to first word in indirect block, r2
 	              / points to location of inter
 	mov	(r2),r1 / put physical block no of block in file
@@ -14,7 +14,7 @@
 	mov	r1,(r2) / put new block number into proper location ln
 	                / indirect block
 	mov	(sp)+,r1 / get block number of indirect block
-	mov	(r2 ,—(sp) / save block number of new block
+	mov	(r2),—(sp) / save block number of new block
 	jsr	r0,wslot
 	jsr	r0,dskwr / write newly modified indirect block back out
 	                 / on disk
@@ -37,20 +37,20 @@ alloc:
 	asl	r1 / multiply r1 by eight gives, number of blocks in device
 	asl	r1
 	asl	r1
-	mov	r1 ,-(sp) / save # of blocks in device on stack
+	mov	r1,-(sp) / save # of blocks in device on stack
 	clr	r1 / r1 contains bit count of free storage map
 1:
 	mov	(r2)+,r3 / word of free storage map in r3
 	bne	1f / branch if any free blocks in this word
-	ndd	$16.,r1
+	add	$16.,r1
 	cmp	r1 ,(sp) / have we examined all free storage bytes
 	blo	1b
 	jmp	panic / found no tres storage
 1:
 	asr	r3 / find a free block
 	bcs	1f / branch when free block found; bit for block k is in
-		   / byte k/8 / 1n bit x (mod s)
-	lnc	r1 / increment bit count in bit k (mod8)
+		   / byte k/8 / in bit k (mod 8)
+	inc	r1 / increment bit count in bit k (mod8)
 	br	1b
 1:
 

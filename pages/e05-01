@@ -4,11 +4,11 @@ mget:
 	clr	ac / later to be high sig
 	mov	$-8,lsh   / divide ac/mq by 256.
 	mov	mq,r2
-	blt	$10000,i.flgs / lg/sm is this a large or small file
+	bit	$10000,i.flgs / lg/sm is this a large or small file
 	bne	4f / branch for large file
-	blt	$!17,r2
+	bit	$!17,r2
 	bne	3f / branch if/r2 greater than or equal to 16
-	blc	$!16,r2 / clear all bits but bits 1,2,3
+	bic	$!16,r2 / clear all bits but bits 1,2,3
 	mov	1.dskp(r2),r1 / r1 has physical block number
 	bne	2f / lf physical block num is zero then need a new block
 		   / for file
@@ -17,9 +17,9 @@ mget:
 	jsr	r0,setimod / set inode modified byte (imod)
 	jsr	r0,clear / zero out disk/drum block just allocated
 2:
-	rts	rO
+	rts	r0
 3: / adding on block which changes small file to a large file
-	jsr	rD,alloc / allocate a new block for this file; block number
+	jsr	r0,alloc / allocate a new block for this file; block number
 	                 /in r1
 	jsr	r0,wslot / set up I/0 buffer for write, r5 points to first
 			 / data word in buffer
@@ -36,14 +36,14 @@ mget:
 	clr	(r5)+
 	dec 	r3
 	bgt	1b
-	jsr	rO,dskwr / write new indirect block on disk
+	jsr	r0,dskwr / write new indirect block on disk
 	mov	r1,i.dskp / put pointer to indirect block ln i—node
-	bis	$10000,i.f1gs / set large file blt in i.flgs word of i-node
-	jsr	rO,setlmod / set i-node modified flag
+	bis	$10000,i.flgs / set large file blt in i.flgs word of i-node
+	jsr	r0,setimod / set i-node modified flag
 	br	mget
 4: / large file
-	mov	9-8,lsh / divide byte number by 256.
-	blc	$!776,r2 / zero all bits but 1,2,3,4,5,6,7,8; gives offset
+	mov	$-8,lsh / divide byte number by 256.
+	bic	$!776,r2 / zero all bits but 1,2,3,4,5,6,7,8; gives offset
 			 / in indirect block
 	mov	r2,-(sp) / save on stack
 	mov	mq,r2 / calculate offset in i-node for pointer to proper
