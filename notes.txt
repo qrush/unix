@@ -101,6 +101,13 @@ e05-05
     - looks like some of the comments contain a "does not equal symbol" manually
       created by typing =<backspace>/.  I symbolized it with "=/".
 --------------------
+e06:
+    - Used tabs between sections of code instead of spaces.
+      For example:
+	bpn	rtty0 / comment
+
+      This may need some review later. I'll go over it again this afternoon.
+--------------------
 e09-01
     - I'm using tabs between opcode and operands now
     - left "bic $!77,r1" although written comment says "? !177"
