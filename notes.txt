@@ -35,7 +35,7 @@ e06-01 to e06-06 (6) - u6 -
    assigned: johan beisser, complete
    reviewed:
 e07-01 to e07-08 (8) - u7 -
-   assigned: Naoki Hamada
+   assigned: Naoki Hamada, complete
    reviewed:
 e08-01 to e08-09 (9) - u8 -
    assigned: Christian David
@@ -107,6 +107,24 @@ e06:
 	bpn	rtty0 / comment
 
       This may need some review later. I'll go over it again this afternoon.
+--------------------
+I used spaces in all occasions because I did not fully understand
+where to put tabs. We can convert them easily by a small program
+if the rule is specified, so I leave them there.
+
+e07-01
+    - left "cmp     r0,$4" as is. There is a write in correction 
+      for "r1" for "r0".
+    - left "to" as is after ttych: There is a write in correction
+      for "from" instead of "to".
+
+e07-04
+    - left "asr     r0" as is. There is a write in correction 
+      for "r2" for "r0".
+
+e07-08
+    - There is a handwritten addendum "super block" after the line 
+      "jsr     r0, ppoke" which clarifies the comment.
 --------------------
 e09-01
     - I'm using tabs between opcode and operands now

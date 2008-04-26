@@ -1,0 +1,57 @@
+2: / check open write access
+        neg   r1 / make inode number positive
+        jsr    r0,access; 1 / get inode in 0 core
+        bit    $40000,i.figs / is it a directory?
+        bne    2f / yes, transfer (error)
+        cmp    r1,$40. / no, is it a special file?
+        bgt    3f / no, return
+        mov    n,-(sp) / yes
+        asl    r1
+        jmp    *1f-2(r1) / figure out which special file it is
+                         / and transfer
+1:
+        otty   / tty
+        leadr  / ppt
+        sret   / mem
+        sret   / rf0
+        sret / rk0
+        sret   / tap0
+        sret   / tapl
+        sret   / tap2
+        sret   / tap3
+        sret   / tap4
+        sret   / tap5
+        sret   / tap6
+        sret   / tap7
+        ocvt   / tty0
+        ocvt   / ttyl
+        ocvt   / tty2
+        ocvt   / tty3
+        ocvt   / tty4
+        ocvt   / tty5
+        ocvt   / tty6
+        ocvt   / tty7
+/       ejec / lpr
+
+otty: / open console tty for reading or writing
+        mov    $100,*$tks / set interrupt enable bit (zero others) in
+                          / reader status reg
+        mov    $100,*$tps / set interrupt enable bit (zero others) in
+                          / punch status reg
+        mov    tty+[ntty*8]-8+6,r5 / r5 points to the header of the
+                                   / console tty buffer
+        incb   (r5) / increment the count of processes that opened the
+                    / console tty
+        tst    u.ttyp / is there a process control tty (i.e., has a tty
+                      / buffer header
+        bne    sret / address been loaded into u.ttyp yet)?  Yes, branch
+        mov    r5,u.ttyp / no, make the console tty the process control
+                         / tty
+        br     sret / ?
+
+sret:
+        clr    *$ps / set processor priority to zero
+        mov    (sp)+,r1 / pop stack to r1
+3:
+        rts    r0
+

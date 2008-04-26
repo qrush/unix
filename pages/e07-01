@@ -1,0 +1,55 @@
+/ u7 -- unix
+
+canon:
+        mov    r5,r1 / move tty buffer address to r1
+        add    $10.,r1 / add 10 to get start of data
+        mov    r1,4(r5) / canp = 10(r5) / move buffer addr + 10 to 3rd
+                        / word in buffer (char. pointer)
+        clr    2(r5) / ncan / clear 2nd word in buffer, 0 char. count
+1:
+        jsr    r0,*(r0) / jump to arg get char off Q of characters, sleep
+                        / if none
+        jsr    r0,cesc; 100 / test for @ (kill line)
+               br canon / character was @ so start over
+        jsr    r0,cesc; 43 / test for # (erase last char. typed)
+               br 1b / character was #, go back
+        cmp    r0,$4 / is char eot?
+        beq    1f / yes. reset and return
+        movb   r1,*4(r5) / no, move char to address in 3rd word of buffer
+                         / (char. pointer)
+        inc    2(r5) / increment 2nd word (char, count)
+        inc    4(r5) / increment 3rd word (char, pointer)
+        cmp    r1,$'\n / is char = newline
+        beq    1f / yes, 1f
+        cmp    2(r5),$120. / is byte count greater than or equal to 120
+        bhis   1f / yes, 1f
+        br     1b / no, get another char off the Q
+1: / get here if line is full, a new line has been received or an eot
+   / has been received
+        mov    r5,r1 / move buffer address to r1
+        add    $10.,r1 / add 10
+        mov    r1,4(r5) / canp = 10(r5) / reset char pointer
+        tst    (r0)+ / skip over argument
+        rts    r0 / return
+
+cesc: / test for erase or kill char
+        cmp    r1,(r0)+ / char in r1 = erase or kill character?
+        bne    1f / no, skip return
+        tst    2(r5) / yes, is char, count = 0
+        beq    2f / yes, don't skip return
+        dec    2(r5) / no, decrement char count
+        dec    4(r5) / decrement character pointer
+        cmpb   *4(r5),$'\\/ was previous character a "\"
+        bne    2f / no, don't skip
+1:
+        tst    (r0)+ / yes, skip
+2:
+        rts    r0 / return
+
+ttych: / get characters from Q of characters inputted to tty
+        mov    $240,*$ps / set processor priority to 5
+        jsr    r0,getc; 0 / takes char, off clist and puts it in r1
+               br 1f / list is empty, go to sleep
+        clr    *$ps / clear process priority
+        rts    r0 / return
+1: / list is empty

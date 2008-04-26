@@ -1,0 +1,53 @@
+        jsr    r0,arg2 / get arguments special and name
+        tst    mnti / is the i-number of the cross device file zero?
+        bne    errora / no, error
+        jsr    r0,getspl / get special files device number in r1
+        mov    (sp)+,u.namep / put the name of file to be placed on the
+                             / device
+        mov    r1,-(sp) / save the device number
+        jsr    r0,namei / get the i-number of the file
+               br errora
+        mov    r1,mnti / put it in mnti
+1:
+        tstb   sb1+1 / is 15th bit of I/O queue entry for dismountable
+                     / device set?
+        bne    1b / (inhibit bit) yes, skip writing
+        mov    (sp),mntd / no, put the device number in mntd
+        movb   (sp),sb1 / put the device number in the lower byte of the
+                        / I/O queue entry
+        mov    (sp)+,cdev / put device number in cdev
+        bis    $2000,sb1 / set the read bit
+        jsr    r0,ppoke / read in entire file system
+1:
+        tstb   sb1+1 / done reading?
+        bne    1b / no, wait
+        br     sysreta / yes
+
+sysumount: / special dismount file system
+        jsr    r0,arg; u.namep / point u.namep to special
+        jsr    r0,getspl / get the device number in r1
+        cmp    r1,mntd / is it equal to the last device mounted?
+        bne    errora / no error
+1:
+        tstb   sb1+1 / yes, is the device still doing I/O (inhibit
+                     / bit set)?
+        bne    1b / yes, wait
+        clr    mntd / no, clear these
+        clr    mnti
+        br     sysreta / return
+
+getspl: / get device number from a special file name
+        jsr    r0,namei / get the i-number of the special file
+               br errora / no such file
+        sub    $4,r1 / i-number-4 rk=1,tap=2+n
+        ble    errora / less than 0?  yes, error
+        cmp    r1,$9. / greater than 9  tap 7
+        bgt    errora / yes, error
+        rts    r0 / return with device number in r1
+
+errora:
+        jmp    error / see 'error' routine
+
+sysreta:
+        jmp    sysret / see 'sysret' routine
+

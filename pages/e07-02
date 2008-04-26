@@ -1,0 +1,57 @@
+        mov    r5,-(sp) / save r5
+        jsr    r0,sleep; 0 / put process to sleep in input wait channel
+        mov    (sp)+,r5 / restore r5
+        br     ttych / try again
+
+pptic: / paper tape input control
+        mov    $240,*$ps / set processor priority to five
+        cmpb   cc+2,$30. / is character count for paper tape input in
+                         / clist greater than or equal to 30
+        bhis   1f / yes, branch
+        bit    *$prs,$104200 / is there either an error, an unread char
+                             / in buffer, or reader busy
+        bne    1f / yes, don't enable reader
+        inc    *$prs / set reader enable bit
+1:
+        jsr    r0,getc; 2 / get next character in clist for ppt input and
+               br 1f / place in r1; if no char in clist for ppt input
+                     / branch
+        tst    (r0)+ / pop stack so that return will be four locations past
+                     / subroutine call
+2:
+        clr    *$ps / set process priority equal to zero
+        rts    r0 / return
+1:                                                     
+        cmpb   pptiflg,$6 / does pptiflg indicate file "not closed"
+        beq    2b / yes, return to calling routine at instruction
+                  / immediately following jsr
+        jsr    r0,sleep; 2 / no, all characters to be read in not yet in
+                           / clist, put process to sleep
+        br     pptic
+
+pptoc: / paper tape output control
+        mov    $240,*$ps / set processor priority to five
+        cmpb   cc+3,$50. / is character count for paper tape output in
+                         / clist greater than or equal to 50
+        bhis   1f / yes
+        jsr    r0,putc; 3 / find place in freelist to assign ppt output
+                          / and place
+               br 1f / character in list; if none available branch to put
+                     / process to sleep
+        jsr    r0,starppt / try to output character
+        clr    *$ps / clear processor priority
+        rts    r0 / return
+1:
+        mov    r1,-(sp) / place character on stack
+        jsr    r0,sleep; 3 / put process to sleep
+        mov    (sp)+,r1 / place character in r1
+        br     pptoc / try again to place character in clist and output
+
+/lptoc: / line printer output control
+/       mov    $240,*$ps / set processor priority to five
+/       cmpb   cc+5,$200. / is character count for printer greater than or
+                          / equal to 200
+/       bhis   1f / yes
+/       jsr    r0,putc; 5 / find place in freelist to assign to printer
+                          / and place
+

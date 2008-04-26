@@ -1,0 +1,55 @@
+oppt: / open paper tape for reading or writing
+        mov    $100,*$prs / set reader interrupt enable bit
+        tstb   pptiflg / is file already open
+        bne    2f / yes, branch
+1:
+        mov    $240,*$ps / no, set processor priority to 5
+        jsr    r0,getc; 2 / remove all entries in clist
+               br .+4 / for paper tape input and place in free list
+        br     1b
+        movb   $2,pptiflg / set pptiflg to indicate file just open
+        movb   $10.,toutt+1 / place 10 in paper tape input tout entry
+        br     sret
+2:
+        jmp    error / file already open
+
+iclose: / close file whose i-number is in r1
+        tst    r1 / test i-number
+        bit    2f / if neg., branch
+        cmp    r1,$40. / is it a special file
+        bgt    3b / no, return
+        mov    r1,-(sp) / yes, save r1 on stack
+        asl    r1
+        jmp    *1f-2(r1) / compute jump address and transfer
+1:
+        ctty   / tty
+        cppt   / ppt
+        sret   / mem
+        sret   / rfo
+        sret   / rk0
+        sret   / tap0
+        sret   / tapl
+        sret   / tap2
+        sret   / tap3
+        sret   / tap4
+        sret   / tap5
+        sret   / tap6
+        sret   / tap7
+        ccvt   / tty0
+        ccvt   / ttyl
+        ccvt   / tty2
+        ccvt   / tty3
+        ccvt   / tty4
+        ccvt   / tty5
+        ccvt   / tty6
+        ccvt   / tty7
+        error / crd
+
+2: / negative i-number
+        neg    r1 / make it positive
+        cmp    r1,$40. / is it a special file
+        bgt    3b / no. return
+        mov    r1,-(sp)
+        asl    r1 / yes. compute jump address and transfer
+        jmp    *1f-2(r1)
+1:

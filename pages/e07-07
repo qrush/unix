@@ -1,0 +1,57 @@
+        ctty   / tty
+        leadr  / ppt
+        sret   / mem
+        sret   / rf0
+        sret   / rk0
+        sret   / tap0
+        sret   / tapl
+        sret   / tap2
+        sret   / tap3
+        sret   / tap4
+        sret   / tap5
+        sret   / tap6
+        sret   / tap7
+        ccvt   / tty0
+        ccvt   / ttyl
+        ccvt   / tty2
+        ccvt   / tty3
+        ccvt   / tty4
+        ccvt   / tty5
+        ccvt   / tty6
+        ccvt   / tty7
+/       ejec / lpr
+
+ctty: / close console tty
+        mov    tty+[ntty*8]-8+6,r5 / point r5 to the console tty buffer
+        decb   (r5) / dec number of processes using console tty
+        br     sret / return via sret
+
+cppt: / close paper tape
+        clrb   pptiflg / set pptiflg to indicate file not open
+1:
+        mov    $240.*$ps /set process or priority to 5
+        jsr    r0,getc; 2 / remove all ppt input entries from clist
+                          / and assign to free list
+               br sret
+        br     1b
+
+/ejec:
+/       mov    $100,*$lps / set line printer interrupt enable bit
+/       mov    $14,r1 / 'form feed' character in r1 (new page).
+/       jsr    r0,lptoc / space the printer to a new page
+/       br     sret / return to caller via 'sret'
+
+leadr: / produce paper tape leader
+        mov    $100,*$pps / set paper tape punch interrupt enable
+        mov    $100.,-(sp) / 101. characters of 'nul' will be output as
+                           / leader
+1:
+        clr    r1 / r1 contains a 'nul' character
+        jsr    r0,pptoc / output the 'nul' character
+        dec    (sp)
+        bge    1b / last leader character output?  no, branch
+        tst    (sp)+ / bump stack pointer
+        br     sret / return to caller via 'sret'
+
+sysmount: / mount file system; args special; name
+

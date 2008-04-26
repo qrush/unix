@@ -1,0 +1,57 @@
+               br 1f / char in list, if none available branch to put
+                     / process to sleep
+/       jsr    r0,starlpt / try to output character
+/       clr    *$ps / set processor priority = 0
+/       rts    r0 / return
+/1:
+/       mov    r1,-(sp) / place character on stack
+/       jsr    r0,sleep; 5 / put process to sleep
+/       mov    (sp)+,r1 / place character on stack
+/       br     lptoc
+
+getc: / get a character off character list
+        mov    (r0)+,r1 / put argument in getc call in r1 (char list id)
+        jsr    r0,get
+               br 1f / empty char list return
+        decb   cc(r1) / decrement number of char in char list
+        mov    $-1,r1 / load minus 1 in r1
+        jsr    r0,put / put char back on free list
+        movb   clist-2(r2),r1 / put char in r1
+        tst    (r0)+ / bump r0 for non blank char list return
+1:
+        rts    r0
+
+putc:
+        mov    r1,-(sp) / save char on stack
+        mov    $-1,r1 / put free list list id in r1
+        jsr    r0,get / take char off free list / clist slot taken
+                      / identified by r2
+               br 1f / branch when no chars in free list
+        mov    (r0)+,r1 / put putc call arg in r1 (i.e., list identifier)
+        incb   cc(r1) / increment character count for list (r1)
+        jsr    r0,put / put clist entry on list
+        movb   (sp),clist-2(r2) / put character in new entry
+1:
+        tst    (r0)+
+        mov    (sp)+,r1
+        rts    r0
+
+get:
+        movb   cf+1(r1),r2 / move current first char offset to r2
+        beq    2f / no characters in char list
+        tst    (r0)+ / bump r0, second return
+        cmpb   r2,cl+1(r1) / r2 equal to last char offset
+        beq    1f / yes, (i.e., entire char list scanned), branch to 1f
+        bic    $!377,r2 / clear bits 8-15 in r2
+        asl    r2 / multiply r2 by 2 to get offset in clist
+        movb   clist-1(r2),cf+1(r1) / move next char in list pointer to
+                                    / first char offset ptr
+        br     2f
+1:
+        clrb   cf+1(r1) / clear first char clist offset
+        clrb   cl+1(r1) / clear last char clist offset
+        bic    $!377,r2 / zero top half of r2
+        asl    r2 / multiply r2 by 2
+2:
+        rts    r0
+
