@@ -1,0 +1,56 @@
+	mov	$1,u.intr / u.intr determines handling of interrupts;
+			  / u.intr = 1 take interrupt
+	mov	$rtssym,*30 / emt trap vector set to take system routine
+	mov	$fpsym,*10 / reserved instruction trap vector set to take 
+			   / system routine
+	mov	$sstack,sp / stack space used during swapping
+	mov	r5,-(sp) / save arguments pointer on stack
+	mov	$ecore,r5 / r5 has end of core
+	mov	$core,r4 / r4 has start of users core
+	mov	r4,u.base / u.base has start of users ore
+	mov	(sp),r2 / move arguments list pointer into r2
+1:
+	tst	(r2)+ / argument char = "nul"
+	bne	1b
+	tst	-(r2) / decrement r2 by 2; r2 has addr of end of arguent 
+		      / pointer list
+1: / move arguments to bottom of users core
+	mov	-(r2),r3 / (r3) last non zero argument ptr
+	cmp	r2,(sp) / is r2 = beginning of argument ptr list
+	blo	1f / branch to 1f when all arguments are moved
+2:
+	tstb	(r3)+
+	bne	2b / scan argument for \0 (nul)
+2:
+	movb	-(r3),-(r5) / move argument char by char starting at 
+			    / "ecore"
+	cmp	r3,(r2) / moved all characters in this argument
+	bhi	2b / branch 2b if not
+	mov	r5,(r4)+ / move r5 into top of users core; r5 has 
+			 / pointer to nth arg
+	br	1b / string
+1:
+	clrb	-(r5)
+	bic	$1,r5 / make r5 even, r5 points to last word of argument 
+		      / strings
+	mov	$core,r2
+1: / move argument pointers into core following argument strings
+	cmp	r2,r4
+	bhis	1f / branch to 1f when all pointers are moved
+	mov	(r2)+,-(r5)
+	br	1b
+1:
+	sub	$core,r4 / gives number of arguments *2
+	asr	r4 / divide r4 by 2 to calculate the number of args stored
+	mov	r4,-(r5) / save number of arguments ahead of the argument 
+			 / pointers
+	clr	-(r5) / popped into ps when rti in sysrele is executed
+	mov	$core,-(r5) / popped into pc when rti is sysrele 
+			    / is executed
+	mov	r5,0f / load second copyz argument
+	tst	-(r5) / decrement r5
+	mov	r5,u.r0 /
+	sub	$16.,r5 / skip 8 words
+	mov	r5,u.sp / assign user stack pointer value, effectively
+		        / zeros all regs when sysrele is executed
+	jsr	r0,copyz; core; 0:0 / zero user's core

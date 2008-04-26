@@ -1,0 +1,55 @@
+sysbreak: / set the program break
+	mov	u.break,r1 / move users break point to r1
+	cmp	r1,$core / is it the same or lower than core?
+	blos	1f / yes, 1f
+	cmp	r1,sp / is it the same or higher than the stack?
+	bhis	1f / yes, 1f
+	bit	$1,r1 / is it an odd address
+	beq	2f / no, its even
+	clrb	(r1)+ / yes, make it even
+2: / clear area between the break point and the stack
+	cmp	r1,sp / is it higher or same than the stack
+	bhis	1f / yes, quit
+	clr	(r1)+ / clear word
+	br	2b / go back
+1:
+	jsr	r0,arg; u.break / put the "address" in u.break (set new 
+				/ break point)
+	br	sysret4 / br sysret
+	
+maknod: / r1 contains the mode
+	bis	$100000,r1 / allocate flag set
+	mov	r1,-(sp) / put mode on stack
+	mov	ii,r1 / move current i-number to r1
+	jsr	r0,access; 1 / get its i-node into core
+	mov	r1,-(sp) / put i-number on stack
+	mov	$40.,r1 / r1 = 40
+1: / scan for a free i-node (next 4 instructions)
+	inc	r1 / r1 = r1 + 1
+	jsr	r0,imap / get byte address and bit position in inode map in 
+			/ r2 & m
+	bitb	mq,(r2) / is the i-node active
+	bne	1b / yes, try the next one
+	bisb	mq,(r2) / no, make it active (put a 1 in the bit map)
+	jsr	r0,iget / get i-node into core
+	tst	i.flgs / is i-node already allocated
+	blt	1b / yes, look for another one
+	mov	r1,u.dirbuf / no, put i-number in u.dirbuf
+	mov	(sp)+,r1 / get current i-number back
+	jsr	r0,iget / get i-node in core
+	jsr	r0,mkdir / make a directory entry in current directory
+	mov	u.dirbuf,r1 / r1 = new inode number
+	jsr	r0,iget / get it into core
+	jsr	r0,copyz; inode; inode+32. / 0 it out
+	mov	(sp)+,i.flgs / fill flags
+	movb	u.uid,i.uid / user id
+	movb	$1,i.nlks / 1 link
+	mov	s.time,i.ctim / time created
+	mov	s.time+2,i.ctim+2 / time modified
+	jsr	r0,setimod / set modified flag
+	rts	r0 / return
+	
+sysseek: / moves read write pointer in an fsp entry
+	jsr	r0,seektell / get proper value in u.count
+	add	u.base,u.count / add u.base to it
+	mov	u.count,*u.fofp / put result into r/w pointer

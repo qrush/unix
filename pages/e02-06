@@ -1,0 +1,56 @@
+	br	2b
+3:
+	mov	u.namep,r2 / u.namep points into a file name string
+	mov	$u.dirbuf+2,r3 / points to file name of directory entry
+3:
+	movb	(r2)+,r4 / move a character from u.namep string into r4
+	beq	3f / if char is nul, then the last char in string has been 
+		   / moved
+	cmp	r4,$'/ / is char a </>
+	beq	3f
+	cmp	r3,$u.dirbuf+10. / have I checked all 8 bytes of file name
+	beq	3b
+	cmpb	(r3)+,r4 / compare char in u.namep string to file name 
+			 / char read from
+	beq	3b / directory; branch if chars match
+	br	2b / file names do not match go to next directory entry
+3:
+	cmp	r3,$u.dirbuf+10. / if equal all 8 bytes were matched
+	beq	3f
+	tstb	(r3)+ /
+	bne	2b
+3:
+	mov	r2,u.namep / u.namep points to char following a / or nul
+	mov	u.dirbuf,r1 / move i-node number in directory entry to r1
+	tst	r4 / if r4 = 0 the end of file name reached, if r4 = </>
+		   / then go to next directory
+	bne	1b
+
+nig:
+	tst	(r0)+ / gives non-error return
+nib:
+	rts	r0
+
+syschdir: / make the directory specified in the argument the current 
+	  / directory
+	jsr	r0,arg; u.namep / u.namep points to path name
+	jsr	r0,namei / find its i-number
+		br error3
+	jsr	r0,access; 2 / get i-node into core
+	bit	$40000,i.flgs / is it a directory?
+	beq	error3 / no error
+	mov	r1,u.cdir / move i-number to users current directory
+	mov	cdev,u.cdev / move its device to users current device
+	br	sysret3
+	
+isown:
+	jsr	r0,arg2 / u.namep points to file name
+	jsr	r0,namei / get its i-number
+		br error3
+	jsr	r0,iget / get i-node into core
+	tstb	u.uid / super user?
+	beq	1f / yes, branch
+	cmpb	i.uid,u.uid / no, is this the owner of the file
+	beq	1f / yes
+	jmp	error3 / no, error
+1:

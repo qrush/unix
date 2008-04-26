@@ -1,0 +1,56 @@
+	bne	1b / no, go back
+	br	sysret3 / return through sysret
+	
+error3:
+	jmp	error / see 'error' routine
+sysret3:
+	jmp	sysret / see 'sysret' routine
+
+getf: / get the device number and the i-number of an open file
+	cmp	r1,$10. / user limited to 10 open files
+	bhis	error3 / u.fp is table of users open files, index in 
+		       / fsp table
+	movb	u.fp(r1),r1 / r1 contains number of entry in fsp table
+	beq	1f / if its zero return
+	asl	r1
+	asl	r1 / multiply by 8 to get index into fsp table entry
+	asl	r1
+	add	$fsp-4,r1 / r1 is pointing at the 3rd word in the fsp entry
+	mov	r1,u.fofp / save address of 3rd word in fsp entry in u.fofp
+	mov	-(r1),cdev / remove the device number  cdev
+	mov	-(r1),r1 / and the i-number  r1
+1:
+	rts	r0
+
+namei:
+	mov	u.cdir,r1 / put the i-number of current directory in r1
+	mov	u.cdev,cdev / device number for users directory into cdev
+	cmpb	*u.namep,$'/ / is first char in file name a /
+	bne	1f
+	inc	u.namep / go to next char
+	mov	rootdir,r1 / put i-number of rootdirectory in r1
+	clr	cdev / clear device number
+1:
+	tstb	*u.namep / is the character in file name a nul
+	beq	nig / yes, end of file name reached; branch to "nig"
+1:
+	jsr	r0,access; 2 / get i-node with i-number r1
+	bit	$40000,i.flgs / directory i-node?
+	beq	error3 / no, got an error
+	mov	i.size,u.dirp / put size of directory in u.dirp
+	clr	u.off / u.off is file offset used by user
+	mov	$u.off,u.fofp / u.fofp is a pointer to the offset portion 
+			      / of fsp entry
+2:
+	mov	$u.dirbuf,u.base / u.dirbuf holds a file name copied from 
+				 / a directory
+	mov	$10.,u.count / u.count is byte count for reads and writes
+	jsr	r0,readi / read 10. bytes of file with i-number (r1);
+			 / i.e. read a directory entry
+	tst	u.nread
+	ble	nib / gives error return
+	tst	u.dirbuf /
+	bne	3f / branch when active directory entry (i-node word in 
+		   / entry non zero)
+	mov	u.off,u.dirp
+	sub	$10.,u.dirp

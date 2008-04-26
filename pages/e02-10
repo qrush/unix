@@ -1,0 +1,54 @@
+	
+fclose:
+	mov	r1,-(sp) / put r1 on the stack (it contains the index 
+			 / to u.fp list)
+	jsr	r0,getf / r1 contains i-number, cdev has device =, u.fofp 
+			/ points to 3rd word of fsp entry
+	tst	r1 / is inumber 0?
+	beq	1f / yes, i-node not active so return
+	tst	(r0)+ / no, jump over error return
+	mov	r1,r2 / move i-number to r2
+	mov	(sp),r1 / restore value of r1 from the stack which is 
+			/ index to u.fp
+	clrb	u.fp(r1) / clear that entry in the u.fp list
+	mov	u.fofp,r1 / r1 points to 3rd word in fsp entry
+	decb	2(r1) / decrement the number of processes that have opened 
+		      / the file
+	bge	1f / if all processes haven't closed the file, return
+	mov	r2,-(sp) / put r2 on the stack (i-number)
+	clr	-4(r1) / clear 1st word of fsp entry
+	tstb	3(r1) / has this file been deleted
+	beq	2f / no, branch
+	mov	r2,r1 / yes, put i-number back into r1
+	jsr	r0,anyi / free all blocks related to i-number
+			/ check if file appears in fsp again
+2:
+	mov	(sp)+,r1 / put i-number back into r1
+	jsr	r0,iclose / check to see if its a special file
+1:
+	mov	(sp)+,r1 / put index to u.fp back into r1
+	rts	r0
+	
+anyi: / r1 contains an i-number
+	mov	$fsp,r2 / move start of fsp table to r2
+1:
+	cmp	r1,(r2) / do i-numbers match?
+	beq	1f / yes, 1f
+	neg	r1 / no complement r1
+	cmp	r1,(r2) / do they match now?
+	beq	1f / yes, transfer
+		   / i-number do not match
+	add	$8,r2 / no, bump to next entry in fsp table
+	cmp	r2,$fsp+[nfiles*8] / are we at last entry in the table
+	blt	1b / no, check next entries i-number
+	tst	r1 / yes, no match
+	bge	.+4
+	neg	r1 / make i-number positive
+	jsr	r0,imap / get address of allocation bit in the i-map in r2
+	bicb	mq,(r2) / clear bit for i-node in the imap
+	jsr	r0,itrunc / free all blocks related to i-node
+	clr	i.flgs / clear all flags in the i-node
+	rts	r0 / return
+1: / i-numbers match
+	incb	7(r2) / increment upper byte of the 4th word
+	rts	r0 / in that fsp entry (deleted flag of fsp entry)

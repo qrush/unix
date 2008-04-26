@@ -1,0 +1,55 @@
+/ u2 -- unix
+
+syslink: / name1, name2
+	jsr	r0,arg2 / u.namep has 1st arg u.off has 2nd
+	jsr	r0,namei / find the i-number associated with the 1st 
+                         / path name
+	br	error9 / cannot be found
+	jsr	r0,iget / get the i-node into core
+	mov	(sp)+,u.namep / u.namep points to 2nd name
+	mov	r1,-(sp) / put i-number of name1 on the stack (a link
+			 / to this file is to be created)
+	mov	cdev,-(sp) / put i-nodes device on the stack
+	jsr	r0,isdir / is it a directory
+	jsr	r0,namei / no, get i-number of name2
+		br .+4   / not found so r1-i-number of current directory
+			 /              ii = i-number of current directory
+	br	error9 / file already exits., error
+	cmp	(sp)+,cdev / u.dirp now points to end of current directory
+	bne	error9
+	mov	(sp),u.dirbuf / i-number of name1 into u.dirbuf
+	jsr	r0,mkdir / make directory entry for name2 in current 
+                         /directory
+	mov	(sp)+,r1 / r1 has i-number of name1
+	jsr	r0,iget / get i-node into core
+	incb	i.nlks / add 1 to its number of links
+	jsr	r0,setimod / set the i-node modified flag
+	
+sysret9:
+	jmp	sysret / see 'sysret' routine
+error9:
+	jmp	error / see 'error' routine
+
+isdir: / if the i-node whose i-number is in r1 is a directory there is an
+       / error unless super user make the call
+	tstb	u.uid / super user
+	beq	1f / yes, don't care
+	mov	ii,-(sp) / put current i-number on stack
+	jsr	r0,iget / get i-number into core (i-number in r1)
+	bit	$40000,i.flgs / is it a directory
+	bne	error9 / yes, error
+	mov	(sp)+,r1 / no, put current i-number back in r1 (ii)
+	jsr	r0,iget / get it back in
+1:
+	rts	r0
+
+sysunlink: / name - remove link name
+	jsr	r0,arg; u.namep / u.namep points to name
+	jsr	r0,namei / find the i-number associated with the path name
+		br error9 / not found
+	mov	r1,-(sp) / put its i-number on the stack
+	jsr	r0,isdir / is it a directory
+	clr	u.dirbuf / no, clear the location that will get written
+	                / into the i-number portion of the entry
+	sub	$10.,u.off / move u.off back 1 directory entry
+	jsr	r0,wdir / free the directory entry

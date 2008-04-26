@@ -1,0 +1,56 @@
+	br	sysret4
+	
+systell: / get the r/w pointer
+	jsr	r0,seektell
+	br	error4
+	
+error4:
+	jmp	error / see 'error' routine
+sysret4:
+	jmp	sysret / see 'sysret' routine
+	
+seektell:
+	jsr	r0,arg; u.base / puts offset in u.base
+	jsr	r0,arg; u.count / put ptr name in u.count
+	mov	*u.r0,r1 / file descriptor in r1 (index in u.fp list)
+	jsr	r0,getf / u.fofp points to 3rd word in fsp entry
+	mov	r1,-(sp) / r1 has i-number of file, put it on the stack
+	beq	error4 / if i-number is 0, not active so error
+	bgt	.+4 / if its positive jump
+	neg	r1 / if not make it positive
+	jsr	r0,iget / get its i-node into core
+	cmp	u.count,$1 / is ptr name =1
+	blt	2f / no its zero
+	beq	1f / yes its 1
+	mov	i.size,u.count /  put number of bytes in file in u.count
+	br	2f
+1: / ptr name =1
+	mov	*u.fofp,u.count / put offset in u.count
+2: / ptrname =0
+	mov	(sp)+,r1 / i-number on stack  r1
+	rts	r0
+	
+sysintr: / set interrupt handling
+	jsr	r0,arg; u.intr / put the argument in u.intr
+	br	1f / go into quit routine
+	jsr	r0,arg; u.quit	/ put argument in u.quit
+1:
+	mov	u.ttyp,r1 / move pointer to control tty buffer to r1
+	beq	sysret4 / return to user
+	clrb	6(r1) / clear the interrupt character in the tty buffer
+	br	sysret4 / return to user
+	
+syssetuid: / set process id
+	movb	*u.r0,r1 / move process id (number) to r1
+	cmpb	r1,u.ruid / is it equal to the real user id number
+	beq	1f / yst
+	tstb	u.uid / no, is current user the super user?
+	bne	error4 / no, error
+1:
+	movb	r1,u.uid / put process id in u.uid
+	movb	 r1,u.ruid / put process id in u.ruid
+	br	sysret4 / system return
+	
+sysgetuid:
+	movb	u.ruid,*u.r0 / move the real user id to (u.r0)
+	br	sysret4 / systerm return, sysret

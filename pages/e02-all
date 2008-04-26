@@ -2,7 +2,8 @@
 
 syslink: / name1, name2
 	jsr	r0,arg2 / u.namep has 1st arg u.off has 2nd
-	jsr	r0,namei / find the i-number associated with the 1st path name
+	jsr	r0,namei / find the i-number associated with the 1st 
+                         / path name
 	br	error9 / cannot be found
 	jsr	r0,iget / get the i-node into core
 	mov	(sp)+,u.namep / u.namep points to 2nd name
@@ -17,7 +18,8 @@ syslink: / name1, name2
 	cmp	(sp)+,cdev / u.dirp now points to end of current directory
 	bne	error9
 	mov	(sp),u.dirbuf / i-number of name1 into u.dirbuf
-	jsr	r0,mkdir / make directory entry for name2 in current directory
+	jsr	r0,mkdir / make directory entry for name2 in current 
+                         /directory
 	mov	(sp)+,r1 / r1 has i-number of name1
 	jsr	r0,iget / get i-node into core
 	incb	i.nlks / add 1 to its number of links
@@ -53,7 +55,7 @@ sysunlink: / name - remove link name
 	jsr	r0,wdir / free the directory entry
 	mov	(sp)+,r1 / get i-number back
 	jsr	r0,iget / get i-node
-	jsr	r0,setimod / set momdified flag
+	jsr	r0,setimod / set modified flag
 	decb	i.nlks / decrement the number of links
 	bgt	sysret9 / if this was not the last link to the file return
 	jsr	r0,anyi / if it was, see if anyone has it open.  Then
@@ -63,9 +65,9 @@ sysunlink: / name - remove link name
 mkdir:
 	jsr	r0,copyz; u.dirbuf+2; u.dirbuf+10. / clear this
 	mov	u.namep,r2 / r2 points to name of directory entry
-	mov	$u.dirbuf+2,r3 / r3 oints to u.dirbuf+2
+	mov	$u.dirbuf+2,r3 / r3 points to u.dirbuf+2
 1: / put characters in the directory name in u.dirbuf+2 - u.dirbuf+10
-	movb	(r2)+,r1 / move character in name to r1
+	movb	 (r2)+,r1 / move character in name to r1
 	beq	1f / if null, done
 	cmp	r1,$'/ / is it a "/"?
 	beq	error9 / yes, error
@@ -75,10 +77,11 @@ mkdir:
 	movb	r1,(r3)+ / no, put the char in the u.dirbuf
 	br	1b / get next char
 1:
-	mov	u.dirp,u.off / pointer to empty current directory slot to u.off
+	mov	u.dirp,u.off / pointer to empty current directory slot to 
+			     /u.off
 			     
 wdir:
-	mov	$u.dirbuf,u.base / u.base points to reated file name
+	mov	$u.dirbuf,u.base / u.base points to created file name
 	mov	$10.,u.count / u.count = 10
 	mov	ii,r1 / r1 has i-number of current directory
 	jsr	r0,access; 1 / get i-node and set its file up for writing
@@ -87,35 +90,41 @@ wdir:
 	
 sysexec:
 	jsr	r0,arg2 / arg0 in u.namep,arg1 on top of stack
-	jsr	r0,namei / namei return i-number of file named in sysexec call in r1
+	jsr	r0,namei / namei return i-number of file named in 
+			 / sysexec call in r1
 		br error9
 	jsr	r0,iget / get i-node for file to be executed
 	bit	$20,i.flgs / is file executable
 	beq	error9
-	jsr	r0,iopen / gets i-node for file with i-number given in r1 (opens file)
+	jsr	r0,iopen / gets i-node for file with i-number given in 
+			 / r1 (opens file)
 	bit	$40,i.flgs / test user id on execution bit
 	beq	1f
 	tstb	u.uid / test user id
 	beq	1f / super user
-	movb	i.uid,u.uid / put user id of owner of file as process user id
+	movb	i.uid,u.uid / put user id of owner of file as process 
+			    / user id
 1:
-	mov	(sp)+,r5 / r5 now contains address of list of pointers to arguments to be passed
+	mov	(sp)+,r5 / r5 now contains address of list of pointers to 
+			 / arguments to be passed
 	mov	$1,u.quit / u.quit determines handling of quits;
 			  / u.quit = 1 take quit
 	mov	$1,u.intr / u.intr determines handling of interrupts;
 			  / u.intr = 1 take interrupt
 	mov	$rtssym,*30 / emt trap vector set to take system routine
-	mov	$fpsym,*10 / reserved instruction trap vector set to take system routine
+	mov	$fpsym,*10 / reserved instruction trap vector set to take 
+			   / system routine
 	mov	$sstack,sp / stack space used during swapping
 	mov	r5,-(sp) / save arguments pointer on stack
 	mov	$ecore,r5 / r5 has end of core
 	mov	$core,r4 / r4 has start of users core
 	mov	r4,u.base / u.base has start of users ore
-	mov	(sp),r2 / move arguments list ointer into r2
+	mov	(sp),r2 / move arguments list pointer into r2
 1:
 	tst	(r2)+ / argument char = "nul"
 	bne	1b
-	tst	-(r2) / decrement r2 by 2; r2 has addr of end of arguent pointer list
+	tst	-(r2) / decrement r2 by 2; r2 has addr of end of arguent 
+		      / pointer list
 1: / move arguments to bottom of users core
 	mov	-(r2),r3 / (r3) last non zero argument ptr
 	cmp	r2,(sp) / is r2 = beginning of argument ptr list
@@ -124,39 +133,45 @@ sysexec:
 	tstb	(r3)+
 	bne	2b / scan argument for \0 (nul)
 2:
-	movb	-(r3),-(r5) / move argument char by char starting at "ecore"
+	movb	-(r3),-(r5) / move argument char by char starting at 
+			    / "ecore"
 	cmp	r3,(r2) / moved all characters in this argument
 	bhi	2b / branch 2b if not
-	mov	r5,(r4)+ / move r5 into top of users core; r5 has pointer to nth arg
+	mov	r5,(r4)+ / move r5 into top of users core; r5 has 
+			 / pointer to nth arg
 	br	1b / string
 1:
 	clrb	-(r5)
-	bic	$1,r5 / make r5 even, r5 points to last word of argument strings
+	bic	$1,r5 / make r5 even, r5 points to last word of argument 
+		      / strings
 	mov	$core,r2
-1: / move argument ointers into core following argument strings
+1: / move argument pointers into core following argument strings
 	cmp	r2,r4
 	bhis	1f / branch to 1f when all pointers are moved
 	mov	(r2)+,-(r5)
 	br	1b
 1:
 	sub	$core,r4 / gives number of arguments *2
-	asr	r4 / divide by 2 to calculate the number of args stored
-	mov	r4,-(r5) / save number of arguments ahead of the argument pointers
+	asr	r4 / divide r4 by 2 to calculate the number of args stored
+	mov	r4,-(r5) / save number of arguments ahead of the argument 
+			 / pointers
 	clr	-(r5) / popped into ps when rti in sysrele is executed
-	mov	$core,-(r5) / popped into pc when rti is sysrele is executed
+	mov	$core,-(r5) / popped into pc when rti is sysrele 
+			    / is executed
 	mov	r5,0f / load second copyz argument
 	tst	-(r5) / decrement r5
 	mov	r5,u.r0 /
 	sub	$16.,r5 / skip 8 words
-	mov	r5,u.sp / assign user stack ointer value, effectively
-		       / zeros all regs when sysrele is executed
+	mov	r5,u.sp / assign user stack pointer value, effectively
+		        / zeros all regs when sysrele is executed
 	jsr	r0,copyz; core; 0:0 / zero user's core
 	clr	u.break
 	mov	r5,sp / point sp to user's stack
 	mov	$14,u.count
 	mov	$u.off,u.fofp
 	clr	u.off / set offset in file to be read to zero
-	jsr	r0,readi / read in first six words of user's file, starting at $core
+	jsr	r0,readi / read in first six words of user's file, starting 
+			 / at $core
 	mov	sp,r5 / put users stack address in r5
 	sub	$core+40.,r5 / subtract $core +40 from r5 (leaves
 			     / number of words less 26 available for
@@ -177,21 +192,22 @@ sysexec:
 1:
 	jsr	r0,readi / read in rest of file
 2:
-	mov	u.nread,u.nbreak / set users program break to end of user code
+	mov	u.nread,u.break / set users program break to end of 
+				/ user code
 	add	$core+14,u.break / plus data area
 	jsr	r0,iclose / does nothing
 	br	sysret3 / return to core image at $core
 	
 sysfstat: / set status of open file
 	jsr	r0,arg; u.off / put buffer address in u.off
-	mov	u.off,-(sp) / put buffer address on stack
-	mov	*u.ro,r1 / put file descriptor in r1
+	mov	u.off,-(sp) / put buffer address on the stack
+	mov	*u.r0,r1 / put file descriptor in r1
 	jsr	r0,getf / get the files i-number
 	tst	r1 / is it 0?
 	beq	error3 / yes, error
 	bgt	1f / if i-number is negative (open for writing)
-	neg	r1 / make it positive, then branch to 1f
-	br	1f
+	neg	r1 / make it positive, then branch
+	br	1f / to 1f
 	
 sysstat: / ; name of file; buffer - get files status
 	jsr	r0,arg2 / get the 2 arguments
@@ -213,18 +229,19 @@ error3:
 sysret3:
 	jmp	sysret / see 'sysret' routine
 
-getf: / get the device number into the i-number of an open file
+getf: / get the device number and the i-number of an open file
 	cmp	r1,$10. / user limited to 10 open files
-	bhis	error3 / u.fp is table of users open files, index in fsp table
+	bhis	error3 / u.fp is table of users open files, index in 
+		       / fsp table
 	movb	u.fp(r1),r1 / r1 contains number of entry in fsp table
-	beq	1f / if its zero, return
+	beq	1f / if its zero return
 	asl	r1
 	asl	r1 / multiply by 8 to get index into fsp table entry
 	asl	r1
 	add	$fsp-4,r1 / r1 is pointing at the 3rd word in the fsp entry
 	mov	r1,u.fofp / save address of 3rd word in fsp entry in u.fofp
-	mov	-(r1),cdev / remove the device number cdev
-	mov	-(r1),r1 / and the i-number in r1
+	mov	-(r1),cdev / remove the device number  cdev
+	mov	-(r1),r1 / and the i-number  r1
 1:
 	rts	r0
 
@@ -239,22 +256,25 @@ namei:
 1:
 	tstb	*u.namep / is the character in file name a nul
 	beq	nig / yes, end of file name reached; branch to "nig"
-/ ?? 1: this label was marked out in the listing -bc
+1:
 	jsr	r0,access; 2 / get i-node with i-number r1
 	bit	$40000,i.flgs / directory i-node?
 	beq	error3 / no, got an error
 	mov	i.size,u.dirp / put size of directory in u.dirp
-	clr	u.off / u.fofp u.off is file offset used by user
-	mov	$u.off,u.fofp / u.fofp is a pointer to the offset portion of fsp entry
+	clr	u.off / u.off is file offset used by user
+	mov	$u.off,u.fofp / u.fofp is a pointer to the offset portion 
+			      / of fsp entry
 2:
-	mov	$u.dirbuf,u.base / u.dirbuf holds a file name copied from a directory
+	mov	$u.dirbuf,u.base / u.dirbuf holds a file name copied from 
+				 / a directory
 	mov	$10.,u.count / u.count is byte count for reads and writes
 	jsr	r0,readi / read 10. bytes of file with i-number (r1);
 			 / i.e. read a directory entry
 	tst	u.nread
 	ble	nib / gives error return
 	tst	u.dirbuf /
-	bne	3f / branch when active directory entry (i-node word in entry non zero)
+	bne	3f / branch when active directory entry (i-node word in 
+		   / entry non zero)
 	mov	u.off,u.dirp
 	sub	$10.,u.dirp
 	br	2b
@@ -263,12 +283,14 @@ namei:
 	mov	$u.dirbuf+2,r3 / points to file name of directory entry
 3:
 	movb	(r2)+,r4 / move a character from u.namep string into r4
-	beq	3f / if char is nul, then the last char in string has been moved
+	beq	3f / if char is nul, then the last char in string has been 
+		   / moved
 	cmp	r4,$'/ / is char a </>
 	beq	3f
 	cmp	r3,$u.dirbuf+10. / have I checked all 8 bytes of file name
 	beq	3b
-	cmpb	(r3)+,r4 / compare char in u.namep string to file name char read from
+	cmpb	(r3)+,r4 / compare char in u.namep string to file name 
+			 / char read from
 	beq	3b / directory; branch if chars match
 	br	2b / file names do not match go to next directory entry
 3:
@@ -288,7 +310,8 @@ nig:
 nib:
 	rts	r0
 
-syschdir: / make the directory specified in the argument the current directory
+syschdir: / make the directory specified in the argument the current 
+	  / directory
 	jsr	r0,arg; u.namep / u.namep points to path name
 	jsr	r0,namei / find its i-number
 		br error3
@@ -311,14 +334,16 @@ isown:
 	jmp	error3 / no, error
 1:
 	jsr	r0,setimod / indicate i-node has been modified
-	mov	(sp)+,r2 / mode is put into r2 (u.off put on stack with 2nd arg)
+	mov	(sp)+,r2 / mode is put into r2 (u.off put on stack with 
+			 / 2nd arg)
 	rts	r0
 
 syschmod: / name; mode
 	jsr	r0,isown / get the i-node and check user status
 	bit	$40000,i.flgs / directory?
 	beq	2f / no
-	bic	$60,r2 / su and ex / yes, clear set user id and executable modes
+	bic	$60,r2 / su & ex / yes, clear set user id and 
+				 / executable modes
 2:
 	movb	r2,i.flgs / move remaining mode to i.flgs
 	br	1f
@@ -335,21 +360,24 @@ syschown: / name; owner
 	jmp	sysret4
 3:
 	jmp	error
-	
+
 arg:
 	mov	u.sp,r1
-	mov	*18.(r1),*(r0)+ / put argument of system call into argument of arg2
+	mov	*18.(r1),*(r0)+ / put argument of system call into 
+				/ argument of arg2
 	add	$2,18.(r1) / point pc on stack to next system argument
 	rts	r0
 	
 arg2:
-	jsr	r0,arg; u.namep / u.namep contains value of first art in sys call
-	jsr	r0,arg; u.off / u.off contains value of second arg in sys call
+	jsr	r0,arg; u.namep / u.namep contains value of first arg in 
+				/ sys call
+	jsr	r0,arg; u.off / u.off contains value of second arg in 
+			      / sys call
 	mov	r0,r1 / r0 points to callling routine
 	mov	(sp),r0 / put operation code back in r0
 	mov	u.off,(sp) / put pointer to second argument on stack
 	jmp	(r1) / return to calling routine
-	
+
 systime: / get time of year
 	mov	s.time,4(sp)
 	mov	s.time+2,2(sp) / put the present time on the stack
@@ -377,7 +405,8 @@ sysbreak: / set the program break
 	clr	(r1)+ / clear word
 	br	2b / go back
 1:
-	jsr	r0,arg; u.break / put the "address" in u.brak (set new break point)
+	jsr	r0,arg; u.break / put the "address" in u.break (set new 
+				/ break point)
 	br	sysret4 / br sysret
 	
 maknod: / r1 contains the mode
@@ -389,7 +418,8 @@ maknod: / r1 contains the mode
 	mov	$40.,r1 / r1 = 40
 1: / scan for a free i-node (next 4 instructions)
 	inc	r1 / r1 = r1 + 1
-	jsr	r0,imap / get byte address and bit position in inode map in r2 & m
+	jsr	r0,imap / get byte address and bit position in inode map in 
+			/ r2 & m
 	bitb	mq,(r2) / is the i-node active
 	bne	1b / yes, try the next one
 	bisb	mq,(r2) / no, make it active (put a 1 in the bit map)
@@ -411,7 +441,7 @@ maknod: / r1 contains the mode
 	jsr	r0,setimod / set modified flag
 	rts	r0 / return
 	
-sysseek: / moves read write pointer in a fsp entry
+sysseek: / moves read write pointer in an fsp entry
 	jsr	r0,seektell / get proper value in u.count
 	add	u.base,u.count / add u.base to it
 	mov	u.count,*u.fofp / put result into r/w pointer
@@ -427,9 +457,9 @@ sysret4:
 	jmp	sysret / see 'sysret' routine
 	
 seektell:
-	jsr	r0,arg; u.base / puts offset into u.base
+	jsr	r0,arg; u.base / puts offset in u.base
 	jsr	r0,arg; u.count / put ptr name in u.count
-	mov	*u.r0,r1 / file descriptor in r1 ( index in u.fp list)
+	mov	*u.r0,r1 / file descriptor in r1 (index in u.fp list)
 	jsr	r0,getf / u.fofp points to 3rd word in fsp entry
 	mov	r1,-(sp) / r1 has i-number of file, put it on the stack
 	beq	error4 / if i-number is 0, not active so error
@@ -444,13 +474,12 @@ seektell:
 1: / ptr name =1
 	mov	*u.fofp,u.count / put offset in u.count
 2: / ptrname =0
-	mov	(sp)+,r1 / i-number on stack r1
+	mov	(sp)+,r1 / i-number on stack  r1
 	rts	r0
 	
 sysintr: / set interrupt handling
 	jsr	r0,arg; u.intr / put the argument in u.intr
 	br	1f / go into quit routine
-sysquit: / hand written on printout -bc
 	jsr	r0,arg; u.quit	/ put argument in u.quit
 1:
 	mov	u.ttyp,r1 / move pointer to control tty buffer to r1
@@ -466,7 +495,7 @@ syssetuid: / set process id
 	bne	error4 / no, error
 1:
 	movb	r1,u.uid / put process id in u.uid
-	movb	r1,u.ruid / put process id in u.ruid
+	movb	 r1,u.ruid / put process id in u.ruid
 	br	sysret4 / system return
 	
 sysgetuid:
@@ -474,16 +503,20 @@ sysgetuid:
 	br	sysret4 / systerm return, sysret
 	
 fclose:
-	mov	r1,-(sp) / put r1 on the stack (it contains the index to u.fp list)
-	jsr	r0,getf / r1 contains i-number, cdev has device #, u.fofp points to 3rd word of fsp entry
+	mov	r1,-(sp) / put r1 on the stack (it contains the index 
+			 / to u.fp list)
+	jsr	r0,getf / r1 contains i-number, cdev has device =, u.fofp 
+			/ points to 3rd word of fsp entry
 	tst	r1 / is inumber 0?
 	beq	1f / yes, i-node not active so return
 	tst	(r0)+ / no, jump over error return
 	mov	r1,r2 / move i-number to r2
-	mov	(sp),r1 / restore value of r1 from the stack which is index to u.fp
+	mov	(sp),r1 / restore value of r1 from the stack which is 
+			/ index to u.fp
 	clrb	u.fp(r1) / clear that entry in the u.fp list
 	mov	u.fofp,r1 / r1 points to 3rd word in fsp entry
-	decb	2(r1) / decrement the number of processes that have opened the file
+	decb	2(r1) / decrement the number of processes that have opened 
+		      / the file
 	bge	1f / if all processes haven't closed the file, return
 	mov	r2,-(sp) / put r2 on the stack (i-number)
 	clr	-4(r1) / clear 1st word of fsp entry
@@ -507,7 +540,7 @@ anyi: / r1 contains an i-number
 	neg	r1 / no complement r1
 	cmp	r1,(r2) / do they match now?
 	beq	1f / yes, transfer
-		/ i-number do not match
+		   / i-number do not match
 	add	$8,r2 / no, bump to next entry in fsp table
 	cmp	r2,$fsp+[nfiles*8] / are we at last entry in the table
 	blt	1b / no, check next entries i-number

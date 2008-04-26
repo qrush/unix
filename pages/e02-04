@@ -1,0 +1,56 @@
+	clr	u.break
+	mov	r5,sp / point sp to user's stack
+	mov	$14,u.count
+	mov	$u.off,u.fofp
+	clr	u.off / set offset in file to be read to zero
+	jsr	r0,readi / read in first six words of user's file, starting 
+			 / at $core
+	mov	sp,r5 / put users stack address in r5
+	sub	$core+40.,r5 / subtract $core +40 from r5 (leaves
+			     / number of words less 26 available for
+			     / program in user core
+	mov	r5,u.count /
+	cmp	core,$405 / br .+14 is first instrution if file is
+			  / standard a.out format
+	bne	1f / branch, if not standard format
+	mov	core+2,r5 / put 2nd word of users program in r5; number of
+			  / bytes in program text
+	sub	$14,r5 / subtract 12
+	cmp	r5,u.count
+	bgt	1f / branch if r5 is greater than u.count
+	mov	r5,u.count
+	jsr	r0,readi / read in rest of user's program text
+	add	core+10,u.nread / add size of user data area to u.nread
+	br	2f
+1:
+	jsr	r0,readi / read in rest of file
+2:
+	mov	u.nread,u.break / set users program break to end of 
+				/ user code
+	add	$core+14,u.break / plus data area
+	jsr	r0,iclose / does nothing
+	br	sysret3 / return to core image at $core
+	
+sysfstat: / set status of open file
+	jsr	r0,arg; u.off / put buffer address in u.off
+	mov	u.off,-(sp) / put buffer address on the stack
+	mov	*u.r0,r1 / put file descriptor in r1
+	jsr	r0,getf / get the files i-number
+	tst	r1 / is it 0?
+	beq	error3 / yes, error
+	bgt	1f / if i-number is negative (open for writing)
+	neg	r1 / make it positive, then branch
+	br	1f / to 1f
+	
+sysstat: / ; name of file; buffer - get files status
+	jsr	r0,arg2 / get the 2 arguments
+	jsr	r0,namei / get the i-number for the file
+		br error3 / no such file, error
+1:
+	jsr	r0,iget / get the i-node into core
+	mov	(sp)+,r3 / move u.off to r3 (points to buffer)
+	mov	r1,(r3)+ / put i-number into 1st word of buffer
+	mov	$inode,r2 / r2 points to i-node
+1:
+	mov	(r2)+,(r3)+ / move rest of i-node to buffer
+	cmp	r2,$inode+32 / done?

@@ -1,0 +1,57 @@
+	jsr	r0,setimod / indicate i-node has been modified
+	mov	(sp)+,r2 / mode is put into r2 (u.off put on stack with 
+			 / 2nd arg)
+	rts	r0
+
+syschmod: / name; mode
+	jsr	r0,isown / get the i-node and check user status
+	bit	$40000,i.flgs / directory?
+	beq	2f / no
+	bic	$60,r2 / su & ex / yes, clear set user id and 
+				 / executable modes
+2:
+	movb	r2,i.flgs / move remaining mode to i.flgs
+	br	1f
+
+syschown: / name; owner
+	jsr	r0,isown / get the i-node and check user status
+	tstb	u.uid / super user
+	beq	2f / yes, 2f
+	bit	$40,i.flgs / no, set userid on execution?
+	bne	3f / yes error, could create Trojan Horses
+2:
+	movb	r2,i.uid / no, put the new owners id in the i-node
+1:
+	jmp	sysret4
+3:
+	jmp	error
+
+arg:
+	mov	u.sp,r1
+	mov	*18.(r1),*(r0)+ / put argument of system call into 
+				/ argument of arg2
+	add	$2,18.(r1) / point pc on stack to next system argument
+	rts	r0
+	
+arg2:
+	jsr	r0,arg; u.namep / u.namep contains value of first arg in 
+				/ sys call
+	jsr	r0,arg; u.off / u.off contains value of second arg in 
+			      / sys call
+	mov	r0,r1 / r0 points to callling routine
+	mov	(sp),r0 / put operation code back in r0
+	mov	u.off,(sp) / put pointer to second argument on stack
+	jmp	(r1) / return to calling routine
+
+systime: / get time of year
+	mov	s.time,4(sp)
+	mov	s.time+2,2(sp) / put the present time on the stack
+	br	sysret4
+
+sysstime: / set time
+	tstb	u.uid / is user the super user
+	bne	error4 / no, error
+	mov	4(sp),s.time
+	mov	2(sp),s.time+2
+	br	sysret4
+	

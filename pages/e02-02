@@ -1,0 +1,56 @@
+	mov	(sp)+,r1 / get i-number back
+	jsr	r0,iget / get i-node
+	jsr	r0,setimod / set modified flag
+	decb	i.nlks / decrement the number of links
+	bgt	sysret9 / if this was not the last link to the file return
+	jsr	r0,anyi / if it was, see if anyone has it open.  Then
+			/ free contents of file and destroy it.
+	br	sysret9
+
+mkdir:
+	jsr	r0,copyz; u.dirbuf+2; u.dirbuf+10. / clear this
+	mov	u.namep,r2 / r2 points to name of directory entry
+	mov	$u.dirbuf+2,r3 / r3 points to u.dirbuf+2
+1: / put characters in the directory name in u.dirbuf+2 - u.dirbuf+10
+	movb	 (r2)+,r1 / move character in name to r1
+	beq	1f / if null, done
+	cmp	r1,$'/ / is it a "/"?
+	beq	error9 / yes, error
+	cmp	r3,$u.dirbuf+10. / have we reached the last slot for
+				 / a char?
+	beq	1b / yes, go back
+	movb	r1,(r3)+ / no, put the char in the u.dirbuf
+	br	1b / get next char
+1:
+	mov	u.dirp,u.off / pointer to empty current directory slot to 
+			     /u.off
+			     
+wdir:
+	mov	$u.dirbuf,u.base / u.base points to created file name
+	mov	$10.,u.count / u.count = 10
+	mov	ii,r1 / r1 has i-number of current directory
+	jsr	r0,access; 1 / get i-node and set its file up for writing
+	jsr	r0,writei / write into directory
+	rts	r0
+	
+sysexec:
+	jsr	r0,arg2 / arg0 in u.namep,arg1 on top of stack
+	jsr	r0,namei / namei return i-number of file named in 
+			 / sysexec call in r1
+		br error9
+	jsr	r0,iget / get i-node for file to be executed
+	bit	$20,i.flgs / is file executable
+	beq	error9
+	jsr	r0,iopen / gets i-node for file with i-number given in 
+			 / r1 (opens file)
+	bit	$40,i.flgs / test user id on execution bit
+	beq	1f
+	tstb	u.uid / test user id
+	beq	1f / super user
+	movb	i.uid,u.uid / put user id of owner of file as process 
+			    / user id
+1:
+	mov	(sp)+,r5 / r5 now contains address of list of pointers to 
+			 / arguments to be passed
+	mov	$1,u.quit / u.quit determines handling of quits;
+			  / u.quit = 1 take quit
