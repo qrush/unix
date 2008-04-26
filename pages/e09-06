@@ -54,4 +54,3 @@ rcvt: / read tty
 2:
 	jsr	r0,canon; rcvch / process a line of characters in
 				/ clist and place results in tty buffer
-

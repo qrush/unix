@@ -54,4 +54,3 @@ partab:	/ contains 3 digits for each character; digit 2 is used
 
 xmtt:
 	jsr	r0,cpass / get next character from user buffer area
-

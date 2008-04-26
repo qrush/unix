@@ -53,5 +53,3 @@ alloc:
 	inc	r1 / increment bit count in bit k (mod8)
 	br	1b
 1:
-
-

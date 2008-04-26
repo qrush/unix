@@ -1,27 +1,27 @@
-. = orig+60
-      ttyi;240 / interrupt vector tty in       ; processor level 5
-      ttyo;240 / interrupt vector tty out
-      ppti;240 /                  punch papertape in
-      ppto;240 /                  punch papertape out
-      clock;340 / clock interrupt vector       ; processor level 7
-. = orig+200
+ . = orig+60
+       ttyi;240 / interrupt vector tty in       ; processor level 5
+       ttyo;240 / interrupt vector tty out
+       ppti;240 /                  punch papertape in
+       ppto;240 /                  punch papertape out
+       clock;340 / clock interrupt vector       ; processor level 7
+ . = orig+200
 /     lpto; 240  line printer interrupt     ; processor level 5 (future)
-. = orig+204
-      drum;300 / drum interrupt         ; processor level 6
-. = orig+214
-      tape;300 / dec tape interrupt
-      disk;300 / rk03 interrupt
-. = orig+300
-      0*4+trcv; 240; 0*4+txmt; 240 / dc11 input;output interrupt vectors
-      1*4+trcv; 240; 1*4+txmt; 240
-      2*4+trcv; 240; 2*4+txmt; 240
-      3*4+trcv; 240; 3*4+txmt; 240
-      4*4+trcv; 240; 4*4+txmt; 240
-      5*4+trcv; 240; 5*4+txmt; 240
-      6*4+trcv; 240; 6*4+txmt; 240
-      7*4+trcv; 240; 7*4+txmt; 240
+ . = orig+204
+       drum;300 / drum interrupt         ; processor level 6
+ . = orig+214
+       tape;300 / dec tape interrupt
+       disk;300 / rk03 interrupt
+ . = orig+300
+       0*4+trcv; 240; 0*4+txmt; 240 / dc11 input;output interrupt vectors
+       1*4+trcv; 240; 1*4+txmt; 240
+       2*4+trcv; 240; 2*4+txmt; 240
+       3*4+trcv; 240; 3*4+txmt; 240
+       4*4+trcv; 240; 4*4+txmt; 240
+       5*4+trcv; 240; 5*4+txmt; 240
+       6*4+trcv; 240; 6*4+txmt; 240
+       7*4+trcv; 240; 7*4+txmt; 240
 
-. = orig+400
+ . = orig+400
 / copy in transfer vectors
 
 	mov    $ecore,sp / put pointer to score in the stack pointer

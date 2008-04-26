@@ -53,4 +53,3 @@ trcv:
 	mov	$12,r1
 3:
 	bitb	$4,tty+4(r0)
-

@@ -53,4 +53,3 @@ sioreg:
 	blc	$l777,r2 / calculate file offset mod 512.
 	add	r5,r2 / r2 now points to 1st byte in system buffer where
 		      / data is to be placed
-

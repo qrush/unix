@@ -54,4 +54,3 @@ ocvt:
 1:
 	mov	tty+6(r1),r5 / put tty buffer address in r5
 	tstb	(r5) / first byte of tty buffer = 0
-

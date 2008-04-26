@@ -51,4 +51,3 @@ passc:
 	movb	r1,*u.base / move a character to the next byte of the
 		           / users buffer
 	inc	u.base / increment the pointer to point to the next byte
-

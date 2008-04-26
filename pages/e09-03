@@ -54,4 +54,3 @@ starxmt:
 		   / 2, far left digit = 0) branch
 	bisb	200,r1 / if entry is less than 0 add 128 to ASC11
 		       / code for char to be output
-

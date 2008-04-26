@@ -55,4 +55,3 @@
 3:
 	bitb	$2,3(r2) / is bit 1 of 5th byte of "tty" area = 1
 			 / (tab to space bit set)
-

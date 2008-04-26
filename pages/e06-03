@@ -1,4 +1,4 @@
-		/ in users buffer
+		       / in users buffer
 	inc	u.nread / increment the number of bytes read
 	dec	u.count / decrement the number of bytes to be read
 	bne	1f / any more bytes to read?; yes, branch
@@ -52,4 +52,3 @@ wtty:
 	beq	wtty / yes, get next character
 1 :
 	mov	$240,*$ps / no, set processor priority to five
-

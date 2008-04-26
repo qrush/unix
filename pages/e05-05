@@ -53,5 +53,3 @@ icalc: / i-node i is located in block (i+31.)/16. and begins 32.*
 	dec	r3
 	bgt	1b
 	jsr	r0,dskwr / write inode out on device
-
-

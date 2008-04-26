@@ -51,4 +51,3 @@ panic:
 	dec    $5
 	bne    1b
 	jmp    *$173700 / rom loader address
-

@@ -51,4 +51,3 @@ access:
 	jsr	r0,iget / read in i-node for current directory (i-number
 			/ passed in r1)
 	mov	i.flgs,r2
-

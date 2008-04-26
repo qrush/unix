@@ -53,4 +53,3 @@ txmt:
 	mov	clockp,-(sp)
 	mov	$s.syst+2,clockp
 	sub	$txmt+4,r0 / 0%4 / offset in cc
-

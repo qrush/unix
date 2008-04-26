@@ -53,4 +53,3 @@ badrts:
 	mov    (sp)+,r1
 	mov    (sp)+,r0
 rpsym:
-

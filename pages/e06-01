@@ -52,4 +52,3 @@ rtty: / read from console tty
 	movb	*4(rS),r1 / no, put character in r1
 	inc	4(r5) / 3rd word of console tty buffer points to byte which
 		      / contains the next char.
-
