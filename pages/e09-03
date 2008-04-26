@@ -18,7 +18,7 @@ starxmt:
 			     / buf in r1 (cc,cf,cl offset)
 	cmpb	cc+1(r1),$10. / is char count for tty output greater
 			      / than or equal to 10
-	bbl	1f / yes
+	bhi	1f / yes
 	mov	r1,0f / no, make offset an arg of "wakeup"
 	inc	0f / increment arg of wakeup
 	jsr	r0,wakeup; runq+2; 0:.. / wakeup process identified

@@ -21,7 +21,7 @@
 	movb	tty+3(r0),0f
 	inc	0f
 	jsr	r0,putc; 0:.. / put char just input on output clist
-		br: .+2
+		br .+2
 	jsr	r0,starxmt
 	mov	(sp)+,r1
 3:

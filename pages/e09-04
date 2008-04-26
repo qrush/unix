@@ -1,4 +1,4 @@
-	blc	$!177,r3 / to make it teletype code and then clear
+	bic	$!177,r3 / to make it teletype code and then clear
 			 / bits 7-15 of r3
 
 3:
@@ -35,7 +35,7 @@
 	clrb	(r2) / col set column count = 0
 	br	1f
 2:
-	blt	$1,r1 / is bit 0 of ASC11 char = 1 (char = lf)
+	bit	$1,r1 / is bit 0 of ASC11 char = 1 (char = lf)
 	bne	2f / yes
 	bitb	$20,3(r2) / cr flag is bit 4 of 5th byte of "tty"
 			  / area = 1
