@@ -48,7 +48,7 @@ e10-01 to e10-02 (2) - ux -
    reviewed:
 e11-01 to e11-07 (7) - sh
    we have a binary for the sh already I think.  this may be optional
-   assigned: johan beisser
+   assigned: johan beisser, complete
    reviewed:
 e12-01 to e12-04 (4) - init 
    we have a binary for init already
