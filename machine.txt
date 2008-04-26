@@ -1,0 +1,42 @@
+
+
+
+            address                     simh dev
+rk03/rk11   177400     disk		RK
+dc11        174000     tty?		(not supp?)
+tc11/tu56   177340     dec tape 	DTn (not showing up in simh?)
+rf11/rs11   177460     fixed head disk	RF
+kw11-l      177546     clock		CLK
+pc11        177550     paper tape	PTR/PTP
+asr-33      177560     tty?		TTI, TTO
+
+set rk3 enabled
+att rk3 rk3.dsk
+set rf enabled
+
+
+
+--------------------
+cpu
+    probably 11/20 with 24kb
+    could be 11/45 though.
+pdp-11 releases:
+    1970: 11/20, 11/15 
+    1972: 11/40, 11/45, 11/05, 11/10 
+    1973: 11/35 
+
+"In 1971, when this manual was written, we had move off the original PDP-7
+to the PDP-11/20; it had 24KB of core memory, and no memory management 
+hardware at all. "
+[...]
+"By this time we knew about the upcoming PDP-11/45, and had visited 
+Digital in Maynard to talk about it; in particular, we had the specs 
+for the floating-point instructions it supported. So the system 
+described here included a simulator for the instructions (fptrap(III))."
+   - http://www.cs.bell-labs.com/who/dmr/1stEdman.html
+     (describing nov 3, 1971 manuals)
+
+-------------------------------------
+section VII pg 5 has "boot procedures" section:
+http://cm.bell-labs.com/cm/cs/who/dmr/man71.pdf
+
