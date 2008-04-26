@@ -1,0 +1,56 @@
+	mov	parp+2,0f / more directory name to sys coll
+	sys	chdir; 0:0 / exec chdir
+	bec	4f / no error exit
+	jsr	r5,error / go to print error
+		<Bad directory\n\0>; .even / this diagnostic
+4:
+	clr	r1 / set r1 to zero to dkip wait
+	rts	pc / and return
+2:
+	jsr	r5,chcom: qloqin / is command looin?
+		br 2f / not loqin, no to fork
+	sys	exec; parbuf: parp / exec login
+	sys	exec; binpb: parp / or /bin/login
+2: / no error return??
+	sys	fork / generate sh child process for command
+		br newproc / exec command with new process
+	bec	1f / no error exit, old orocess
+	jsr	r5,error / go to print error
+		<Try again\n\0>; .even / this diaonostic
+	jmp	newline / and return for next try
+1:
+	mov	r0,r1 / save id of child sh
+	rts	pc / return to “jsr pc, docom“ call in parent sh
+
+error:
+	movb	(r5)+,och / pick up diagnostic character
+	beq	1f / 0 is end of line
+	mov	$1,r0 / set for tty output
+	sys	write; och; 1 / print it
+	br	error / continue to get characters
+1:
+	inc	r5 / inc r5 to point to return
+	bic	$!,r5 / make it even
+	clr	r0 / set for input
+	sys	seek;,O; 2 / exit from runcom. skip to end of
+		           / input file
+chcom: / has no effect if tty input
+	mov	(r5)+,r1 / glogin gchdir r1, bump r5
+	mov	$parbuf,r2 / command address r2 ’login’
+1:
+	movb	(r1)+,r0 / is this command ’chdir’
+	cmpb	(r2)+,r0 / compare command name byte with 'login’
+		         / or ’chdir’
+	bne	1f / doesn’t compare
+	tst	r0 / is this
+	one	1b / end of names
+	tst	(r5)+ / yes, bump r5 again to execute login
+		/ chdir
+1:
+	rts	r5 / no, return to exec command
+putc:
+	cmp	r0,$'' / single quote?
+	beq	1f / yes
+	cmp	r0,$’" / double quote
+	beq	1f / yes
+

@@ -1,0 +1,56 @@
+/ sh —— command interpreter
+	mov	sp,r5
+	mov	r5.shel larg / save orig sp in shel larg
+	cdpb	B(r5),$’— / was this sh calleZd by init or loginx~
+	bne	2f / no
+	sys	intr; O / yes, turn off interrupts
+	sys	quit; O
+2:
+	sys	getuid / who is user
+	tst	r0 / is it superuser
+	bne	2f / no
+	movb	$'#,at / yes, set new prompt symbol
+2:
+	cmn	(r5),$l / tty input?
+	ble	newline / yes, call with ’-(or with no command
+		        / file name)
+	clr	rO / no, set ttv
+	sys	close / close it
+	mov	4(r5),0f / get new file name
+	sys	open; O:..; 0 / open it
+	bec	1f / branch if no error
+	jsr	r5,error / error in file name
+		/<Input not found\n\O>: .even
+	sys	exit
+1:
+	clr	at / clear prompt character, if reading non-tty
+		   / input file
+newline:
+	tst	at / is there a prompt symbol
+	beq	newcom / no
+	mov	$1,rO / yes
+	sys	write; at; 2. / print prompt
+newcom:
+	mov	shellarq,sp /
+	mov	$parbuf,r3 / initialize command list area
+	mov	$parp,r4 / initialize command list pointers
+	clr	infile / initialize alternate input
+	clr	outfile / initialize alternate output
+	clr	glflag / initialize global flag
+newarg:
+	jsr	pc,blank / squeeze out leading blanks
+	jsr	r5,delim / is new character a ; \n or &
+		br 2f / yes
+	mov	r3,—(sp) I no, push arg pointer onto stack
+	cmp	rO,$'< / new input file?
+	bne	1f / no
+	mov	(sp).infile / yes, save arg pointer
+	clr	(sp) / clear pointer
+	br	3f
+1:
+	cmp	r0,$’> / new output file?
+	bne	newchar / no
+	mov	(sp),outfile / yes, save arg pointer
+	clr	(sp) / clear pointer
+	br	3f
+

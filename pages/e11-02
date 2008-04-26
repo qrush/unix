@@ -1,0 +1,56 @@
+newchar:
+	cmp	$' .r0 / is character a blank
+	beq	1f / branch if it is (blank as arg separator)
+	cmp	$’\n+200,r0 / treat \n preceded by \
+	beq	1f / as blank
+	jsr	pc,putc / put this character in parbuf list
+3:
+	jsr	pc,getc / get next character
+	jsr	r5,delim / is char a : \n or &,
+		br 1f / yes
+	br	newchar / no, start new character tests
+1:
+	clrb	(r3)+ / end name with \0 when read blank, or
+		      / delim
+	mov	(sp)+,(r4)+ / move are ant! to par? location
+	bne	1f / if (sp)=O, in file or out file points to arg
+	tst	-(r4) / so ignore dummy (O), in pointer list
+1:
+	jsr	r5,delim / is char a : \n or &.
+		br 2f / yes
+	br	newarg / no, start newarg processing
+2:
+	clr	(r4) / \n, &, or ; takes to here (end of arg list)
+		     / after ’dellm’ call
+	mov	r0,-(sp) / save delimter in stack
+	jsr	pc,docom / go to exec command in parbuf
+	cmpb	(sp),$’& / get a new command without wait?
+	beq	newcom / yes
+	tst	r1 / was chdir just executed or line ended with
+		   / ampersand?
+	beq	2f / yes
+1:
+	sys	wait / no, wait for new process to terminate
+		     / command executed)
+	bcs	2f / no, children not previously waited for
+	cmp	r0,r1 / is this my child
+	bne	1b
+2:
+	cmp	(sp),$’\n / was delimiter a new line
+	beq	newline / yes
+	br	newcom / no, pick up next command
+docom:
+	sub	$parp,r4 / out arg count in r4
+	bne	1f / any arguments?
+	clr	r1 / no, line ended with ampersand
+	rts	pc / return from call
+1:
+	jsr	r5,chcom; qchdir / is command chdir?
+		br 2f / command not chdir
+	cmp	r4,$4 / prepare to exec chdir, 4=aro count x 2
+	beq	3f
+	jsr	r5,error / go to print error
+		<Arg count\n\0>; .even
+	br	4f
+3:
+

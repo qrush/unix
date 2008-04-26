@@ -1,0 +1,55 @@
+	bic	$!177,r0 / no, remove 200, if present
+	movb	r0,(r3)+ / store character in parbuf
+	rts	po
+1:
+	mov	r0,-(sp) / push quote mark onto stack
+1:
+	jsr	pc,getc / get a quoted charactef
+	cmp  | r0.$’\n / is it end or line
+	bne	2f / no
+	jsr	r5,error / yes, indicate missing quote mark
+		<"’ imbalance\n\0)>; .even
+	jmp	newline / ask for new line
+2:
+	cmp	r0,(sp) / is this closing quote mark
+	beq	1f / yes
+	bic	$!177,r0 / no, strip off 200 if present
+	movb	r0,(r3)+ / store quoted character in parbuf
+	br	1b / continue
+1:
+	tst	(sp)+ / pop quote mark off stack
+	’ rts bc‘, return
+/ thp‘e new process
+newproc:
+	mov	infile,0f / move pointer to new file name
+	beq	lf / branch if no alternate read file given
+	tstb	*0f
+	beq	3f / branch if no file name miven
+	clr	rO / set tty input file name
+	sys	close / close it
+	sys	open; 0:..; 0 / open new input file for reading
+	bcc	1f / branch if input file ok
+3:
+	jsr	r5,error / file not ok, print error
+		<Input file\n\0>: .even / this diagnostic
+	sys	exit / terminate this process and make narent sh
+1:
+	mov	outfile,r2 / more pointer to new file name
+	beq	1f / branch if no alternate write file
+	cmpb	(r2),$’> / is > at beqinninrg of file name?
+	bne	4f / branch if it isn’t
+	inc	r2 / yes, increment pointer
+	mov	r2,0f
+	svs	open; O:..; 1 / open file for writing
+	bec	3f / if no error
+4:
+	mov	r2,0f
+	sys	creat; 0:..; 17 / create new file with this name
+	bec	3f / branch it no error
+2:
+	jsr	r5,error
+		<Output file\n\O>; .even
+	sys	exit
+3:
+	sys	close / close the new write file
+
