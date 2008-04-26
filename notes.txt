@@ -48,7 +48,7 @@ e10-01 to e10-02 (2) - ux -
    reviewed:
 e11-01 to e11-07 (7) - sh
    we have a binary for the sh already I think.  this may be optional
-   assigned:
+   assigned: johan beisser
    reviewed:
 e12-01 to e12-04 (4) - init 
    we have a binary for init already
@@ -156,3 +156,14 @@ e10-02
      after 8 characters and another after 7 characters.  The spaces
      between opcode and operands are probably due to a tab, as can be
      seen in later assembly code we have in machine readable form.
+-------------------
+e11-01
+   - I'm using a whole bunch of guesswork on some of these. Keystrokes
+     are highly faded, and have to be guessed. The OCR utterly failed.
+e11-02
+   - Line 15 has manual corrections, making it difficult to read what
+     was added or subtracted.
+e11-03
+e11-04
+   - First lines are horribly mangled. Guessed.
+   - Line 7 has a typo, preserved
