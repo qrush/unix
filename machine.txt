@@ -1,5 +1,7 @@
+Collection of notes on the hardware this should run on.
 
-
+------------------
+device layout per u0 src:
 
             address                     simh dev
 rk03/rk11   177400     disk		RK
@@ -10,15 +12,42 @@ kw11-l      177546     clock		CLK
 pc11        177550     paper tape	PTR/PTP
 asr-33      177560     tty?		TTI, TTO
 
+
+------------------
+man IV tap0 ... tap7 :
+"all eight files exist even though at present there are only two physical
+drives."
+
+man IV tty
+claims that tty is treated differently than tty0..tty5 and implies
+that it is not used in multi-user mode.  This may pose a problem
+if DC-11 is not supported.. we may only be able to run in single user
+mode.
+"By appropriate console switch settings, it is possible to cause UNIX
+to come up as a single-user system with I/O on this device."
+
+man IV tty0 ... tty5
+says there are six tty devices.  u0 srcs sets ntty to 8+1 (8 dc-11 plus
+one console?)
+
+man V core
+"It is exactly 8192+64 bytes long" 8k of user core.
+this agrees with the definition of core in u0 as 4096 words long.
+This also lines up with the statement that there was 24k ram:
+u0 sets orig to 0, and core to 16k and ecore to 24k (core+8k).
+
+------------------
 set rk3 enabled
 att rk3 rk3.dsk
 set rf enabled
+set cpu 11/20
+set cpu 32K       ?    there was really just 24k in the real machine
 
 
 
 --------------------
 cpu
-    probably 11/20 with 24kb
+    probably 11/20 with 24kb  (or should that be 24k words = 48k?)
     could be 11/45 though.
 pdp-11 releases:
     1970: 11/20, 11/15 
