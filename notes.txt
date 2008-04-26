@@ -84,6 +84,17 @@ e00-10
     - left "/ect/init" typo
 
 --------------------
+e02-05
+    - label "1:" is overstruck with "/" in the listing.  leaving the
+      label in place.  Should be reviewed for semantic meaning.
+e02-09
+    - extra label "sysquit:" handwritten after "sysintr:".  Leaving
+      the extra label out.
+e02-10
+    - comment says "cdev has device =" it probably means "#" and could
+      have just been a weak print of "#", but leaving as "=".
+
+--------------------
 I noticed that "inode" and "i-node" were used interchangably, which could possibly
 indicate two different people commenting the code.  I left each as the original.
 
