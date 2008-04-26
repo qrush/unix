@@ -48,7 +48,7 @@ writei:
 wtty:
 	jsr	r0,cpass / get next character from user buffer area; if
 		         / none go to return address in syswrite
-	tsl	ri / is character = null
+	tsl	r1 / is character = null
 	beq	wtty / yes, get next character
 1 :
 	mov	$240,*$ps / no, set processor priority to five

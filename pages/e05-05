@@ -12,7 +12,7 @@
 	beq	2f / branch if r1=0
 	tst	cdev / is the current device number non zero (i.e., device
 	       	     / =/ drum)
-	une	1f / branch 1f cdev =/ 0
+	bne	1f / branch 1f cdev =/ 0
 	cmp	r1,mnti / mnti is the i-number of the cross devlce
 			 / file (root directory of mounted devlce)
 	bne	1f

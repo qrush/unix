@@ -51,4 +51,4 @@ dskw: / write routine for non-special files
 		            / put in r2
 	 cmp	 r2,i.size / is this greater than the present size of
 		           / the file?
-	 blos	 if / no, branch
+	 blos	 1f / no, branch

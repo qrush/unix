@@ -19,7 +19,7 @@ rmem: / transfer characters from memory to a user area of core
 	movb	(r1),r1 / get character from memory file, put it in r1
 	jsr	r0,passc / move this character to the next byte of the
 		         / users core area
-	br	 mem / continue
+	br	 rmem / continue
 1:
 rcrd:
 	jmp	error / see 'error' routine

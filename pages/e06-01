@@ -49,6 +49,6 @@ rtty: / read from console tty
 1:
 	tst	2(r5) / is the number of characters zero
 	beq	ret1 / yes, return to caller via 'ret1'
-	movb	*4(rS),r1 / no, put character in r1
+	movb	*4(r5),r1 / no, put character in r1
 	inc	4(r5) / 3rd word of console tty buffer points to byte which
 		      / contains the next char.

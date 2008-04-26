@@ -35,7 +35,7 @@ imap: / get the byte that has the allocation bit for the i-number contained
 	mov	$systm,r2 / r2 points to the in-core image of the super
 			  / block for drum
 	tst	cdev / is the device the disk
-	beg	1f / yes
+	beq	1f / yes
 	add	$mount-systm,r2 / for mounted device, r2 points to 1st word
 				/ of its super block
 1:

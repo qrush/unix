@@ -35,7 +35,7 @@
 cpass: / get next character from user area of core and put it in r1
 	tst	u.count / have all the characters been transferred (i.e.,
 		        / u.count, # of chars. left .
-	beg	1f / to be transferred = 0?) yes, branch
+	beq	1f / to be transferred = 0?) yes, branch
 	dec	u.count / no, decrement u.count
 	movb	*u.base,r1 / take the character pointed to by u.base and
 		           / put it in r1
@@ -46,10 +46,11 @@ cpass: / get next character from user area of core and put it in r1
 	mov	(sp)+,r0 / put return address of calling routine into r0
 	mov	(sp)+,r1 / i.-number in r1
 	rts	r0 / non-local return
+
 sioreg:
 	mov	*u.fofp,r2 / file offset (in bytes) is moved to r2
 	mov	r2,r3 / and also to r3
 	bis	$177000,r3 / set bits 9,...,15. of file offset in r3
-	blc	$l777,r2 / calculate file offset mod 512.
+	bic	$l777,r2 / calculate file offset mod 512.
 	add	r5,r2 / r2 now points to 1st byte in system buffer where
 		      / data is to be placed

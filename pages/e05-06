@@ -9,7 +9,7 @@ itrunc:
 	mov	$i.dskp,r2 / address of block pointers in r2
 1:
 	mov	(r2)+,r1 / move physical block number into r1
-	beg	5f
+	beq	5f
 	mov	r2,-(sp)
 	bit	$10000,i.flgs / test large file bit?
 	beq	4f / if clear, branch
