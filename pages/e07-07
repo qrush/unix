@@ -29,7 +29,7 @@ ctty: / close console tty
 cppt: / close paper tape
         clrb   pptiflg / set pptiflg to indicate file not open
 1:
-        mov    $240.*$ps /set process or priority to 5
+        mov    $240,*$ps /set process or priority to 5
         jsr    r0,getc; 2 / remove all ppt input entries from clist
                           / and assign to free list
                br sret

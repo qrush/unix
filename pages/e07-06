@@ -15,7 +15,7 @@ oppt: / open paper tape for reading or writing
 
 iclose: / close file whose i-number is in r1
         tst    r1 / test i-number
-        bit    2f / if neg., branch
+        blt    2f / if neg., branch
         cmp    r1,$40. / is it a special file
         bgt    3b / no, return
         mov    r1,-(sp) / yes, save r1 on stack

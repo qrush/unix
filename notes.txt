@@ -122,6 +122,11 @@ e07-04
     - left "asr     r0" as is. There is a write in correction 
       for "r2" for "r0".
 
+e07-07
+    - printout has: "mov    $240.*$ps" but this is invalid syntax and
+      there are other occurances where the "." is a comma.  I'm
+      changing this to be valid assembly -timnewsham.
+
 e07-08
     - There is a handwritten addendum "super block" after the line 
       "jsr     r0, ppoke" which clarifies the comment.
