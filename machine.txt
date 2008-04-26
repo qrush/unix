@@ -69,3 +69,8 @@ described here included a simulator for the instructions (fptrap(III))."
 section VII pg 5 has "boot procedures" section:
 http://cm.bell-labs.com/cm/cs/who/dmr/man71.pdf
 
+------------------------------------
+http://en.wikipedia.org/wiki/PDP-11#PDP-11_instruction_repertoire
+
+Has a reference on all the AS instructions in the PDP-11. This may come in
+handy while fixing the OCR text.
