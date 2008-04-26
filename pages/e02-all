@@ -260,7 +260,7 @@ namei:
 	br	2b
 3:
 	mov	u.namep,r2 / u.namep points into a file name string
-	mov	$u.dirbuf+2,r3  points to file name of directory entry
+	mov	$u.dirbuf+2,r3 / points to file name of directory entry
 3:
 	movb	(r2)+,r4 / move a character from u.namep string into r4
 	beq	3f / if char is nul, then the last char in string has been moved
