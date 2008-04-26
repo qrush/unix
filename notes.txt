@@ -20,7 +20,7 @@ e01-01 to e01-10 (10) - u1 -
    assigned: Hellwig Geisse
    reviewed:
 e02-01 to e02-10 (10) - u2 -
-   assigned: Brantley Coile
+   assigned: Brantley Coile, complete
    reviewed:
 e03-01 to e03-04 (4) - u3 -
    assigned: Tim Bradshaw
