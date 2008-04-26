@@ -11,7 +11,7 @@ m u0 e00-*
 #m u4 e04-*
 m u5 e05-*
 m u6 e06-*
-#m u7 e07-*
+m u7 e07-*
 #m u8 e08-*
 m u9 e09-*
 m ux e10-*
