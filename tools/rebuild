@@ -1,6 +1,6 @@
 #!/bin/sh
 
-m() { cat pages/$2 > rebuilt/$1; }
+m() { cat pages/$2 > rebuilt/$1.s; }
 
 test -d rebuilt || mkdir rebuilt
 
