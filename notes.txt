@@ -167,3 +167,6 @@ e11-03
 e11-04
    - First lines are horribly mangled. Guessed.
    - Line 7 has a typo, preserved
+   - Line 8 has what resembles a "|", not sure if this is a screwup or
+     not. Preserved, and assuming it's a "|".
+   - line 21/22: I have no idea.
