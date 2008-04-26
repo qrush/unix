@@ -6,7 +6,7 @@ test -d rebuilt || mkdir rebuilt
 
 m u0 e00-*
 #m u1 e01-*
-#m u2 e02-*
+m u2 e02-*
 #m u3 e03-*
 #m u4 e04-*
 m u5 e05-*
