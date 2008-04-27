@@ -28,7 +28,7 @@ sysret:
 	tstb	smod / has the super block been modified
 	beq	1f / no, 1f
 	clrb	smod / yes, clear smod
-	bis	$1000,sb0 / set write bit in I/0 queue for super block
+	bis	$1000,sb0 / set write bit in I/O queue for super block
 		          / output
 	jsr	r0,ppoke / write out modified super block to disk
 1:
@@ -36,8 +36,8 @@ sysret:
 		     / system
 	beq	1f / been modified?  no, 1f
 	clrb	mmod / yes, clear mmod
-	movb	mntd,sb1 / set the I/0 queue
-	bis	$1000,sb1 / set write bit in I/0 queue for detached sb
+	movb	mntd,sb1 / set the I/O queue
+	bis	$1000,sb1 / set write bit in I/O queue for detached sb
 	jsr	r0,ppoke / write it out to its device
 1:
 	tstb	uquant / is the time quantum 0?
