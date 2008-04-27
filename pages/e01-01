@@ -24,7 +24,7 @@ sysent:
 	mov	-(r0),r0 / sys inst in r0      10400xxx
 	sub	$sys,r0 / get xxx code
 	asl	r0 / multiply by 2 to jump indirect in bytes
-	cmp	r0,$2f—1f / limit of table (35) exceeded
+	cmp	r0,$2f-1f / limit of table (35) exceeded
 	bhis	badsys / yes, bad system call
 	bic	$341,20.(sp) / set users processor priority to 0 and clear
 		             / carry bit

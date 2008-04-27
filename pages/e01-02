@@ -23,7 +23,7 @@ sysret:
 	bne	sysexit / of an error? yes, go to sysexit
 	mov	u.sp,sp / no point stack to users stack
 	clr	r1 / zero r1 to check last mentioned i-node
-	jsr	r0,iget / if last mentioned i—node has been modified
+	jsr	r0,iget / if last mentioned i-node has been modified
 		        / it is written out
 	tstb	smod / has the super block been modified
 	beq	1f / no, 1f

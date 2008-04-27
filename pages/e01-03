@@ -9,7 +9,7 @@
 badsys:
 	incb	u.bsys / turn on the user's bad system flag
 	mov	$3f,u.namep / point u.namep to "core\0\O"
-	jsr	r0,namei / get the i—number for the core image file
+	jsr	r0,namei / get the i-number for the core image file
 		br 1f / error
 	neg	r1 / negate the i-number to open the core image file
 		   / for writing
@@ -47,7 +47,7 @@ sysexit: / terminate process
 	movb	u.uno,r1 / yes, move dying process's number to r1
 	clrb	 p.stat-1(r1) / free the process
 	asl	r1 / use r1 for index into the below tables
-	mov	p.pid—2(r1),r3 / move dying process's name to r3
+	mov	p.pid-2(r1),r3 / move dying process's name to r3
 	mov	p.ppid-2(r1),r4 / move its parents name to r4
 	clr	r2
 	clr	r5 / initialize reg
