@@ -1,0 +1,56 @@
+	sysmount / 21
+	sysumount / 22
+	syssetuid / 23
+	sysgetuid / 24
+	sysstime / 25
+	sysquit / 26
+	sysintr / 27
+	sysfstat / 28
+	sysemt / 29
+	sysmdate / 30
+	sysstty / 31
+	sysgtty / 32
+	sysilgins / 33
+2:
+
+error:
+	mov	u.sp,r1
+	bis	$1,20.(r1) / set c bit in processor status word below
+		           / users stack
+
+sysret:
+	tstb	u.bsys / is a process about to be terminated because
+	bne	sysexit / of an error? yes, go to sysexit
+	mov	u.sp,sp / no point stack to users stack
+	clr	r1 / zero r1 to check last mentioned i-node
+	jsr	r0,iget / if last mentioned i—node has been modified
+		        / it is written out
+	tstb	smod / has the super block been modified
+	beq	1f / no, 1f
+	clrb	smod / yes, clear smod
+	bis	$1000,sb0 / set write bit in I/0 queue for super block
+		          / output
+	jsr	r0,ppoke / write out modified super block to disk
+1:
+	tstb	mmod / has the super block for the dismountable file
+		     / system
+	beq	1f / been modified?  no, 1f
+	clrb	mmod / yes, clear mmod
+	movb	mntd,sb1 / set the I/0 queue
+	bis	$1000,sb1 / set write bit in I/0 queue for detached sb
+	jsr	r0,ppoke / write it out to its device
+1:
+	tstb	uquant / is the time quantum 0?
+	bne	1f / no, don't swap it out
+
+sysrele:
+	jsr	r0,tswap / yes, swap it out
+1:
+	mov	(sp)+,sc / restore user registers
+	mov	(sp)+,mq
+	mov	(sp)+,ac
+	mov	(sp)+,r5
+	mov	(sp)+,r4
+	mov	(sp)+,r3
+	mov	(sp)+,r2
+	mov	(sp)+,r1

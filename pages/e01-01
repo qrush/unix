@@ -1,0 +1,54 @@
+/ u1 -- unix
+unkni: / used for all system calls
+sysent:
+	incb	sysflg / indicate a system routine is
+	beq	1f / in progress
+	jmp	panic / called if trap inside system
+1:
+	mov	$s.syst+2,c1ockp
+	mov	r0,-(sp) / save user registers
+	mov	sp,u.r0 / pointer to bottom of users stack in u.r0
+	mov	r1,-(sp)
+	mov	r2,-(sp)
+	mov	r3,-(sp)
+	mov	r4,-(sp)
+	mov	r5,-(sp)
+	mov	ac,-(sp) / "accumulator" register for extended
+		         / arithmetic unit
+	mov	mq,-(sp) / "multiplier quotient" register for the
+		         / extended arithmetic unit
+	mov	sc,-(sp) / "step count" register for the extended
+		         / arithmetic unit
+	mov	sp,u.sp / u.sp points to top of users stack
+	mov	18.(sp),r0 / store pc in r0
+	mov	-(r0),r0 / sys inst in r0      10400xxx
+	sub	$sys,r0 / get xxx code
+	asl	r0 / multiply by 2 to jump indirect in bytes
+	cmp	r0,$2f—1f / limit of table (35) exceeded
+	bhis	badsys / yes, bad system call
+	bic	$341,20.(sp) / set users processor priority to 0 and clear
+		             / carry bit
+	jmp	*1f(r0) / jump indirect thru table of addresses
+		        / to proper system routine.
+1:
+	sysrele / 0
+	sysexit / 1
+	sysfork / 2
+	sysread / 3
+	syswrite / 4
+	sysopen / 5
+	sysclose / 6
+	syswait / 7
+	syscreat / 8
+	syslink / 9
+	sysunlink / 10
+	sysexec / 11
+	syschdir / 12
+	systime / 13
+	sysmkdir / 14
+	syschmod / 15
+	syschown / 16
+	sysbreak / 17
+	sysstat / 18
+	sysseek / 19
+	systell / 20

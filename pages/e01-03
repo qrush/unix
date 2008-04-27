@@ -1,0 +1,56 @@
+	mov	(sp)+,r0
+	mov	$s.chrgt+2,clockp
+	decb	sysflg / turn system flag off
+	jsr	r0,isintr / is there an interrupt from the user
+		br intract / yes, output gets flushed, take interrupt
+		           / action
+	rti	/ no return from interrupt
+
+badsys:
+	incb	u.bsys / turn on the user's bad system flag
+	mov	$3f,u.namep / point u.namep to "core\0\O"
+	jsr	r0,namei / get the i—number for the core image file
+		br 1f / error
+	neg	r1 / negate the i-number to open the core image file
+		   / for writing
+	jsr	r0,iopen / open the core image file
+	jsr	r0,itrunc / free all associated blocks
+	br	2f
+1:
+	mov	$17,r1 / put i-node mode (17) in r1
+	jsr	r0,maknod / make an i-node
+	mov	u.dirbuf,r1 / put i-nodes number in r1
+2:
+	mov	$core,u.base / move address core to u.base
+	mov	$ecore-core,u.count / put the byte count in u.count
+	mov	$u.off,u.fofp / more user offset to u.fofp
+	clr	u.off / clear user offset
+	jsr	r0,writei / write out the core image to the user
+	mov	$user,u.base / pt. u.base to user
+	mov	$64.,u.count / u.count = 64
+	jsr	r0,writei / write out all the user parameters
+	neg	r1 / make i-number positive
+	jsr	r0,iclose / close the core image file
+	br	sysexit /
+3:
+	<core\0\0>
+
+sysexit: / terminate process
+	clr	u.intr / clear interrupt control word
+	clr	r1 / clear r1
+1: / r1 has file descriptor (index to u.fp list)  Search the whole list
+	jsr	r0,fclose / close all files the process opened
+		br .+2 / ignore error return
+	inc	r1 / increment file descriptor
+	cmp	r1,$10. / end of u.fp list?
+	blt	1b / no, go back
+	movb	u.uno,r1 / yes, move dying process's number to r1
+	clrb	 p.stat-1(r1) / free the process
+	asl	r1 / use r1 for index into the below tables
+	mov	p.pid—2(r1),r3 / move dying process's name to r3
+	mov	p.ppid-2(r1),r4 / move its parents name to r4
+	clr	r2
+	clr	r5 / initialize reg
+1: / find children of this dying process, if they are zombies, free them
+	add	$2,r2 / search parent process table for dying process's name
+	cmp	p.ppid-2(r2),r3 / found it?
