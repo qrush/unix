@@ -3,8 +3,8 @@
 	br	1b / get next character
 ret1:
 	jmp	ret / return to caller via 'ret'
-rppt: / read paper tape`
-	jsr	r0,ppt1c / gets next character in clist for ppt input and
+rppt: / read paper tape
+	jsr	r0,pptic / gets next character in clist for ppt input and
 			 / places
 		br ret / it 1n r1; 1f there 1s no problem with reader, it
 		       / also enables read bit Ln prs

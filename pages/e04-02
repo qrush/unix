@@ -1,4 +1,4 @@
-       mov     $touts—toutt—1,r0 / set up r0 as index to decrement thru
+       mov     $touts-toutt-1,r0 / set up r0 as index to decrement thru
                                  / the table
 1:
        tstb    toutt(r0) / is the time out for this entry —
@@ -12,7 +12,7 @@
        dec     r0 / set up r0 for next entry
        bge     1b / finished? , no, go back `
        br      retisp / yes, restore registers and do a rtl
-ttyl: / console tty input interrupt routine
+ttyi: / console tty input interrupt routine
        jsr     r0,setisp / save reg r1, r2, r3
        mov     *$tkb,r1 / r1 = char in tty reader buffer
        inc     *$tks / set the reader enable bit
@@ -21,7 +21,7 @@ ttyl: / console tty input interrupt routine
        cmp     r1,$'a-40 / is character upper case A,..., upper case Z.
                          / note that
        blt     1f / lower case a ls represented by 141, upper case by
-       cmp     r1,$'z—40 / 101; and lower case z by 172, upper
+       cmp     r1,$'z-40 / 101; and lower case z by 172, upper
                          / case Z by 132.
        bgt     1f / if not upper case, branch
        add     $40,r1 / if upper case, calculate the representation of its

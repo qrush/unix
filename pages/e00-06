@@ -43,7 +43,7 @@ rtssyms:
 	rts    r0
 	rts    r1
 	rts    r2
-	tts    r3
+	rts    r3
 	rts    r4
 	rts    r5
 	rts    sp

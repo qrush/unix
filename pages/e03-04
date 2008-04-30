@@ -6,6 +6,6 @@
        bgt     1b / branch u til all data words in buffer are zero
        jsr	r0,dskwr / write zeroed buffer area out onto physical
                          / block specified
-       rts     rO / in r1
+       rts     r0 / in r1
 
 

@@ -3,7 +3,7 @@
 tswap:
        movb    u.uno,r1 / move users process number to r1
        mov     $runq+4,r2 / move lowest priority queue address to r2
-       jsr     rO,putlu / create link from last user on Q to u.uno's user
+       jsr     r0,putlu / create link from last user on Q to u.uno's user
 swap:
        mov     $300,*$ps / processor priority = 6
        mov     $runq,r2 / r2 points to runq table
@@ -12,7 +12,7 @@ swap:
        bne     1f / yes, process 1f
        cmp     r2,$runq+6 / if zero compare address to end of table
        bne     1b / lf not at end, go back
-       jsr     rO,idle; s.idlet+2 / waif for interrupt; all queues
+       jsr     r0,idle; s.idlet+2 / waif for interrupt; all queues
                                   / are empty
        br      swap
 1:
@@ -32,24 +32,24 @@ swap:
        clr     *$ps / clear processor status
        cmpb    r1,u.uno / is this process the same as the process in core?
        beq     2f / yes, don't have to swap
-       mov     rO,-(sp) / no, write out core; save rO (address in rout? v
+       mov     r0,-(sp) / no, write out core; save r0 (address in rout? v
                         / that called swap)
        mov     sp,u.usp / save stack pointer
        mov     $sstack,sp / move swap stack pointer to the stack pointer
        mov     r1,-(sp) / put r1 (new process #) on the stack
        tstb    u.uno / is the process # = O
        beq     1f / yes, kill process by overwriting
-       jsr     rO,wswap / write out core to disk
+       jsr     r0,wswap / write out core to disk
 1: 
        mov     (sp)+,r1 / restore r1 to new process number
-       jsr     rO,rswap / read new process 1nto core
-       jsr     rO,unpack / unpack the users stack from next to his program
+       jsr     r0,rswap / read new process 1nto core
+       jsr     r0,unpack / unpack the users stack from next to his program
                          / to its normal
        mov     u.usp,sp / location; restore stack pointer to new process
                         / stack
-       mov     (sp)+,rO / put address of where the process that just got
+       mov     (sp)+,r0 / put address of where the process that just got
                         / swapped in, left off., i.e., transfer control
                         / to new process
 2:
        movb    $30.,uquant / initialize process time quantum
-       rts     rO / return
+       rts     r0 / return

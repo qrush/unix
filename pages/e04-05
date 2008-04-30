@@ -46,11 +46,11 @@ wakeup: / wakeup processes waiting for an event by linking them to the
 
 sleep: / wait for event
        jsr     r0,isintr / check to see if interrupt or quit from user
-               br      2f / something happened / yes, his interrupt so return
-                          / to user
+               br 2f / something happened / yes, his interrupt so return
+                     / to user
        mov     (r0)+,r1 / put number of wait channel in r1
-       movb    wlist(r1),—(sp) / put old process number in there, on
+       movb    wlist(r1),-(sp) / put old process number in there, on
                                / the stack
-       movb   u.uno,wlist(r1) / put process number of process to put
+       movb    u.uno,wlist(r1) / put process number of process to put
                               / to sleep in there
-       mov    cdev,-(sp) / nothing happened in isintr so
+       mov     cdev,-(sp) / nothing happened in isintr so

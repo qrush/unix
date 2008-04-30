@@ -43,7 +43,7 @@ dskrd:
        clr     *$ps
        bit     $22000,(r5) / if either bits 10, or 13 are 1; jump to idle
        beq     1f
-       jsr     r0,1d1e; s.wa1t+2
+       jsr     r0,idle; s.wait+2
        br      1b
 1:
        add     $8,r5 / r5 points to first word of data in block just read

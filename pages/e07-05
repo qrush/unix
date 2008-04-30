@@ -1,11 +1,11 @@
 2: / check open write access
         neg   r1 / make inode number positive
         jsr    r0,access; 1 / get inode in 0 core
-        bit    $40000,i.figs / is it a directory?
+        bit    $40000,i.flgs / is it a directory?
         bne    2f / yes, transfer (error)
         cmp    r1,$40. / no, is it a special file?
         bgt    3f / no, return
-        mov    n,-(sp) / yes
+        mov    r1,-(sp) / yes
         asl    r1
         jmp    *1f-2(r1) / figure out which special file it is
                          / and transfer

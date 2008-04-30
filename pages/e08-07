@@ -33,7 +33,7 @@ taper: / dec tape error
        bis     $4000,(r2) / set tape to reverse direction
        mov     $tape2,tcstate / put tape 2 as the state
 0:
-       bis     $4,act1ve / check active bit of tape
+       bis     $4,active / check active bit of tape
        movb    $103,(r2) / set read function and interrupt enable
        br      4f / go to retisp
 tape1: / read bn forward
@@ -41,15 +41,15 @@ tape1: / read bn forward
        cmp     (r0),2(r1) / compare block addresses
        blt     0b / if lt, keep moving
        bgt     taper / if gt, reverse
-       mov     6(r1),—(r0) / put bus address in tcba
+       mov     6(r1),-(r0) / put bus address in tcba
        mov     4(r1),-(r0) / put word count in tcwc
-       mov     $115,—(sp) / put end interrupt enable
+       mov     $115,-(sp) / put end interrupt enable
        bit     $20000,(r1) / is "waiting to read bit" of I/O queue set?
        beq     1f / no 1f
        mov     $105,(sp) / yes, put and lnterrupt enable
 1:
        movb    (sp)+,(r2) / move function into command register (tccm)
-       bis     $4,actlve / set active bit
+       bis     $4,active / set active bit
        mov     $tape3,tcstate / get ready for I/O transfer
        br      4f / go to retisp (rtl)
 

@@ -16,7 +16,7 @@
 
 isintr:
        mov     r1,-(sp) / put number of wait channel on the stack
-       mov     r2,—(sp) / save r2
+       mov     r2,-(sp) / save r2
        mov     u.ttyp,r1 / r1 = pointer to buffer of process control
                          / typewriter
        beq     1f / if 0, do nothing except skip return
@@ -24,7 +24,7 @@ isintr:
        beg     1f / if its 0 do nothing except skip return
        cmp     r1,$177 / is interrupt char e delete?
        bne     3f / no, so lt must be a quit (fs)
-       tst     u.1ntr / yes, value of u.intr determines handling
+       tst     u.intr / yes, value of u.intr determines handling
                       / of interrupts
        bne     2f / if not 0, 2f. If zero do nothing.
 1:

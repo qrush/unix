@@ -51,6 +51,6 @@ sioreg:
 	mov	*u.fofp,r2 / file offset (in bytes) is moved to r2
 	mov	r2,r3 / and also to r3
 	bis	$177000,r3 / set bits 9,...,15. of file offset in r3
-	bic	$l777,r2 / calculate file offset mod 512.
+	bic	$!777,r2 / calculate file offset mod 512.
 	add	r5,r2 / r2 now points to 1st byte in system buffer where
 		      / data is to be placed

@@ -8,7 +8,7 @@
 prf: / drum
        bit     $1,active / test drum busy blt
        bne     2f / branch if bit is set
-       bis     $1,act1ve / set drum busy bit
+       bis     $1,active / set drum busy bit
        mov     r1,rfap / rfap points to current I/O queue entry for drum
        mov     $dae+2,r3
        clr     -(sp)
@@ -21,7 +21,7 @@ prf: / drum
                            / number
 3:
        mov     (sp)+,-(r3) / load rkda register; load dar register
-       mov     6(r1),—(r3) / load bus address register
+       mov     6(r1),-(r3) / load bus address register
        mov     4(r1),-(r3) / load word count register
        mov     $103,-(sp) / 103 indicates write operation when loaded
                           / in csr
@@ -30,7 +30,7 @@ prf: / drum
        beq     3f / then read operation is indicated
        mov     $105,(sp) / 105 indicates read operation
 3:
-       mov     (sp)+,—(r3) / load csr with interrupt enabled, command, go
+       mov     (sp)+,-(r3) / load csr with interrupt enabled, command, go
        br      seta
 ptc: / tape I/O
        bit     $4,active
@@ -46,7 +46,7 @@ ptc: / tape I/O
        bis     $4,active
        mov     r1,tcap
        mov     $20.,tcerrc
-       mov     sta e1,tcstate
+       mov     $tape1,tcstate
        movb    (r1),r3 / device
        sub     $2,r3 / now unit
        swab    r3

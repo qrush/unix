@@ -23,10 +23,10 @@ writei:
 	jmp	*1f-2(r1) / jump table and jump to the appropriate routine
 1:
 	wtty	/ tty
-	wnpk	/ ppt
+	wppt	/ ppt
 	wmem	/ mem
 	wrf0	/ rf0
-	wzk0	/ rk0
+	wrk0	/ rk0
 	wtap	/ tap0
 	wtap	/ tap1
 	wtap	/ tap2
@@ -48,7 +48,7 @@ writei:
 wtty:
 	jsr	r0,cpass / get next character from user buffer area; if
 		         / none go to return address in syswrite
-	tsl	r1 / is character = null
+	tst	r1 / is character = null
 	beq	wtty / yes, get next character
 1 :
 	mov	$240,*$ps / no, set processor priority to five

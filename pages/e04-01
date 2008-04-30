@@ -1,15 +1,15 @@
 / u4 -- unix
 
 setisp:
-       mov     r1,—(sp)
-       mov     r2,—(sp)
+       mov     r1,-(sp)
+       mov     r2,-(sp)
        mov     r3,-(sp)
        mov     clockp,-(sp)
        mov     $s.syst+2,clockp
        jmp     (r0)
 
 clock: / interrupt from 60 cycle clock
-       mov     r0,—(sp) / save r0
+       mov     r0,-(sp) / save r0
        tst     *$lks / restart clock?
        mov     $s.time+2,r0 / increment the time of day
        inc     (r0)
@@ -30,7 +30,7 @@ clock: / interrupt from 60 cycle clock
        bge     2f / yes, check time outs
        tstb    (r0) / no, user timed out?
        bne     1f / no
-       cmpb    sysflg,$—1 / yes, are we outside the system?
+       cmpb    sysflg,$-1 / yes, are we outside the system?
        bne     1f / no, 1f
        mov     (sp)+,r0 / yes, put users r0 in r0
        sys     0 / sysrele

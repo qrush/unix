@@ -50,7 +50,7 @@ rswap:
        bne     1b / no, wait for bit 15 to clear (inhibit blt)
        mov     u.emt,*$3O / yes move these
        mov     u.ilgins,*$10 / back
-       rts     rO / return
+       rts     r0 / return
 
 unpack: / move stack back to its normal place
        mov     u.break,r2 / r2 points to end of user program

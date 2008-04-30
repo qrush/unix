@@ -25,7 +25,7 @@ mount:	.=.+1024.
 proc:
 	p.pid:  .=.+[2*nproc]
 	p.dska: .=.+[2*nproc]
-	p.ppid; .=.+[2*nproc]
+	p.ppid: .=.+[2*nproc]
 	p.break:.=.+[2*nproc]
 	p.link: .=.+nproc
 	p.stat: .=.+nproc

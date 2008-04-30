@@ -24,8 +24,8 @@ ppoke:
        clr     *$ps
        rts     r0
 poke:
-       mov     r1,—(sp)
-       mov     r2,—(sp)
+       mov     r1,-(sp)
+       mov     r2,-(sp)
        mov     r3,-(sp)
        mov     $bufp+nbuf+nbuf+6,r2 / r2 points to highest priority I/O
                                     / queue pointer
@@ -36,9 +36,9 @@ poke:
        beq     2f / branch to 2f if both are clear
        bit     $130000,(r1) / test bits 12, 13, and 15
        bne     2f / branch if any are set
-       movb    (r1),r3 / get device 1d
+       movb    (r1),r3 / get device id
        tstb    deverr(r3) / test for errors on this device
-       beg     3f / branch if no errors
+       beq     3f / branch if no errors
        mov     $-1,2(r1) / destroy associativity
        clrb    1(r1) / do not do I/O
        br      2f

@@ -35,7 +35,7 @@ read:
 	rcvt / tty4
 	rcvt / tty5
 	rcvt / tty6
-	zcvt / ety7
+	rcvt / tty7
 	rcrd/ crd
 rtty: / read from console tty
 	mov	tty+[8*ntty]-8+6,r5 / r5 is the address of the 4th word of

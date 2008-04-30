@@ -25,11 +25,11 @@
 
 	mov    $41.,r0 / rootdir set to 41 and never changed
 	mov    r0,rootdir / rootdir is i-number of root directory
-	mov    r0,u.cd1r / u.cd1r 1s i-number of process current directory
+	mov    r0,u.cdir / u.cdir is i-number of process current directory
 	mov    $1,r0
 	movb   r0,u.uno / set process table index for this process to 1
 	mov    r0,mpid / initialize mpid to 1
-	mov    r0,p.p1d / p.pid identifies process
+	mov    r0,p.pid / p.pid identifies process
 	movb   r0,p.stat / process status = 1 i.e., active
                          /                = 0 free
 	.if cold         /                = 2 waiting for a child to die

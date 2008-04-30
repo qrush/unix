@@ -1,9 +1,9 @@
        cmp     r1,(r0)+ / block # greater than or equal to maximum
        	                / block number allowed
-       bhis    error1O / yes, error
+       bhis    error10 / yes, error
        inc     *u.fofp / no, *u.fofp has next block number
        jsr     r0,preread / read in the block whose number is in r1
-       bis     $4000O,(r5) / set bit 14 of the 1st word of the I/O
+       bis     $40000,(r5) / set bit 14 of the 1st word of the I/O
        	                   / buffer
 1:
        bit     $22000,(r5) / are 10th and 13th bits set (read bits)
@@ -17,7 +17,7 @@
        mov     (sp)+,r5 / restore r5
        br      1b / go back
 2: / drum or disk
-       jsr     r0,idle; s.wa1t+2 / wait
+       jsr     r0,idle; s.wait+2 / wait
        br      1b
 1: / 10th and 13th bits not set
        bic     $40000,(r5) / clear bit 14
@@ -40,13 +40,13 @@ bwrite: / write on block structured device »
        jsr     r0,tstdeve / test the device for an error
        mov     *u.fofp,r1 / put the block number in r1
        cmp     r1,(r0)+ / does block number exceed maximum allowable #
-       bhis    error1O / yes, error
+       bhis    error10 / yes, error
        inc     *u.fofp / no, increment block number
        jsr     r0,wslot / get an I/O buffer to write into
        jsr     r0,dioreg / do the necessary bookkeeping
 1: / r2 points to the users data; r5-points to the I/O buffers data area
        movb    (r2)+,(r5)+ / ; r3, has the byte count
-       dcc     r3 / area to the I/O buffer
+       dec     r3 / area to the I/O buffer
        bne     1b
        jsr     r0,dskwr / write it out on the device
        tst     u.count / done
