@@ -25,9 +25,11 @@ e02-01 to e02-10 (10) - u2 -
    reviewed: tim newsham
 e03-01 to e03-04 (4) - u3 -
    assigned: Tim Bradshaw
+             (Brad Parker, complete)
    reviewed:
 e04-01 to e04-07 (7) - u4 -
    assigned: Alex Garbutt
+             (Brad Parker, complete)
    reviewed:
 e05-01 to e05-06 (6) - u5 -
    assigned: Ralph Logan, complete
@@ -39,7 +41,8 @@ e07-01 to e07-08 (8) - u7 -
    assigned: Naoki Hamada, complete
    reviewed:
 e08-01 to e08-09 (9) - u8 -
-   assigned: Christian David
+   (Christian David pg 1)
+   assigned: 
    reviewed:
 e09-01 to e09-08 (8) - u9 -
    assigned: tim newsham, complete
