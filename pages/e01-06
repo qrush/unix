@@ -47,7 +47,7 @@
 
 sysread:
 	jsr	r0,rw1 / get i-number of file to be read into r1
-	tst	r1 / negative i—number?
+	tst	r1 / negative i-number?
 	ble	error1 / yes, error 1 to read it should be positive
 	jsr	r0,readi / read data into core
 	br	1f

@@ -35,7 +35,7 @@ ppti: / paper tape lnput interrupt routine M
        jsr     r0,pptito / place 10 ln toutt entry for ppt input
        br      retisp
 1:
-       movb    $4,pptiflg / change "pptiflg" to indicate file "normal°
+       movb    $4,pptiflg / change "pptiflg" to indicate file "normal"
 2:
        jsr     r0,wakeup; runq+2; 2 / wakeup process for ppt input entry
                                     / ln wllst

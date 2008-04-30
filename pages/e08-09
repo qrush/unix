@@ -1,5 +1,5 @@
 4:
-       jmp     retisp / u4—3
+       jmp     retisp / u4-3
 
 trapt:                                   / r2 points to the
        mov     (r0)+,r2 / device control register

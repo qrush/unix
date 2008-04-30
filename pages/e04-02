@@ -1,7 +1,7 @@
        mov     $touts-toutt-1,r0 / set up r0 as index to decrement thru
                                  / the table
 1:
-       tstb    toutt(r0) / is the time out for this entry —
+       tstb    toutt(r0) / is the time out for this entry
        beq     2f / yes
        decb    toutt(r0) / no, decrement the time
        bne     2f / is the time O, now
@@ -27,7 +27,7 @@ ttyi: / console tty input interrupt routine
        add     $40,r1 / if upper case, calculate the representation of its
                       / lower case counter part
 1:
-       cmp     r1,$175 / char = "}”? Note: may be quit char (fs)
+       cmp     r1,$175 / char = "}"? Note: may be quit char (fs)
        beq     2f / yes 2f
        cmp     r1,$177 / char = "del" ?
        beq     2f / yes, 2f

@@ -4,7 +4,7 @@
        bgt     0b / if gt keep reading
        br      taper / else reverse
 
-tape3: / I/O transfer ·
+tape3: / I/O transfer
        bic     $30000,(r1) / clear bits 12 and 13 of I/0 queue entry
        jsr     r0,poke / do the I/O
        bit     $4,active / still k sy see if pick up r-ahead, w-behind

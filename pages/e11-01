@@ -1,7 +1,7 @@
-/ sh —— command interpreter
+/ sh -- command interpreter
 	mov	sp,r5
 	mov	r5.shel larg / save orig sp in shel larg
-	cdpb	B(r5),$’— / was this sh calleZd by init or loginx~
+	cdpb	B(r5),$'- / was this sh calleZd by init or loginx~
 	bne	2f / no
 	sys	intr; O / yes, turn off interrupts
 	sys	quit; O
@@ -12,7 +12,7 @@
 	movb	$'#,at / yes, set new prompt symbol
 2:
 	cmn	(r5),$l / tty input?
-	ble	newline / yes, call with ’-(or with no command
+	ble	newline / yes, call with '-(or with no command
 		        / file name)
 	clr	rO / no, set ttv
 	sys	close / close it
@@ -41,14 +41,14 @@ newarg:
 	jsr	pc,blank / squeeze out leading blanks
 	jsr	r5,delim / is new character a ; \n or &
 		br 2f / yes
-	mov	r3,—(sp) I no, push arg pointer onto stack
+	mov	r3,-(sp) I no, push arg pointer onto stack
 	cmp	rO,$'< / new input file?
 	bne	1f / no
 	mov	(sp).infile / yes, save arg pointer
 	clr	(sp) / clear pointer
 	br	3f
 1:
-	cmp	r0,$’> / new output file?
+	cmp	r0,$'> / new output file?
 	bne	newchar / no
 	mov	(sp),outfile / yes, save arg pointer
 	clr	(sp) / clear pointer

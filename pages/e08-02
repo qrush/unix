@@ -9,7 +9,7 @@
        bit     $22000,(r5) / are 10th and 13th bits set (read bits)
        beq     1f / no
        cmp     cdev,$1 / disk or drum?
-       ble     2f / yes ·
+       ble     2f / yes
        tstb    uquant / is the time quan+um = 0?
        bne     2f / no, 2f
        mov     r5,-(sp) / yes, save r5 (buffer address)
@@ -36,7 +36,7 @@
        mov     (sp)+,r0 / jump to routine that called readi
        jmp     ret
 
-bwrite: / write on block structured device »
+bwrite: / write on block structured device
        jsr     r0,tstdeve / test the device for an error
        mov     *u.fofp,r1 / put the block number in r1
        cmp     r1,(r0)+ / does block number exceed maximum allowable #
