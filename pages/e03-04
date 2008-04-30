@@ -1,0 +1,11 @@
+                        / in buffer
+       mov     $256.,r3
+1: 
+       clr     (r5)+ / zero data word in buffer
+       dec     r3
+       bgt     1b / branch u til all data words in buffer are zero
+       jsr	r0,dskwr / write zeroed buffer area out onto physical
+                         / block specified
+       rts     rO / in r1
+
+

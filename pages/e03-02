@@ -1,0 +1,56 @@
+
+wswap:
+       mov     *$30,u.emt / determines handling of emts
+       mov     *$10,u.ilgins / determines handling of illegal instructions
+       mov     u.break,r2 / put process program break address in r2
+       inc     r2 / add 1 to it 
+       bic     $1,r2 / make it even
+       mov     r2,u.break / set break to an even location
+       mov     u.usp,r3 / put users stack pter at moment of swap in r3
+       cmp     r2,$core / is u.break less than Score
+       blos    2f / yes
+       cmp     r2,r3 / no, is (u.break) greater than stack pointer
+       bhis    2f / yes
+1:
+       mov     (r3)+,(r2)+ / no, pack stack next to users program
+       cmp     r3,$ecore / has stack reached end of core
+       bne     1b / no, keep packing
+       br      1f / yes
+2: 
+       mov     $ecore,r2 / put end of core in r2 
+1:
+       sub     $user,r2 / get number of bytes to write out (user up
+                        / to end of stack gets written out) ~
+       neg     r2 / make it negative V
+       asr     r2 / ciange bytes to words (divide by 2)
+       mov     r2,swp+4 / word count
+       movb    u.uno,r1 / move user process number to r1
+       asl     r1 / x2 for index
+       mov     r2,p.break-2(r1) / put negative of word count into the
+       	                        / p.break table
+       mov     p.dska-2(r1),r1 / move disk address of swap area for
+                               / process to r1
+       mov     r1,swp+2 / put processes dska address in swp +2 (block
+                        / number)
+       bis     $1000,swp / set it up to write (set bit 9)
+       jsr     r0,ppoke / write process out on swap area of disk
+1:
+       tstb    swp+1 / is lt done writing?
+       bne     1b / no, wait
+       rts     r0 / yes, return to swap
+
+rswap:
+       asl     r1 / process number x2 for index
+       mov     p.break-2(r1), swp+4 / word count
+       mov     p.dska2(r1),swp+2 / disk address
+       bis     $2000,swp / read
+       jsr     r0,ppoke / read it in 
+1:
+       tstb    swp+1 / done l
+       bne     1b / no, wait for bit 15 to clear (inhibit blt)
+       mov     u.emt,*$3O / yes move these
+       mov     u.ilgins,*$10 / back
+       rts     rO / return
+
+unpack: / move stack back to its normal place
+       mov     u.break,r2 / r2 points to end of user program

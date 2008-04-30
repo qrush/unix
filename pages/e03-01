@@ -1,0 +1,55 @@
+/ u3  unlx
+
+tswap:
+       movb    u.uno,r1 / move users process number to r1
+       mov     $runq+4,r2 / move lowest priority queue address to r2
+       jsr     rO,putlu / create link from last user on Q to u.uno's user
+swap:
+       mov     $300,*$ps / processor priority = 6
+       mov     $runq,r2 / r2 points to runq table
+1: / search runq table for highest priority process
+       tst     (r2)+ / are there any processes to run in this Q entry
+       bne     1f / yes, process 1f
+       cmp     r2,$runq+6 / if zero compare address to end of table
+       bne     1b / lf not at end, go back
+       jsr     rO,idle; s.idlet+2 / waif for interrupt; all queues
+                                  / are empty
+       br      swap
+1:
+       tst     -(r2) / restore pointer to right Q entry
+       mov     r2,u.pr1 / set present user to this run queue
+       movb    (r2)+,r1 / move 1st process in queue to r1
+       cmpb    r1,(r2)+ / is there only 1 process in this Q to be run
+       beq     1f / yes
+       tst     (r2) / no, pt r2 back to this Q entry
+       movb    p.link-1(r1),(r2) / move next process in line into
+                                 / run queue
+       br      2f
+1:
+       clr     -(r2) / zero the entry; no processes on the Q
+2: / write out core to appropriate disk area and read in new process if
+   / required V
+       clr     *$ps / clear processor status
+       cmpb    r1,u.uno / is this process the same as the process in core?
+       beq     2f / yes, don't have to swap
+       mov     rO,-(sp) / no, write out core; save rO (address in rout? v
+                        / that called swap)
+       mov     sp,u.usp / save stack pointer
+       mov     $sstack,sp / move swap stack pointer to the stack pointer
+       mov     r1,-(sp) / put r1 (new process #) on the stack
+       tstb    u.uno / is the process # = O
+       beq     1f / yes, kill process by overwriting
+       jsr     rO,wswap / write out core to disk
+1: 
+       mov     (sp)+,r1 / restore r1 to new process number
+       jsr     rO,rswap / read new process 1nto core
+       jsr     rO,unpack / unpack the users stack from next to his program
+                         / to its normal
+       mov     u.usp,sp / location; restore stack pointer to new process
+                        / stack
+       mov     (sp)+,rO / put address of where the process that just got
+                        / swapped in, left off., i.e., transfer control
+                        / to new process
+2:
+       movb    $30.,uquant / initialize process time quantum
+       rts     rO / return

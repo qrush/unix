@@ -1,0 +1,60 @@
+
+       cmp     r2,$core / at beginning of user program yet?
+       blos    2f / yes, return
+       cmp     r2,u.usp / is break_above the "stack pointer before
+                        / swapping"
+       bhis    2f / yes, return
+       mov     secore,r3 / r3 points to end of core
+       add     r3,r2
+       sub     u.usp,r2 / end of users stack is in r2
+1:
+       mov     -(r2),-(r3) / move stack back to its normal place
+       cmp     r2,u.break / in core
+       bne     1b
+2:
+       rts     r0
+
+putlu: / r1 = user process no.; r2 points to lowest priority queue
+       tstb    (r2)+ / is queue empty?
+       beg     1f / yes, branch
+       movb    (r2),r3 / no, save the last user processnumber in_r3
+       movb    r1,p.link-1(r3) / put pointer to user on last users- link
+       br      2f /
+1:
+       movb    r1,-1(r2) / user is only user; put_procss no. at beginning
+                         / and at end
+2: 
+       movb    r1,(r2) / user process in r1 is now the last entry on
+                       / the queue
+       dec     r2 / restore r2
+       rts     r0
+
+copyz:
+       mov     r1,-(sp) / put r1 on stack
+       mov     r2,-(sp) / put r2 on stack
+       mov     (r0)+,r1
+       mov     (r0)+,r2
+1:
+       clr     (r1)+ / clear all locations between r1 and r2
+       cmp     r1,r2 
+       blo     1b
+       mov     (sp)+,r2 / restore r2
+       mov     (sp)+,r1 / restore r1
+       rts     r0 
+
+idle:
+       mov	*$ps,-(sp) / save ps on stack
+       clr	*$ps / clear ps
+       mov	clockp,(sp) / save clockp on stack
+       mov	(r0)+,clockp / arg to idle 1n clockp
+       1 / wait for interrupt
+       mov      (sp)+,clockp / restore clockp, ps
+       mov	(sp)+,*$ps
+       rts	r0
+
+clear:
+       jsr       r0,ws1ot / get an I/O buffer set bits 9 and 15 in first
+                          / word of I/O queue r5 points to first data word
+       
+       
+       
