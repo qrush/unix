@@ -1,0 +1,56 @@
+       jar     r0,swap / swap out process that needs to sleep
+       mov     (sp)+,cdev / restore device
+       jsr     r0,isintr / check for interrupt of new process
+               br      2f / yes, return to new user
+       movb    (sp)+,r1 / no, r1 = old process number that was originally
+                        / on the wait channel
+       beg     1f / if 0 branch
+       mov     $runq+4,r2 / r2 points to lowest priority queue
+       mov     $300,*$ps / processor priority = 6
+       jsr     r0,putlu / create llnk to old process number
+       clr     *$ps / clear the status; process priority = O
+1:
+       rts     r0 / return
+2:
+       jmp     sysret / return to user
+
+isintr:
+       mov     r1,-(sp) / put number of wait channel on the stack
+       mov     r2,—(sP) / save r2 .
+       mov     u.ttyp,r1 / r1 = pointer to buffer of process control
+       	                 / typewriter
+       beq     1f / if 0, do nothing except skip return
+       movb    6(r1),r1 / put interrupt char in the tty buffer in r1
+       beg     1f / if its 0 do nothing except skip return
+       cmp     r1,$177 / is interrupt char e delete?
+       bne     3f / no, so lt must be a quit (fs)
+       tst     u.1ntr / yes, value of u.intr determines handling
+                      / of interrupts
+       bne     2f / if not 0, 2f. If zero do nothing.
+1:
+       tst     (r0)+ / bump r0 past system return (skip)
+4:
+       mov     (sp)+,r2 / restore r1 and r2
+       mov     (sp)+,r1
+       rts     r0
+3: / interrupt char = quit (fs)
+       tst     u.quit / value of u.quit determines handling of quits
+       beq     1b / u.quit = 0 means do nothing
+2: / get here because either u.intr <> 0 or u.qult <> O
+       mov     $tty+6,r1 / move pointer to tty block into r1
+1: / find process control tty entry in tty block
+       cmp     (r1),u.ttyp / is this the process control tty buffer?
+       beq     1f / block found go to 1f
+       add     $8,r1 / look at next tty block
+       cmp     r1,$tty+[ntty*8]+6 / are we at end of tty blocks
+       blo     1b / no
+       br      4b / no process control tty found so go to 4b
+1:
+       mov     $240,*$ps / set processor priority to 5
+       movb    -3(r1),0f / load getc call argument; character llst
+                          / identifier
+       inc     0f / increment
+1:
+       jsr     r0,getc; 0:.. / erase output char list for control
+               br 4b / process tty. This prevents a line of stuff
+                     / being typed out after you hit the interrupt

@@ -1,0 +1,58 @@
+pptito: / paper tape input touts subrouting
+       cmpb    pptif1g,$2 / does "pptiflg" indicate file just opened
+       bne     1f / no, do nothing pyf
+       movb    $10.,toutt+1 / yes, place 10 in tout entry for tty input
+       tstb    *$prs+1 / is error bit set
+       blt     1f / yes, return
+       inc     *$prs / no, set read enable bit
+1:
+       rts     r0
+
+starppt: / start ppt output
+       cmpb    cc+3,$10. / is character count for ppt output greater
+                         / than 10.
+       bhl     1f / yes, branch
+       jsr     r0,wakeup; runq+2; 3 / no, wakeup process in wlist
+                                    / entry for ppt input
+1:
+       tstb    *$pps / is ready bit set in punch status word
+       bge     1f / no, branch
+       jsr     r0,qetc; 3 / yes, get next char in clist for pptout and
+       	                  / place in r1
+       br      1f / if none, branch
+       mov     r1,*$ppb / place character in ppt buffer
+1:
+       rts r0
+
+wakeup: / wakeup processes waiting for an event by linking them to the
+       / queue
+       mov     r1,-(sp) / put char on stack
+       mov     (r0)+,r2 / r2 points to a queue
+       mov     (r0)+,r3 / r3 = wait channel number
+       movb    wlist(r3),r1 / r1 contains process number in that wait
+                            / channel that was sleeping
+       beq     2f / if O return, nothing to wakeup
+       cmp     r2,u.pr1 / is rung greater than or equal to users process
+       	                / priority
+       bhis    1f / yes, don't set time quantum to zero
+       clrb    uquant / time quantum = O
+1:
+       clrb    wlist(r3) / zero wait channel entry
+       jsr     r0,putlu / create a link from the last user on the Q
+                        / to this process number that got woken
+2:
+       mov     (sp)+,r1 / restore r1
+       rts     r0
+
+sleep: / wait for event
+       jsr     r0,isintr / check to see if interrupt or quit from user
+               br      2f / something happened / yes, his interrupt so return
+                          / to user
+       mov     (r0)+,r1 / put number of wait channel in r1
+       movb    wlist(r1),—(sp) / put old process number in there, on
+                               / the stack
+       movb   u.uno,wlist(r1) / put process number of process to put
+                              / to sleep in there
+       mov    cdev,-(sp) / nothing happened in isintr so
+       
+       

@@ -1,0 +1,55 @@
+/ u4 -- unix
+
+setisp:
+       mov     r1,—(sp)
+       mov     r2,—(sp)
+       mov     r3,-(sp)
+       mov     clockp,-(sp)
+       mov     $s.syst+2,clockp
+       jmp     (r0)
+
+clock: / interrupt from 60 cycle clock
+       mov     r0,—(sp) / save r0
+       tst     *$lks / restart clock?
+       mov     $s.time+2,r0 / increment the time of day
+       inc     (r0)
+       bne     1f
+       inc     -(r0)
+1:
+       mov     clockp,r0 / increment appropriate time category
+       inc     (rO)
+       bne     1f
+       inc     -(rO)
+1:
+       mov     $uquant,r0 / decrement user time quantum
+       decb    (r0)
+       bge     1f / if less than 0
+       clrb    (r0) / make it 0
+1: / decrement time out counts return now if priority was not 0
+       cmp     4(sp),$200 / ps greater than or equal to 200
+       bge     2f / yes, check time outs
+       tstb    (r0) / no, user timed out?
+       bne     1f / no
+       cmpb    sysflg,$—1 / yes, are we outside the system?
+       bne     1f / no, 1f
+       mov     (sp)+,r0 / yes, put users r0 in r0
+       sys     0 / sysrele
+       rti
+2: / priority is high so just decrement time out counts
+       mov     $toutt,r0 / rO points to beginning of time out table
+2:
+       tstb    (r0) / is the time out?
+       beq     3f / yes, 3f (get next entry)
+       decb    (r0) / no, decrement the time
+       bne     3f /Is1t zero now?
+       incb    (r0) / yes, increment the time
+3:
+       inc     r0 / next entry
+       cmp     r0,$touts / end of toutt table?
+       blo     2b / no, check this entry
+       mov     (sp)+,r0 / yes, restore r0
+       rti / return from interrupt
+1: / decrement time out counts; if 0 call subroutine
+       mov     (sp)+,r0 / restore r0
+       mov     $240,*$ps / set processor priority to 5
+       jsr     r0,setisp / save registers
