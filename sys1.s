@@ -1,7 +1,7 @@
 rele    = 0.
 exit    = 1.
 fork    = 2.
-read    = 3.
+/ read    = 3.
 write   = 4.
 open    = 5.
 close   = 6.
@@ -12,7 +12,7 @@ unlink  = 10.
 exec    = 11.
 chdir   = 12.
 time    = 13.
-mkdir   = 14.
+/ mkdir   = 14.
 chmod   = 15.
 chown   = 16.
 break   = 17.

@@ -36,7 +36,7 @@ preread:
 dskrd:
        jsr     r0,bufaloc / shuffle off to bufalocg get a free I/0 buffer
        br      1f
-       bis     $2000,(rS) / set bit 10 of word 1 of I/O queue entry
+       bis     $2000,(r5) / set bit 10 of word 1 of I/O queue entry
                           / for buffer
        jsr     r0,poke / just assigned in bufalocg bit 10:1 says read
 1:
@@ -53,5 +53,3 @@ dskrd:
 wslot:
        jsr     r0,bufaloc / get a free I/0 buffer; pointer to first
                br 1f / word in buffer in r5
-       
-       

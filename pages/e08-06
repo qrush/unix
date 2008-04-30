@@ -1,5 +1,5 @@
        bic     $13000,r3 / clear all bits except 9 and 10
-       blc     $3000,(r1) / clear only bits 9 and 10
+       bic     $3000,(r1) / clear only bits 9 and 10
        rol     r3
        rol     r3
        rol     r3
@@ -52,5 +52,5 @@ bufaloc:
        tst    (r0)+ / skip if warmed over buffer
 1:
        mov    -(r2),r5 / put pointer to word 1 of I/O queue entry in r5
-       movb   cdev (rS) / put current device number in I/O queue entry
-       mov    r1,2(r5) / move block number 1nto word 2 of I/O queue
+       movb   cdev,(r5) / put current device number in I/O queue entry
+       mov    r1,2(r5) / move block number into word 2 of I/O queue

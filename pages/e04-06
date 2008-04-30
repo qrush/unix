@@ -1,4 +1,4 @@
-       jar     r0,swap / swap out process that needs to sleep
+       jsr     r0,swap / swap out process that needs to sleep
        mov     (sp)+,cdev / restore device
        jsr     r0,isintr / check for interrupt of new process
                br      2f / yes, return to new user
@@ -16,9 +16,9 @@
 
 isintr:
        mov     r1,-(sp) / put number of wait channel on the stack
-       mov     r2,—(sP) / save r2 .
+       mov     r2,—(sp) / save r2
        mov     u.ttyp,r1 / r1 = pointer to buffer of process control
-       	                 / typewriter
+                         / typewriter
        beq     1f / if 0, do nothing except skip return
        movb    6(r1),r1 / put interrupt char in the tty buffer in r1
        beg     1f / if its 0 do nothing except skip return

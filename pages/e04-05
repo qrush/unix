@@ -54,5 +54,3 @@ sleep: / wait for event
        movb   u.uno,wlist(r1) / put process number of process to put
                               / to sleep in there
        mov    cdev,-(sp) / nothing happened in isintr so
-       
-       

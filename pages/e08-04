@@ -10,7 +10,7 @@
        bis     $101000,(r5) / set bits 9, 15 in 1st word of I/O queue
                             / (write, inhibit bits)
        clr     *$ps / clear processor status
-       add     $8,rS / r5 points to first word in data area for this
+       add     $8,r5 / r5 points to first word in data area for this
        	             / block
        rts     r0
 
@@ -26,7 +26,7 @@ ppoke:
 poke:
        mov     r1,—(sp)
        mov     r2,—(sp)
-        mov    r3,-(sp)
+       mov     r3,-(sp)
        mov     $bufp+nbuf+nbuf+6,r2 / r2 points to highest priority I/O
                                     / queue pointer
 1:
@@ -47,7 +47,7 @@ poke:
        blt     prf / device id = 0; device is drum
        bgt     ptc / device id greater than or equal to 1; device is
        	           / dec tape
-       blt     $2,active / test disk busy bit
+       bit     $2,active / test disk busy bit
        bne     2f / branch if bit is set
        bis     $2,active / set disk busy bit
        mov     r1,rkap / rkap points to current I/O queue entry for disk

@@ -17,9 +17,9 @@ clock: / interrupt from 60 cycle clock
        inc     -(r0)
 1:
        mov     clockp,r0 / increment appropriate time category
-       inc     (rO)
+       inc     (r0)
        bne     1f
-       inc     -(rO)
+       inc     -(r0)
 1:
        mov     $uquant,r0 / decrement user time quantum
        decb    (r0)
@@ -36,7 +36,7 @@ clock: / interrupt from 60 cycle clock
        sys     0 / sysrele
        rti
 2: / priority is high so just decrement time out counts
-       mov     $toutt,r0 / rO points to beginning of time out table
+       mov     $toutt,r0 / r0 points to beginning of time out table
 2:
        tstb    (r0) / is the time out?
        beq     3f / yes, 3f (get next entry)
