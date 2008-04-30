@@ -1,0 +1,17 @@
+4:
+       jmp     retisp / u4—3
+
+trapt:                                   / r2 points to the
+       mov     (r0)+,r2 / device control register
+       mov     *(r0)+,r1 / transaction pointer points to buffer
+       tst     (sp)+ ‘
+       tstb    (r2) / is ready bit of dcs set?
+       bge     4b / device still active so branch
+       bit     (r0),act1ve / was device busy?
+       beq     4b / no, stray interrupt -
+       bio     (r0)+,active / yes, set active to zero
+       tst     (r2) / test the err(bit is) of dcs
+       bge     2f / if no error jump to 2f
+       tst     (r0)+ / skip on error
+ 2:
+       jmp     (r0)

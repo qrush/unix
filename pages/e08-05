@@ -1,0 +1,56 @@
+       mov     $rkda+2,r3 / A
+       mov     ac,-(sp) / put remainder from divide on stack; gives
+       	                / sector number
+       mov     $4,lsh / shift quotient 4 bits, to align with cyl and surf
+       	              / bits in rkda
+       bis     mq,(sp) / or mq with sector; gives total disk address
+       br      3f
+prf: / drum
+       bit     $1,active / test drum busy blt
+       bne     2f / branch if bit is set
+       bis     $1,act1ve / set drum busy bit
+       mov     r1,rfap / rfap points to current I/O queue entry for drum
+       mov     $dae+2,r3
+       clr     -(sp)
+       movb    2(r1),1(sp) / move low byte of physical block number into
+       	                   / high byte of stack
+       clr     -(sp) / word
+       movb    3(r1),(sp) / move high byte of physical block number into
+       	                  / low byte of stack
+       mov     (sp)+,-(r3) / load dae with high byt. of physical block
+       	                   / number
+3:
+       mov     (sp)+,-(r3) / load rkda register; load dar register
+       mov     6(r1),—(r3) / load bus address register
+       mov     4(r1),-(r3) / load word count register
+       mov     $103,-(sp) / 103 indicates write operation when loaded
+                          / in csr
+       Abit    $2000,(r1) / if bit 10 of word 1 of I/O queue entry is
+                          / a one
+       beq	3f / then read operation is indicated
+       mov 	$105,(sp) / 105 indicates read operation
+3:
+       mov	(sp)+,—(r3) / load csr with interrupt enabled, command, go
+       br 	seta
+ptc: / tape I/O
+       bit      $4,active
+       bne 	2f
+       mov 	tccm,r3
+       swab 	r3
+       bic 	$17,r3
+       add 	$2,r3
+       cmpb 	r3,(r1)
+       beq 	3f
+       movb 	$1,tccm / stop transport if not same unit
+3:
+       bis	$4,active
+       mov 	r1,tcap
+       mov 	$20.,tcerrc
+       mov 	sta e1,tcstate
+       movb 	(r1),r3 / device
+       sub 	$2,r3 / now unit
+       swab 	r3
+       bis 	$103,r3 / now rbn,for,un1t,1e
+       mov 	r3,tccm
+ seta: / I/O queue bookkeeping; set read/write waiting bits.
+       mov      (r1),r3 / move word 1 of I/O queue entry into r3

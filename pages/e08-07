@@ -1,0 +1,56 @@
+/ entry
+1:
+       cmp     r2,$bufp / bump all entrys ln bufp and put latest assigned
+       blos    1f / buffer on the top (this makes if the lowest priority)
+       mov     -(r2),2(r2) / job for a particular device
+       br      1b
+1:
+       mov     r5,(r2)
+       mov     (sp)+,r2 / restore r2
+       rts     r0
+
+tape: / dec tape interrupt
+       jsr     r0,setisp / save registers and clockp on stack
+       mov     tcstate,r3 / put state of dec tape in r3
+       jsr     r0,trapt; tccm; tcap; 4 / busy bit
+       mov     r3,pc / device control status register
+       / if no errors, go to device state (an address)
+
+taper: / dec tape error
+       dec     tcerrc / decrement the number of errors
+       bne     1f / if more than 1 branch ‘
+       movb    1(r2),r3 / r2+1 points to command register upper byte
+       bic     $17,r3 / clear all but bits 8-10 (Unit Selection)
+       lncb    deverr+2(r3) / set error bit for this tape unit
+       br      tape3
+1: / more than 1 error
+       bit     $4000,(r2) / direction of tape
+       beq     1f / if forward go to 1f
+       bic     $4000,(r2) / reverse, set to forward
+       mov     $tape1,tcstate / put tape 1 in the state
+       br      0f
+1: / put tape in reverse
+       bis     $4000,(r2) / set tape to reverse direction
+       mov     $tape2,tcstate / put tape 2 as the state
+0:
+       bis     $4,act1ve / check active bit of tape
+       movb    $103,(r2) / set read function and interrupt enable
+       br      4f / go to retisp
+tape1: / read bn forward
+       mov     $tcdt,r0 / move address of data register to r0
+       cmp     (r0),2(r1) / compare block addresses
+       blt     0b / if lt, keep moving
+       bgt     taper / if gt, reverse
+       mov     6(r1),—(r0) / put bus address in tcba
+       mov     4(r1),-(r0) / put word count in tcwc
+       mov     $115,—(sp) / put end interrupt enable" »
+       bit     $20000,(r1) / is waiting to read bit of I/O queue set?
+       beq     1f / no 1f
+       mov     $105,(sp) / yes, put and lnterrupt enable
+1:
+       movb    (sp)+,(r2) / move function into command register (tccm)
+       bis     $4,actlve / set active bit ·
+       mov     $tape3,tcstate / get ready for I/O transfer
+       br      4f / go to retisp (rtl)
+
+tape2: / read bn bakasswards

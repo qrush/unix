@@ -1,0 +1,56 @@
+       bic     $13000,r3 / clear all bits except 9 and 10
+       blc     $3000,(r1) / clear only bits 9 and 10
+       rol     r3
+       rol     r3
+       rol     r3
+       bis     r3,(r1) / or old value of bits 9 and 10 with bits 12
+       	               / and 13
+2:
+       cmp     r2,$bufp / test to see if entire-I/O queue has been
+              / scanned
+       bhi    1b
+       mov    (sp)+,r3
+       mov    (sp)+,r2
+       mov    (sp)+,r1
+       rts    r0
+
+bufaloc:
+       mov    r2,-(sp) / save r2 on stack
+       mov    $340,*$ps / set processor priority to 7
+1:
+       clr    -(sp) / vacant buffer
+       mov    $bufp,r2 / bufp contains pointers to I/O queue entrys
+                       / in buffer area
+2:
+       mov    (r2)+,r5 / move pointer to word 1 of an I/O queue entry
+                       / into r5
+       bit    $173000,(r5) / lock+keep+active+outstand1ng
+       bne    3f / branch when any of bits 9,10,12,13,14,15 are set
+       	         / (i.e., buffer busy)
+       mov    r2,(sp) / save pointer to last non-busy buffer_found
+       	              / points to word 2_of I/O queue entry)
+3:
+       cmpb   (r5),cdev / is device in I/O queue entry same as current
+                        / device
+       bne    3f
+       cmp    2(r5),r1 / is block number in I/O queue entry, same as
+       	               / current block number
+       bne    3f
+       tst    (sp)+ / bump stack pointer
+       br     1f / use this buffer
+3:
+       cmp    r2,$bufp+nbuf+nbuf
+       blo    2b / go to 2b if r2 less than bufp+nbuf+nbuf (all
+                 / buffers not checked)
+       mov    (sp)+,r2 / once all bufs are examined move pointer to
+       	               / last free block
+       bne    2f / if (sp) is non zero, i.e., if a free buffer is
+       	         / found branch to 2f
+       jsr    r0,idle; s.wait+2 / idle if no free buffers
+       br     1b
+2:
+       tst    (r0)+ / skip if warmed over buffer
+1:
+       mov    -(r2),r5 / put pointer to word 1 of I/O queue entry in r5
+       movb   cdev (rS) / put current device number in I/O queue entry
+       mov    r1,2(r5) / move block number 1nto word 2 of I/O queue

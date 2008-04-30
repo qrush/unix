@@ -1,0 +1,56 @@
+       cmp     r1,(r0)+ / block # greater than or equal to maximum
+       	                / block number allowed
+       bhis    error1O / yes, error
+       inc     *u.fofp / no, *u.fofp has next block number
+       jsr     r0,preread / read in the block whose number is in r1
+       bis     $4000O,(r5) / set bit 14 of the 1st word of the I/O
+       	                   / buffer
+1:
+       bit     $22000,(r5) / are 10th and 13th bits set (read bits)
+       beq     1f / no
+       cmp     cdev,$1 / disk or drum?
+       ble     2f / yes ·
+       tstb    uquant / is the time quan+um = 0?
+       bne     2f / no, 2f
+       mov     r5,-(sp) / yes, save r5 (buffer address)
+       jsr     r0,sleep; 31. / put process to sleep in channel 31 (tape)
+       mov     (sp)+,r5 / restore r5
+       br      1b / go back
+2: / drum or disk
+       jsr     r0,idle; s.wa1t+2 / wait
+       br      1b
+1: / 10th and 13th bits not set
+       bic     $40000,(r5) / clear bit 14
+       jsr     r0,tstdeve / test device for error (tape)
+       add     $8,r5 / r5 points to data in I/O buffer
+       jsr     r0,dioreg / do bookkeeping on u.count etc.
+1: / r5 points to beginning of data in I/O buffer, r2 points to beginning
+   / of users data
+       movb    (r5)+,(r2)+ / move data from the I/O buffer
+       dec     r3 / to the user's area in core starting at u.base
+       tst     u.count / done
+       beq     1f / yes, return .
+       tst     -(r0) / no, point r0 to the argument again
+       br      bread / read some more
+1:
+       mov     (sp)+,r0 / jump to routine that called readi
+       jmp     ret
+
+bwrite: / write on block structured device »
+       jsr     r0,tstdeve / test the device for an error
+       mov     *u.fofp,r1 / put the block number in r1
+       cmp     r1,(r0)+ / does block number exceed maximum allowable #
+       bhis    error1O / yes, error
+       inc     *u.fofp / no, increment block number
+       jsr     r0,wslot / get an I/O buffer to write into
+       jsr     r0,dioreg / do the necessary bookkeeping
+1: / r2 points to the users data; r5-points to the I/O buffers data area
+       movb    (r2)+,(r5)+ / ; r3, has the byte count
+       dcc     r3 / area to the I/O buffer
+       bne     1b
+       jsr     r0,dskwr / write it out on the device
+       tst     u.count / done
+       beq     1f / yes, 1f
+       tst     -(r0) / no, point r0 to the argument of the call
+       br      bwrite / go back and write next block
+1:

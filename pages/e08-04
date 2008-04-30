@@ -1,0 +1,55 @@
+1:
+       bit     $22000,(r5) / check bits 10, 13 (read, waiting to read)
+       	                   / of I/O queue entry
+       beq     1f / branch 1f 10, 13 zero (i.e., not reading, or waiting
+       	          / to read)
+       jsr     r0,idle; s.wait+2 / if buffer is reading or writing to read,
+       	                         / idle
+       br      1b / till finished
+1:
+       bis     $101000,(r5) / set bits 9, 15 in 1st word of I/O queue
+                            / (write, inhibit bits)
+       clr     *$ps / clear processor status
+       add     $8,rS / r5 points to first word in data area for this
+       	             / block
+       rts     r0
+
+dskwr:
+       bic     $100000,*bufp / clear bit 15 of I/O queue entry at
+                             / bottom of queue
+
+ppoke:
+       mov     $340,*$ps
+       jsr     r0,poke
+       clr     *$ps
+       rts     r0
+poke:
+       mov     r1,—(sp)
+       mov     r2,—(sp)
+        mov    r3,-(sp)
+       mov     $bufp+nbuf+nbuf+6,r2 / r2 points to highest priority I/O
+                                    / queue pointer
+1:
+       mov     -(r2),r1 / r1 points to an I/O queue entry
+       bit     $3000,(r1) / test bits 9 and 10 of word 1 of I/O queue
+                          / entry
+       beq     2f / branch to 2f if both are clear
+       bit     $130000,(r1) / test bits 12, 13, and 15
+       bne     2f / branch if any are set
+       movb    (r1),r3 / get device 1d
+       tstb    deverr(r3) / test for errors on this device
+       beg     3f / branch if no errors
+       mov     $-1,2(r1) / destroy associativity
+       clrb    1(r1) / do not do I/O
+       br      2f
+3:
+       cmpb    r3,$1 / device id = 1; device is disk
+       blt     prf / device id = 0; device is drum
+       bgt     ptc / device id greater than or equal to 1; device is
+       	           / dec tape
+       blt     $2,active / test disk busy bit
+       bne     2f / branch if bit is set
+       bis     $2,active / set disk busy bit
+       mov     r1,rkap / rkap points to current I/O queue entry for disk
+       mov     2(r1),mq / put physical block number in mq
+       mov     $12.,div / divide physical block number by 12.

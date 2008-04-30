@@ -1,0 +1,56 @@
+       mov     tcdt,rO / rO has contents of data register
+       add     $3,rO / overshoot
+       cmp     r0,2(r1)
+       bgt     0b / if gt keep reading
+       br      taper / else reverse
+
+tape3: / I/O transfer ·
+       bic     $30000,(r1) / clear bits 12 and 13 of I/0 queue entry
+       jsr     r0,poke / do the I/O
+       bit     $4,act1ve / still k sy see if pick up r-ahead, w-behind
+       bne     1f / yes I
+       movb    $1,(r2) / no, indicate too bad
+1:
+       jsr     rO,wakeup; runq; 31. / wait up
+       br      4f / retisp
+
+drum: / interrupt handler
+       jsr     r0,setisp / save r1,r2,r3, and clockp on the stack
+       jsr     r0,trapt; dcs; rfap; 1 / check for stray interrupt or
+                                      / error
+               br 3f / no, error
+       br      2f / error
+
+disk:
+       jsr     r0,setisp / save r1,r2,r3, and clockp on the stack
+       jmp     *$0f
+0:
+       jsr     r0,trapt; rkcs; rkap; 2
+       	       br 3f / no, errors
+       mov     $115,(r2) / drive reset, errbit was set
+       mov     $1f,0b-2 / next time jmp *$0f is executed jmp will be
+               / to 1f
+       br      4f
+1:
+       blt     $20000,rkcs
+       beq     4f / wait for seek complete
+       mov     $0b,0b-2
+       mov     rkap,r1
+2:
+       bit     $3000,(r1) / are bits 9 or 10 set in the 1st word of
+                          / the disk buffer
+       bne     3f / no, branch ignore error if outstanding
+       inc     r1
+       asr     (r1)
+       asr     (r1)
+       asr     (r1) / reissue request
+       dec     r1
+3:
+       bic     $3000O,(r1) / clear bits 12 and 13 in 1st word of buffer
+       mov     ac,-(sp)
+       mov     mq,—(sp) / put these on the stack
+       mov     sc,—(sp)
+       jsr     r0,poke
+       mov     (sp)+,sc
+       mov     (sp)+,mq / pop them off stack
+       mov     (sp)+,ac
