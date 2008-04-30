@@ -1,0 +1,56 @@
+	bne	3f / no
+	asr	r2 / yes, it is a parent
+	cmpb	p.stat-1(r2),$3 / is the child of this dying process a
+		                / zombie
+	bne	2f / no
+	clrb	p.stat-1(r2) / yes, free the child process
+2:
+	asl	r2
+3: / search the process name table for the dying process's parent
+	cmp	p.pid-2(r2),r4 / found it?
+	bne	3f / no
+	mov	r2,r5 / yes, put index to p.pid table (parents
+		      / process # x2) in r5
+3:
+	cmp	r2,$nproc+nproc / has whole table been searched?
+	blt	1b / no, go back
+	mov	r5,r1 / yes, r1 now has parents process # x2
+	beq	2f / no parent has been found. The process just dies
+	asr	r1 / set up index to p.stat
+	movb	p.stat-1(r1),r2 / move status of parent to r2
+	beq	2f / if its been freed, 2f
+	cmp	r2,$3 / is parent a zombie?
+	beq	2f / yes, 2f
+	movb	u.uno,r3 / move dying process's number to r3
+	movb	$3,p.stat-1(r3) / make the process a zombie
+	cmp	r2,$2 / is the parent waiting for this child to die
+	bne	2f / yes, notify parent not to wait any more
+	decb	p.stat-1(r1) / awaken it by putting it (parent)
+	mov	$runq+4,r2 / on the runq
+	jsr	r0, putlu
+2: / the process dies
+	clrb	u.uno / put zero as the process number, so "swap" will
+	jsr	r0,swap / overwrite process with another process
+	0	/ and thereby kill it; halt?
+
+intract: / interrupt action
+	cmp	*(sp),$rti / are you in a clock interrupt?
+	bne	1f / no, 1f
+	cmp	(sp)+,(sp)+ / pop clock pointer
+1: / now in user area
+	mov	r1,-(sp) / save r1
+	mov	u.ttyp,r1 / pointer to tty buffer in control to r1
+	cmpb	6(r1),$177 / is the interrupt char equal to "del"
+	beq	1f / yes, 1f
+	clrb	6(r1) / no, clear the byte (must be a quit character)
+	mov	(sp)+,r1 / restore r1
+	clr	u.quit / clear quit flag
+	bis	$20,2(sp) / set trace for quit (sets t bit of ps-trace trap)
+	rti	          / return from interrupt
+1: / interrupt char = del
+	clrb	6(r1) / clear the interrupt byte in the buffer
+	mov	(sp)+,r1 / restore r1
+	cmp	u.intr,$core / should control be transferred to loc core?
+	blo	1f
+	jmp	*u.intr / user to do rti yes, transfer to loc core
+1:

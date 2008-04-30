@@ -1,0 +1,56 @@
+	sys	1 / exit
+
+syswait: / wait for a process to die
+	movb	u.uno,r1 / put parents process number in r1
+	asl	r1 / x2 to get index into p.pid table
+	mov	p.pid-2(r1),r1 / get the name of this process
+	clr	r2
+	clr	r3 / initialize reg 3
+1:
+	add	$2,r2 / use r2 for index into p.ppid table / search table
+		      / of parent processes for this process name
+	cmp	p.ppid-2(r2),r1 / r2 will contain the childs process number
+	bne	3f / branch if no match of parent process name
+	inc	r3 / yes, a match, r3 indicates number of children
+	asr	r2 / r2/2 to get index to p.stat table
+	cmpb	p.stat-1(r2),$3 / is the child process a zombie?
+	bne	2f / no, skip it
+	clrb	p.stat-1(r2) / yes, free it
+	asl	r2 / r2x2 to get index into p.pid table
+	mov	p.pid-2(r2),*u.r0 / put childs process name in (u.r0)
+	br	sysret1 / return cause child is dead
+2:
+	asl	r2 / r2x2 to get index into p.ppid table
+3:
+	cmp	r2,$nproc+nproc / have all processes been checked?
+	blt	1b / no, continue search
+	tst	r3 / one gets here if there are no children or children
+		   / that are still active
+	beq	error1 / there are no children, error
+	movb	u.uno,r1 / there are children so put parent process number
+		         / in r1
+	incb	p.stat-1(r1) / it is waiting for other children to die
+	jsr	r0,swap / swap it out, because it's waiting
+	br	syswait / wait on next process
+
+error1:
+	jmp	error / see 'error' routine
+sysret1:
+	jmp	sysret / see 'sysret' routine
+
+sysfork: / create a new process
+	clr	r1
+1: / search p.stat table for unused process number
+	inc	r1
+	tstb	p.stat-1(r1) / is process active, unused, dead
+	beq	1f / it's unused so branch
+	cmp	r1,$nproc / all processes checked
+	blt	1b / no, branch back
+	add	$2,18.(sp) / add 2 to pc when trap occured, points
+		           / to old process return
+	br	error1 / no room for a new process
+1:
+	movb	u.uno,-(sp) / save parent process number
+	movb	r1,u.uno / set child process number to r1
+	incb	p.stat-1(r1) / set p.stat entry for child process to
+		             / active status

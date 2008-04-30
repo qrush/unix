@@ -1,0 +1,56 @@
+	mov	u.ttyp,r2 / put pointer to parent process' control tty
+		          / buffer in r2
+	beq	2f / branch, if no such tty assigned
+	clrb	6(r2) / clear interrupt character in tty buffer
+2:
+	mov	$runq+4,r2
+	jsr	r0,putlu / put child process on lowest priority run queue
+	asl	r1 / multiply r1 by 2 to get index into p.pid table
+	inc	mpid / increment m.pid; get a new process name
+	mov	mpid,p.pid-2(r1) / put new process name in child process'
+		                 / name slot
+	movb	(sp),r2 / put parent process number in r2
+	asl	r2 / multiply by 2 to get index into below tables
+	mov	p.pid-2(r2),r2 / get process name of parent process
+	mov	r2,p.ppid-2(r1) / put parent process name in parent
+		                / process slot for child
+	mov	r2,*u.r0 / put parent process name on stack at location
+		         / where r0 was saved
+	mov	$sysret1,-(sp) /
+	mov	sp,u.usp / contents of sp at the time when user is
+		         / swapped out
+	mov	$sstack,sp / point sp to swapping stack space
+	jsr	r0,wswap / put child process out on drum
+	jsr	r0,unpack / unpack user stack
+	mov	u.usp,sp / restore user stack pointer
+	tst	(sp)+ / bump stack pointer
+	movb	(sp)+,u.uno / put parent process number in u.uno
+	mov	mpid,*u.r0 / put child process name on stack where r0
+		           / was saved
+	add	$2,18.(sp) / add 2 to pc on stack; gives parent
+		           / process return
+	clr	r1
+1: / search u.fp list to find the files opened by the parent process
+	movb	u.fp(r1),r2 / get an open file for this process
+	beq	2f / file has not been opened by parent, so branch
+	asl	r2 / multiply by 8
+	asl	r2 / to get index into fsp table
+	asl	r2
+	incb	fsp-2(r2) / increment number of processes using file,
+		          / because child will now be using this file
+2:
+	inc	r1 / get next open file
+	cmp	r1,$10. / 10. files is the maximum number which can be
+		        / opened
+	blt	1b / check next entry
+	br	sysret1
+
+sysread:
+	jsr	r0,rw1 / get i-number of file to be read into r1
+	tst	r1 / negative i—number?
+	ble	error1 / yes, error 1 to read it should be positive
+	jsr	r0,readi / read data into core
+	br	1f
+
+syswrite:
+	jsr	r0,rw1 / get i-number in r1 of file to write
