@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# assemble the sources
+#
+
+# settings
+APOUT=/tmp/apout2.3alpha2/apout
+APOUT_ROOT=/tmp/s2
+
+export APOUT_ROOT
+
+tools/rebuild
+
+# fix "mount" issue which 1ed as cant deal with
+test -d build || mkdir build
+for f in rebuilt/u?.s ; do
+    b=`basename $f`
+    sed 's/mount/xmount/g' < $f > build/$b
+done
+
+cd build
+$APOUT $APOUT_ROOT/bin/as - u?.s
+
