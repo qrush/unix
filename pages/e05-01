@@ -1,4 +1,5 @@
 / u5 - unix
+
 mget:
 	mov	*u.fofp,mq / file offset in mq
 	clr	ac / later to be high sig
@@ -9,7 +10,7 @@ mget:
 	bit	$!17,r2
 	bne	3f / branch if/r2 greater than or equal to 16
 	bic	$!16,r2 / clear all bits but bits 1,2,3
-	mov	1.dskp(r2),r1 / r1 has physical block number
+	mov	i.dskp(r2),r1 / r1 has physical block number
 	bne	2f / lf physical block num is zero then need a new block
 		   / for file
 	jsr	r0,alloc / allocate a new block

@@ -17,7 +17,7 @@ swap:
        br      swap
 1:
        tst     -(r2) / restore pointer to right Q entry
-       mov     r2,u.pr1 / set present user to this run queue
+       mov     r2,u.pri / set present user to this run queue
        movb    (r2)+,r1 / move 1st process in queue to r1
        cmpb    r1,(r2)+ / is there only 1 process in this Q to be run
        beq     1f / yes

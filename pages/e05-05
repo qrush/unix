@@ -25,6 +25,7 @@
 2:
 	mov	ii,r1
 	rts	r0
+
 icalc: / i-node i is located in block (i+31.)/16. and begins 32.*
        / (i+31)mod16 bytes from its start
 	add	$31.,r1 / add 31. to i-number
@@ -43,10 +44,10 @@ icalc: / i-node i is located in block (i+31.)/16. and begins 32.*
 	bic	$!17,(sp) / zero all but last 4 bits; gives (i+31.) mod 16
 	mov	(sp)+,mq / calculate offset in data buffer; 32.*(i+31.)mod16
 	mov	$5,lsh / for i-node i.
-	add	mq,r5 / r5 points to flrst word in i-node i.
+	add	mq,r5 / r5 points to first word in i-node i.
 	mov	$inode,r1 / inode is address of first word of current i-node
 	mov	$16.,r3
-	tst	(r0)+ / branch to 2f when argument in icalc call = 0
+	tst	(r0)+ / branch to 2 fwhen argument in icalc call = 0
 	beq	2f / r0 now contains proper return address for rts r0
 1:
 	mov	(r1)+,(r5)+ / over write old i-node

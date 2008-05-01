@@ -12,11 +12,13 @@
 	jmp	error
 1:
 	rts	r0
+
 setimod:
 	movb	$1,imod / set current i-node modified bytes
 	mov	s.time,i.mtim / put present tlme into file modified time
 	mov	s.time+2,i.mtim+2
 	rts	r0
+
 imap: / get the byte that has the allocation bit for the i-number contained
       / in r1
 	mov	$1,mq / put 1 in the mq
@@ -43,6 +45,7 @@ imap: / get the byte that has the allocation bit for the i-number contained
 	add	(sp)+,r2 / ?
 	add	$2,r2 / ?
 	rts	r0
+
 iget:
 	cmp	r1, ii / r1 = i-number of current flle
 	bne	1f

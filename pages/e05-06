@@ -4,6 +4,7 @@
 	dec	r3
 	bgt	2b
 	rts	r0
+
 itrunc:
 	jsr	r0,iget
 	mov	$i.dskp,r2 / address of block pointers in r2

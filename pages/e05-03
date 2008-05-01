@@ -2,6 +2,7 @@
 	jsr	r0,3f / have found a free block
 	bic	r3,(r2) / set bit for this block i.e. assign block
 	br	2f
+
 free:
 	mov	r2,-(sp) / save r2, r3
 	mov	r3,-(sp)
@@ -47,6 +48,7 @@ free:
 	rts	r0 / return to 'free'
 2:
 	.byte	1,2,4,10,20,40,100,200 / masks for bits 0,...,7
+
 access:
 	jsr	r0,iget / read in i-node for current directory (i-number
 			/ passed in r1)

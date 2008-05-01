@@ -1,5 +1,5 @@
 pptito: / paper tape input touts subrouting
-       cmpb    pptif1g,$2 / does "pptiflg" indicate file just opened
+       cmpb    pptiflg,$2 / does "pptiflg" indicate file just opened
        bne     1f / no, do nothing pyf
        movb    $10.,toutt+1 / yes, place 10 in tout entry for tty input
        tstb    *$prs+1 / is error bit set
@@ -11,13 +11,13 @@ pptito: / paper tape input touts subrouting
 starppt: / start ppt output
        cmpb    cc+3,$10. / is character count for ppt output greater
                          / than 10.
-       bhl     1f / yes, branch
+       bhi     1f / yes, branch
        jsr     r0,wakeup; runq+2; 3 / no, wakeup process in wlist
                                     / entry for ppt input
 1:
        tstb    *$pps / is ready bit set in punch status word
        bge     1f / no, branch
-       jsr     r0,qetc; 3 / yes, get next char in clist for pptout and
+       jsr     r0,getc; 3 / yes, get next char in clist for pptout and
        	                  / place in r1
        br      1f / if none, branch
        mov     r1,*$ppb / place character in ppt buffer
@@ -32,7 +32,7 @@ wakeup: / wakeup processes waiting for an event by linking them to the
        movb    wlist(r3),r1 / r1 contains process number in that wait
                             / channel that was sleeping
        beq     2f / if O return, nothing to wakeup
-       cmp     r2,u.pr1 / is rung greater than or equal to users process
+       cmp     r2,u.pri / is rung greater than or equal to users process
        	                / priority
        bhis    1f / yes, don't set time quantum to zero
        clrb    uquant / time quantum = O

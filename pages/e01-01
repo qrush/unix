@@ -5,7 +5,7 @@ sysent:
 	beq	1f / in progress
 	jmp	panic / called if trap inside system
 1:
-	mov	$s.syst+2,c1ockp
+	mov	$s.syst+2,clockp
 	mov	r0,-(sp) / save user registers
 	mov	sp,u.r0 / pointer to bottom of users stack in u.r0
 	mov	r1,-(sp)

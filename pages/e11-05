@@ -45,7 +45,7 @@ delim:
 1:
 	rts	r5
 blank:
-	jsr	pc,qetc / get next character
+	jsr	pc,getc / get next character
 	cmp	$' ,r0 / leadino blanks
 	beq	blank / yes, ’squeeze out'
 	cmp	r0,$200+'\n / new—line preceded by \ is translated

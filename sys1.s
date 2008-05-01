@@ -35,3 +35,13 @@ stty    = 31.
 gtty    = 32.
 ilgins  = 33.
 
+/ KE11A memory map
+div = 0177300
+ac  = 0177302
+mq  = 0177304
+mul = 0177306
+sc  = 0177310
+sr  = 0177311
+nor = 0177312
+lsh = 0177314
+ash = 0177316

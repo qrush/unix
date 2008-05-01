@@ -1,4 +1,4 @@
-rtssyms:
+rtssym:
 	mov    r0,-(sp)
 	mov    r1,-(sp)
 	mov    4(sp),r0

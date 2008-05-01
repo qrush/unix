@@ -31,7 +31,7 @@ ttyi: / console tty input interrupt routine
        beq     2f / yes 2f
        cmp     r1,$177 / char = "del" ?
        beq     2f / yes, 2f
-       jsr     r0,putc; O / put char in r1 on clist entry
+       jsr     r0,putc; 0 / put char in r1 on clist entry
                br 1f
        movb    r1,ttyoch / put char in ttyoch
        jsr     r0,startty / load char in tty output data buffer
@@ -39,7 +39,7 @@ ttyi: / console tty input interrupt routine
        beq     1f / yes, 1f
        cmp     r1,$12 / r1 = "lf"
        beq     1f / yes 1f
-       cmpb    cc+O,$15. / are there less than 15 chars on the input list
+       cmpb    cc+0,$15. / are there less than 15 chars on the input list
        blo     retisp / yes, return
 1:
        jsr     r0,wakeup; runq; 0 / no, wakeup the input process

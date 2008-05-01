@@ -4,7 +4,7 @@
        cmp     r2,u.usp / is break_above the "stack pointer before
                         / swapping"
        bhis    2f / yes, return
-       mov     secore,r3 / r3 points to end of core
+       mov     $ecore,r3 / r3 points to end of core
        add     r3,r2
        sub     u.usp,r2 / end of users stack is in r2
 1:
@@ -16,7 +16,7 @@
 
 putlu: / r1 = user process no.; r2 points to lowest priority queue
        tstb    (r2)+ / is queue empty?
-       beg     1f / yes, branch
+       beq     1f / yes, branch
        movb    (r2),r3 / no, save the last user processnumber in_r3
        movb    r1,p.link-1(r3) / put pointer to user on last users- link
        br      2f /
@@ -53,7 +53,7 @@ idle:
        rts	r0
 
 clear:
-       jsr       r0,ws1ot / get an I/O buffer set bits 9 and 15 in first
+       jsr       r0,wslot / get an I/O buffer set bits 9 and 15 in first
                           / word of I/O queue r5 points to first data word
        
        

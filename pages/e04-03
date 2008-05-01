@@ -17,7 +17,7 @@ retisp:
        mov     (sp)+,r2
        mov     (sp)+,r1
        mov     (sp)+,r0
-       rtl     / return from interrupt
+       rti     / return from interrupt
 
 ppti: / paper tape lnput interrupt routine M
        jsr     r0,setisp / save registers
@@ -44,7 +44,7 @@ ppti: / paper tape lnput interrupt routine M
        mov     *$prb,r1 / place contents ppt read buffer in r1
        jsr     r0,putc; 2 / place character in clist area for ppt input
        br      .+2 / temp / if no space ln clist character lost
-       cmpb    cc+2,$S0. / character count in clist area for ppt lnput
+       cmpb    cc+2,$50. / character count in clist area for ppt lnput
                          / greater than or equal to 50
        bhis    retisp / yes
        inc     *$prs / no, set reader enable bit in prs

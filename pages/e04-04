@@ -1,8 +1,8 @@
-/      jsr     r0,set1sp
-/      jsr     r0,star1pt
+/      jsr     r0,setisp
+/      jsr     r0,starlpt
 /      br      retisp
 ppto: / paper tape output in errupt routine
-       jsr r0,set1sp / save registers
+       jsr r0,setisp / save registers
        jsr r0,starppt / get next character from clist, and output
        / if possible .
        br retisp / pop register values from stack
@@ -29,7 +29,7 @@ startty: / start or restart console tty output
 1:
        tstb    *$tps / test console output ready bit
        bge     2f / branch if ready bit is clear
-       tstb    toutt+O / is toutt for console a zero
+       tstb    toutt+0 / is toutt for console a zero
        bne     2f / if not; branch to 2f
        movb    ttyoch,r1 / put character to be output in r1
        bne     1f

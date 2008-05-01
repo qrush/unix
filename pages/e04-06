@@ -4,7 +4,7 @@
                br      2f / yes, return to new user
        movb    (sp)+,r1 / no, r1 = old process number that was originally
                         / on the wait channel
-       beg     1f / if 0 branch
+       beq     1f / if 0 branch
        mov     $runq+4,r2 / r2 points to lowest priority queue
        mov     $300,*$ps / processor priority = 6
        jsr     r0,putlu / create llnk to old process number
@@ -21,7 +21,7 @@ isintr:
                          / typewriter
        beq     1f / if 0, do nothing except skip return
        movb    6(r1),r1 / put interrupt char in the tty buffer in r1
-       beg     1f / if its 0 do nothing except skip return
+       beq     1f / if its 0 do nothing except skip return
        cmp     r1,$177 / is interrupt char e delete?
        bne     3f / no, so lt must be a quit (fs)
        tst     u.intr / yes, value of u.intr determines handling

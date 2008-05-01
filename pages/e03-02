@@ -22,7 +22,7 @@ wswap:
        sub     $user,r2 / get number of bytes to write out (user up
                         / to end of stack gets written out) ~
        neg     r2 / make it negative V
-       asr     r2 / ciange bytes to words (divide by 2)
+       asr     r2 / change bytes to words (divide by 2)
        mov     r2,swp+4 / word count
        movb    u.uno,r1 / move user process number to r1
        asl     r1 / x2 for index
@@ -42,13 +42,13 @@ wswap:
 rswap:
        asl     r1 / process number x2 for index
        mov     p.break-2(r1), swp+4 / word count
-       mov     p.dska2(r1),swp+2 / disk address
+       mov     p.dska-2(r1),swp+2 / disk address
        bis     $2000,swp / read
        jsr     r0,ppoke / read it in 
 1:
        tstb    swp+1 / done l
        bne     1b / no, wait for bit 15 to clear (inhibit blt)
-       mov     u.emt,*$3O / yes move these
+       mov     u.emt,*$30 / yes move these
        mov     u.ilgins,*$10 / back
        rts     r0 / return
 
