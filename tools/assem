@@ -12,10 +12,14 @@ export APOUT_ROOT
 tools/rebuild
 
 # fix "mount" issue which 1ed as cant deal with
+# and also fix up the vector table in u0.s since
+# the result is a slightly different format a.out that doesnt
+# include the header in the text segment
 test -d build || mkdir build
 for f in rebuilt/u?.s ; do
     b=`basename $f`
-    sed 's/mount/xmount/g' < $f > build/$b
+    sed -e 's/mount/xmount/g' \
+	-e 's/.*init by copy.*/4;4;unkni;0;fpsym;0/' < $f > build/$b
 done
 
 cd build
