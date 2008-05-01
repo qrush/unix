@@ -19,7 +19,7 @@ e00-01 to e00-10 (10) - u0 -
 e01-01 to e01-10 (10) - u1 - 
    assigned: Hellwig Geisse
    reviewed:
-      (reviewed e01-01 to e01-03 - tim newsham)
+      (reviewed e01-01 to e01-06 - tim newsham)
 e02-01 to e02-10 (10) - u2 -
    assigned: Brantley Coile, complete
    reviewed: tim newsham
@@ -86,6 +86,12 @@ e00-06
 
 e00-10
     - left "/ect/init" typo
+
+------
+e01-06
+    - "r2, p pid-2(r1)" has written correction "p.ppid".  Using written
+       correction.
+    - "mov $sysret1,(sp)" has written correction for "-(sp)".  Using
 
 --------------------
 e02-05
