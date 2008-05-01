@@ -6,9 +6,10 @@
 		         / 'readi' by:
 ret: / (1) pop the return address off the stack into r0
 	mov	(sp)+,r1 / (2) pup the i-number off the stack into r1
-1 : .
+1:
 	clr	*$ps / clear processor status
 	rts	r0 / return to address currently on top of stack
+
 writei:
 	clr	u.nread / clear the number of bytes transmitted during
 		        / read or write calls

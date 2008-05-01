@@ -1,8 +1,10 @@
 	dec	2(r5) / decrement the character count
 	jsr	r0,passc / move the character to core (user)
 	br	1b / get next character
+
 ret1:
 	jmp	ret / return to caller via 'ret'
+
 rppt: / read paper tape
 	jsr	r0,pptic / gets next character in clist for ppt input and
 			 / places
@@ -47,6 +49,7 @@ dskr:
 	tst	u.count / all bytes read off disk
 	bne	dskr
 	br	ret
+
 passc:
 	movb	r1,*u.base / move a character to the next byte of the
 		           / users buffer

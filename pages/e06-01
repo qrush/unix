@@ -1,5 +1,6 @@
 / u6 -- unix
-read:
+
+readi:
 	clr	u.nread / accumulates number of bytes transmitted
 	tst	u.count / is number of bytes to be read greater than 0
 	bgt	1f / yes, branch
@@ -37,6 +38,7 @@ read:
 	rcvt / tty6
 	rcvt / tty7
 	rcrd/ crd
+
 rtty: / read from console tty
 	mov	tty+[8*ntty]-8+6,r5 / r5 is the address of the 4th word of
 				    / of the control and status block _

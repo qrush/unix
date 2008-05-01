@@ -41,14 +41,15 @@ wmem: / transfer characters from a user area of core to memory file
 	br	wmem / continue
 1:
 	jmp	error / ?
+
 dskw: / write routine for non-special files
 	mov	(sp),r1 / get an i-node number from the stack into r1
 	jsr	r0,iget / write i-node out (if modified), read i-node 'r1'
 		        / into i-node area of core
-	 mov	 *u.fofp,r2 / put the file offset [(u.off) or the offset in
+	mov	 *u.fofp,r2 / put the file offset [(u.off) or the offset in
 		            / the fsp entry for this file] in r2
-	 add	 u.count,r2 / no. of bytes to be written + file offset is
+	add	 u.count,r2 / no. of bytes to be written + file offset is
 		            / put in r2
-	 cmp	 r2,i.size / is this greater than the present size of
+	cmp	 r2,i.size / is this greater than the present size of
 		           / the file?
-	 blos	 1f / no, branch
+	blos	 1f / no, branch
