@@ -12,11 +12,11 @@
 	cmp    r1,$34. / first drum address not in i list
 	bgt    1b / if block 34 has been freed, zero i list
 
-/ zero 1 list
+/ zero i list
 
 1:
 	dec    r0 / r0=33.,...,1
-	jsr    r0,c1ear / zero block 'r1' on fixed head disk
+	jsr    r0,clear / zero block 'r1' on fixed head disk
 	tst    r1
 	bgt    1b / if blocks 33,...,1 have all been zeroed, done.
 	.endif

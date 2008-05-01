@@ -1,4 +1,4 @@
-       bic     $13000,r3 / clear all bits except 9 and 10
+       bic     $!3000,r3 / clear all bits except 9 and 10
        bic     $3000,(r1) / clear only bits 9 and 10
        rol     r3
        rol     r3
