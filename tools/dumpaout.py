@@ -29,11 +29,10 @@ def dump(fn, addr) :
 
 	vals = unpack("<%dH" % (a.txt/2), a.txtd)
 
-	if v7 :
-		# it appears the a.out header isnt used for the kernel.
-		# dropping the first 16 bytes causes the tables in u0.s to
-		# line up with the addresses they were assigned...
-		vals = vals[8:]
+	# it appears the a.out header isnt used for the kernel.
+	# dropping the first 16 bytes causes the tables in u0.s to
+	# line up with the addresses they were assigned...
+	vals = vals[8:]
 
 	for n,v in enumerate(vals) :
 		print 'dep cpu %o %06o' % (addr+n*2, v)
