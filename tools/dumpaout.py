@@ -3,6 +3,8 @@
 import sys
 from struct import pack, unpack
 
+v7 = 0
+
 class AOut(object) :
 	def __init__(self, bin) :
 		self.mag, self.txt, self.sym, self.rel, self.dat, self.z = \
@@ -27,10 +29,12 @@ def dump(fn, addr) :
 
 	vals = unpack("<%dH" % (a.txt/2), a.txtd)
 
-	# it appears the a.out header isnt used for the kernel.
-	# dropping the first 16 bytes causes the tables in u0.s to
-	# line up with the addresses they were assigned...
-	vals = vals[8:]
+	if v7 :
+		# it appears the a.out header isnt used for the kernel.
+		# dropping the first 16 bytes causes the tables in u0.s to
+		# line up with the addresses they were assigned...
+		vals = vals[8:]
+
 	for n,v in enumerate(vals) :
 		print 'dep cpu %o %06o' % (addr+n*2, v)
 	print 'go 400'
