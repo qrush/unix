@@ -34,8 +34,8 @@ preread:
        rts     r0
 
 dskrd:
-       jsr     r0,bufaloc / shuffle off to bufalocg get a free I/0 buffer
-       br      1f
+       jsr     r0,bufaloc / shuffle off to bufaloc; get a free I/0 buffer
+               br 1f
        bis     $2000,(r5) / set bit 10 of word 1 of I/O queue entry
                           / for buffer
        jsr     r0,poke / just assigned in bufalocg bit 10:1 says read
