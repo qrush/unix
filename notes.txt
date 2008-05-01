@@ -68,6 +68,10 @@ e00-01
     - the bottom section looks like it could be tabbed but my tabstops
       didnt line up with the values given so I used spaces
 
+    - (Brad Parker) removed commented out 3 lines at "4;4". The comment
+      appears to be written in and is wrong (I think it might just be a 
+      stroke of the pen rather than a correction)
+
 e00-02
     - I used tabs for the start of each asm command but not for the
       separation between mnemonic and arguments since these didnt line up.

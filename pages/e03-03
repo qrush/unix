@@ -45,8 +45,8 @@ copyz:
 idle:
        mov	*$ps,-(sp) / save ps on stack
        clr	*$ps / clear ps
-       mov	clockp,(sp) / save clockp on stack
-       mov	(r0)+,clockp / arg to idle 1n clockp
+       mov	clockp,-(sp) / save clockp on stack
+       mov	(r0)+,clockp / arg to idle in clockp
        1 / wait for interrupt
        mov      (sp)+,clockp / restore clockp, ps
        mov	(sp)+,*$ps
