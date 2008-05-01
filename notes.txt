@@ -97,9 +97,15 @@ e01-06
 e02-05
     - label "1:" is overstruck with "/" in the listing.  leaving the
       label in place.  Should be reviewed for semantic meaning.
+      - the struck label is referenced below as "1b" right before
+        "nig:" on e02-06.  I believe removing the label would cause
+        an extra comparison to occur but not change he semantics of
+        the loop.
 e02-09
     - extra label "sysquit:" handwritten after "sysintr:".  Leaving
       the extra label out.
+      - adding it back in.  this label is referenced in the syscall
+        table (u1.s) but not defined elsewhere.
 e02-10
     - comment says "cdev has device =" it probably means "#" and could
       have just been a weak print of "#", but leaving as "=".
@@ -125,9 +131,10 @@ indicate two different people commenting the code.  I left each as the original.
 e05-01
     - line 9 has a crossed out term, so i used the correction "r2"
 
-e05-01
+e05-02
     - line 48 comment says "panic / found no tres storage" - left it as "tres"
       no idea whether it is supposed to be "tree", "free", or "tres"
+      - reviewed, looks clearly "free", fixed.
 
 e05-04
     - some of the latter parts of the code have comments "/ ?", left as is
@@ -150,12 +157,19 @@ if the rule is specified, so I leave them there.
 e07-01
     - left "cmp     r0,$4" as is. There is a write in correction 
       for "r1" for "r0".
+      - reviewed this, r1 has the character at this point and $4 is
+        control-D.  The write-in looks correct.
     - left "to" as is after ttych: There is a write in correction
       for "from" instead of "to".
 
 e07-04
     - left "asr     r0" as is. There is a write in correction 
       for "r2" for "r0".
+      - changed it to "r2".  The comments clearly say "r2".  The
+        value comes from a call to "get" right before the call to
+        this code ("put"), a page earlier inside the getc function.
+        "r2" was previously multipled by 2 in get, so this divide
+        by 2 makese sense to undo that.
 
 e07-07
     - printout has: "mov    $240.*$ps" but this is invalid syntax and
@@ -174,17 +188,28 @@ e08-*
 e09-01
     - I'm using tabs between opcode and operands now
     - left "bic $!77,r1" although written comment says "? !177"
+      - changing to "$!177".  This is masking off the high bit of
+        the received ascii character.  shortly after this it compares
+        with $177 (delete) so clearly its not supposed to mask off
+        both hight bits ($!77).  Also later in the other e09 pages
+        similar operations are performed.
 e09-02
     - left "movb    tty+38r0),r1" as is.  There's a write in 
       correction for "(" instead of "8".  This concerns me as it
       means there are probably some errors in this listing as
       the paren is most likely the right character here.
+      - fixed this to allow assembly to work.
 e09-03
     - hard to tell due to hand written correction, but I believe
       the line before "rts r0" reads "mov (sp)+,r0"
+      - this makes sense since r0 is pushed onto the stack at the
+        start of the function.
     - comment "ASC11" (one instead of I) left as is.
 e09-04
     - text comment says a label was lost!  leaving it out for now.
+      - adding it back.  This looks like a switch table starting
+        at the missing label (or actually one instruction before
+        the label, weird that they wrote it this way).
     - correction "if count >=0" obscures original text in comment.
       no choice but to use new text.
     - "ASC11" sic

@@ -21,7 +21,7 @@
 	incb	(r2) / normal / jmp to location determined by digits
 		     / 0 and 1 of character's entry in "partab" which
 		     / is now in r3
-	rts	r0 / non-printing
+1:	rts	r0 / non-printing
 	br	1f / bs  
 	br	2f / nl (line feed)  
 	br	3f / tab (horizontal tab)

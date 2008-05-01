@@ -46,7 +46,7 @@ alloc:
 	add	$16.,r1
 	cmp	r1 ,(sp) / have we examined all free storage bytes
 	blo	1b
-	jmp	panic / found no tres storage
+	jmp	panic / found no free storage
 1:
 	asr	r3 / find a free block
 	bcs	1f / branch when free block found; bit for block k is in

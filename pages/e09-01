@@ -32,7 +32,7 @@ trcv:
 	bitb	$100,tty+4(r0)
 	beq	2f / non-37 parity not allowed
 4:
-	bic	!77,r1
+	bic	$!177,r1
 	bit	$40,tty+4(r0)
 	bne	3f / raw
 	cmp	r1,$177

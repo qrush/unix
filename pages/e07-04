@@ -1,5 +1,5 @@
 put:
-        asr    r0 / divide r2 by 2; r2 is offset in clist
+        asr    r2 / divide r2 by 2; r2 is offset in clist
         mov    r2,-(sp) / save r2 on stack
         movb   cl+1(r1),r2 / move offset of last char in list (r1) into r2
         beq    1f / offset = 0 then go to 1f (i.e., start a new list)
