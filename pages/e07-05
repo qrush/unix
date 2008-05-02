@@ -16,7 +16,7 @@
         sret   / rf0
         sret / rk0
         sret   / tap0
-        sret   / tapl
+        sret   / tap1
         sret   / tap2
         sret   / tap3
         sret   / tap4
@@ -24,7 +24,7 @@
         sret   / tap6
         sret   / tap7
         ocvt   / tty0
-        ocvt   / ttyl
+        ocvt   / tty1
         ocvt   / tty2
         ocvt   / tty3
         ocvt   / tty4
@@ -44,7 +44,7 @@ otty: / open console tty for reading or writing
                     / console tty
         tst    u.ttyp / is there a process control tty (i.e., has a tty
                       / buffer header
-        bne    sret / address been loaded into u.ttyp yet)?  Yes, branch
+        bne    sret / address been loaded into u.ttyp yet)?  yes, branch
         mov    r5,u.ttyp / no, make the console tty the process control
                          / tty
         br     sret / ?

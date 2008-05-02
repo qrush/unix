@@ -1,7 +1,7 @@
 	 mov	r2,i.size / yes, increase the f11e size to file offset +
 		           / no. of data bytes
-	 jsr	r0,setimod / set imod=1 (1.e., core inode has been
-		           / modified), stuff tlme of modiflcatlon into
+	 jsr	r0,setimod / set imod=1 (i.e., core inode has been
+		           / modified), stuff tlme of modification into
 		           / core image of i-node
 1:
 	jsr	r0,mget / get the block no. in which to write the next data
@@ -11,7 +11,7 @@
 		   / 512, 1024,...(i.e., start of new block)
 	cmp	u.count,$512. / if zero, is there enough data to fill an
 		              / entire block? (i.e., no. of
-	bhis	3f / bytes to be written greater than S12.? Yes, branch.
+	bhis	3f / bytes to be written greater than 512.? Yes, branch.
 		   / Don't have to read block
 2: / in as no past info. is to be saved (the entire block will be
    / overwritten).
@@ -34,7 +34,7 @@
 
 cpass: / get next character from user area of core and put it in r1
 	tst	u.count / have all the characters been transferred (i.e.,
-		        / u.count, # of chars. left .
+		        / u.count, # of chars. left
 	beq	1f / to be transferred = 0?) yes, branch
 	dec	u.count / no, decrement u.count
 	movb	*u.base,r1 / take the character pointed to by u.base and
@@ -44,7 +44,7 @@ cpass: / get next character from user area of core and put it in r1
 	rts	r0 / next byte
 1: 
 	mov	(sp)+,r0 / put return address of calling routine into r0
-	mov	(sp)+,r1 / i.-number in r1
+	mov	(sp)+,r1 / i-number in r1
 	rts	r0 / non-local return
 
 sioreg:

@@ -29,7 +29,7 @@
 icalc: / i-node i is located in block (i+31.)/16. and begins 32.*
        / (i+31)mod16 bytes from its start
 	add	$31.,r1 / add 31. to i-number
-	mov	r1,-(sp) / save i+.31. on stack
+	mov	r1,-(sp) / save i+31. on stack
 	asr	r1 / divide by 16.
 	asr	r1
 	asr	r1

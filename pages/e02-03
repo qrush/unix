@@ -7,7 +7,7 @@
 	mov	r5,-(sp) / save arguments pointer on stack
 	mov	$ecore,r5 / r5 has end of core
 	mov	$core,r4 / r4 has start of users core
-	mov	r4,u.base / u.base has start of users ore
+	mov	r4,u.base / u.base has start of users core
 	mov	(sp),r2 / move arguments list pointer into r2
 1:
 	tst	(r2)+ / argument char = "nul"
@@ -45,12 +45,12 @@
 	mov	r4,-(r5) / save number of arguments ahead of the argument 
 			 / pointers
 	clr	-(r5) / popped into ps when rti in sysrele is executed
-	mov	$core,-(r5) / popped into pc when rti is sysrele 
+	mov	$core,-(r5) / popped into pc when rti in sysrele 
 			    / is executed
 	mov	r5,0f / load second copyz argument
 	tst	-(r5) / decrement r5
 	mov	r5,u.r0 /
 	sub	$16.,r5 / skip 8 words
 	mov	r5,u.sp / assign user stack pointer value, effectively
-		        / zeros all regs when sysrele is executed
+		        / zeroes all regs when sysrele is executed
 	jsr	r0,copyz; core; 0:0 / zero user's core

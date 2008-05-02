@@ -41,7 +41,7 @@ clock: / interrupt from 60 cycle clock
        tstb    (r0) / is the time out?
        beq     3f / yes, 3f (get next entry)
        decb    (r0) / no, decrement the time
-       bne     3f /Is1t zero now?
+       bne     3f / isit zero now?
        incb    (r0) / yes, increment the time
 3:
        inc     r0 / next entry

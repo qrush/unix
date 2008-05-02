@@ -13,12 +13,12 @@ canon:
                br canon / character was @ so start over
         jsr    r0,cesc; 43 / test for # (erase last char. typed)
                br 1b / character was #, go back
-        cmp    r0,$4 / is char eot?
-        beq    1f / yes. reset and return
+        cmp    r1,$4 / is char eot?
+        beq    1f / yes, reset and return
         movb   r1,*4(r5) / no, move char to address in 3rd word of buffer
                          / (char. pointer)
-        inc    2(r5) / increment 2nd word (char, count)
-        inc    4(r5) / increment 3rd word (char, pointer)
+        inc    2(r5) / increment 2nd word (char. count)
+        inc    4(r5) / increment 3rd word (char. pointer)
         cmp    r1,$'\n / is char = newline
         beq    1f / yes, 1f
         cmp    2(r5),$120. / is byte count greater than or equal to 120
@@ -35,7 +35,7 @@ canon:
 cesc: / test for erase or kill char
         cmp    r1,(r0)+ / char in r1 = erase or kill character?
         bne    1f / no, skip return
-        tst    2(r5) / yes, is char, count = 0
+        tst    2(r5) / yes, is char. count = 0
         beq    2f / yes, don't skip return
         dec    2(r5) / no, decrement char count
         dec    4(r5) / decrement character pointer
@@ -48,7 +48,7 @@ cesc: / test for erase or kill char
 
 ttych: / get characters from Q of characters inputted to tty
         mov    $240,*$ps / set processor priority to 5
-        jsr    r0,getc; 0 / takes char, off clist and puts it in r1
+        jsr    r0,getc; 0 / takes char. off clist and puts it in r1
                br 1f / list is empty, go to sleep
         clr    *$ps / clear process priority
         rts    r0 / return

@@ -7,8 +7,8 @@
        beq     1f / if 0 branch
        mov     $runq+4,r2 / r2 points to lowest priority queue
        mov     $300,*$ps / processor priority = 6
-       jsr     r0,putlu / create llnk to old process number
-       clr     *$ps / clear the status; process priority = O
+       jsr     r0,putlu / create link to old process number
+       clr     *$ps / clear the status; process priority = 0
 1:
        rts     r0 / return
 2:
@@ -22,8 +22,8 @@ isintr:
        beq     1f / if 0, do nothing except skip return
        movb    6(r1),r1 / put interrupt char in the tty buffer in r1
        beq     1f / if its 0 do nothing except skip return
-       cmp     r1,$177 / is interrupt char e delete?
-       bne     3f / no, so lt must be a quit (fs)
+       cmp     r1,$177 / is interrupt char = delete?
+       bne     3f / no, so it must be a quit (fs)
        tst     u.intr / yes, value of u.intr determines handling
                       / of interrupts
        bne     2f / if not 0, 2f. If zero do nothing.

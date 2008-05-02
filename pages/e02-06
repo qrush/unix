@@ -31,7 +31,7 @@ nig:
 nib:
 	rts	r0
 
-syschdir: / make the directory specified in the argument the current 
+syschdir: / makes the directory specified in the argument the current 
 	  / directory
 	jsr	r0,arg; u.namep / u.namep points to path name
 	jsr	r0,namei / find its i-number

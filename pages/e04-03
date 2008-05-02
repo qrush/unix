@@ -1,12 +1,12 @@
 wakeall:
        mov     $39.,0f / flll arg2 of wakeup call wlth 39
 1:
-       jsr     r0,wakeup; runq+4; 0:.. / wakeup the processes ln the
+       jsr     r0,wakeup; runq+4; 0:.. / wakeup the processes in the
        dec     0b                      / wait list; decrement arg2
-       bge     1b / lf not done, go back
+       bge     1b / if not done, go back
        rts     r0
 
-ttyo: / console typewriter output interrupt routlne
+ttyo: / console typewriter output interrupt routine
        jsr     r0,setisp / save registers
        jsr     r0,startty / put a char on the console tty output buffer
        br      retisp / restore registers
@@ -19,31 +19,31 @@ retisp:
        mov     (sp)+,r0
        rti     / return from interrupt
 
-ppti: / paper tape lnput interrupt routine M
+ppti: / paper tape lnput interrupt routine
        jsr     r0,setisp / save registers
        movb    pptiflg,r1 / place "pptiflg" in r1
-       jmp     *1f(r1) / jump to location speclfled by value of pptiflg
+       jmp     *1f(r1) / jump to location speclfled by value of "pptiflg"
 1:
        retisp / file not open
        1f / file just opened
        2f / file normal
        retisp / file not closed
 
-1: / flle just opened
-       tstb    *$prs+1 / is error blt set in prs
+1: / file just opened
+       tstb    *$prs+1 / is error bit set in prs
        bge     1f / no
-       jsr     r0,pptito / place 10 ln toutt entry for ppt input
+       jsr     r0,pptito / place 10 in toutt entry for ppt input
        br      retisp
 1:
        movb    $4,pptiflg / change "pptiflg" to indicate file "normal"
 2:
        jsr     r0,wakeup; runq+2; 2 / wakeup process for ppt input entry
-                                    / ln wllst
+                                    / in wlist
        tstb    *$prs+1 / is error bit set
        blt     1f / yes
        mov     *$prb,r1 / place contents ppt read buffer in r1
        jsr     r0,putc; 2 / place character in clist area for ppt input
-       br      .+2 / temp / if no space ln clist character lost
+               br .+2 / temp / if no space in clist character lost
        cmpb    cc+2,$50. / character count in clist area for ppt lnput
                          / greater than or equal to 50
        bhis    retisp / yes

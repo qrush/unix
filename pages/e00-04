@@ -1,7 +1,7 @@
 / free rest of drum
 
 	.if cold
-	mov    $128.,systm / inltialize word 1 of drum superblock image;
+	mov    $128.,systm / initialize word 1 of drum superblock image;
                            / number of bytes in free storage map=128.
 	mov    $64.,systm+2+128. / init. wd 66. of superblock image; # of
                                  / bytes in i-node map=64.
@@ -52,6 +52,6 @@
 	dec    r1 / next i-node no. = present i-node no.-1
 	bgt    1b / has i-node 1 been initialized; no, branch
 
-/ initialize i-nodes r1.,...,47. and wr1te the root device, binary, etc.,
+/ initialize i-nodes r1.,...,47. and write the root device, binary, etc.,
 / directories onto fixed head disk. user temporary, initialization prog.
 

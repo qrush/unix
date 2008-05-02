@@ -1,5 +1,5 @@
-	jsr	r0,setimod / indicate i-node has been modified
-	mov	(sp)+,r2 / mode is put into r2 (u.off put on stack with 
+	jsr	r0,setimod / indicates i-node has been modified
+	mov	(sp)+,r2 / mode is put in r2 (u.off put on stack with 
 			 / 2nd arg)
 	rts	r0
 
@@ -38,7 +38,7 @@ arg2:
 				/ sys call
 	jsr	r0,arg; u.off / u.off contains value of second arg in 
 			      / sys call
-	mov	r0,r1 / r0 points to callling routine
+	mov	r0,r1 / r0 points to calling routine
 	mov	(sp),r0 / put operation code back in r0
 	mov	u.off,(sp) / put pointer to second argument on stack
 	jmp	(r1) / return to calling routine
@@ -52,6 +52,6 @@ sysstime: / set time
 	tstb	u.uid / is user the super user
 	bne	error4 / no, error
 	mov	4(sp),s.time
-	mov	2(sp),s.time+2
+	mov	2(sp),s.time+2 / set the system time
 	br	sysret4
 	

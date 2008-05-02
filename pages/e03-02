@@ -7,7 +7,7 @@ wswap:
        bic     $1,r2 / make it even
        mov     r2,u.break / set break to an even location
        mov     u.usp,r3 / put users stack pter at moment of swap in r3
-       cmp     r2,$core / is u.break less than Score
+       cmp     r2,$core / is u.break less than $core
        blos    2f / yes
        cmp     r2,r3 / no, is (u.break) greater than stack pointer
        bhis    2f / yes
@@ -20,8 +20,8 @@ wswap:
        mov     $ecore,r2 / put end of core in r2 
 1:
        sub     $user,r2 / get number of bytes to write out (user up
-                        / to end of stack gets written out) ~
-       neg     r2 / make it negative V
+                        / to end of stack gets written out)
+       neg     r2 / make it negative
        asr     r2 / change bytes to words (divide by 2)
        mov     r2,swp+4 / word count
        movb    u.uno,r1 / move user process number to r1
@@ -46,8 +46,8 @@ rswap:
        bis     $2000,swp / read
        jsr     r0,ppoke / read it in 
 1:
-       tstb    swp+1 / done l
-       bne     1b / no, wait for bit 15 to clear (inhibit blt)
+       tstb    swp+1 / done
+       bne     1b / no, wait for bit 15 to clear (inhibit bit)
        mov     u.emt,*$30 / yes move these
        mov     u.ilgins,*$10 / back
        rts     r0 / return

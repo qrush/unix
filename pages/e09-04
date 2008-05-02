@@ -4,7 +4,7 @@
 3:
 	mov	(sp),r2 / r2 contains 8xtty number
 	bit	$4,rcsr(r2) / is carrier present for tty
-	beq	starxmt / no carrler flush
+	beq	starxmt / no carrier flush
 	mov	r1,-(sp) / yes, place character to be output on stack
 	cmp	r1,$11 / is character "ht"
 	bne	3f / no
@@ -35,7 +35,7 @@
 	clrb	(r2) / col set column count = 0
 	br	1f
 2:
-	bit	$1,r1 / is bit 0 of ASC11 char = 1 (char = lf)
+	bit	$1,r1 / is bit 0 of ASCII char = 1 (char = lf)
 	bne	2f / yes
 	bitb	$20,3(r2) / cr flag is bit 4 of 5th byte of "tty"
 			  / area = 1

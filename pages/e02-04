@@ -6,18 +6,18 @@
 	jsr	r0,readi / read in first six words of user's file, starting 
 			 / at $core
 	mov	sp,r5 / put users stack address in r5
-	sub	$core+40.,r5 / subtract $core +40 from r5 (leaves
+	sub	$core+40.,r5 / subtract $core +40, from r5 (leaves
 			     / number of words less 26 available for
 			     / program in user core
 	mov	r5,u.count /
-	cmp	core,$405 / br .+14 is first instrution if file is
+	cmp	core,$405 / br .+14 is first instruction if file is
 			  / standard a.out format
 	bne	1f / branch, if not standard format
 	mov	core+2,r5 / put 2nd word of users program in r5; number of
 			  / bytes in program text
 	sub	$14,r5 / subtract 12
-	cmp	r5,u.count
-	bgt	1f / branch if r5 is greater than u.count
+	cmp	r5,u.count /
+	bgt	1f / branch if r5 greater than u.count
 	mov	r5,u.count
 	jsr	r0,readi / read in rest of user's program text
 	add	core+10,u.nread / add size of user data area to u.nread
@@ -49,7 +49,7 @@ sysstat: / ; name of file; buffer - get files status
 1:
 	jsr	r0,iget / get the i-node into core
 	mov	(sp)+,r3 / move u.off to r3 (points to buffer)
-	mov	r1,(r3)+ / put i-number into 1st word of buffer
+	mov	r1,(r3)+ / put i-number in 1st word of buffer
 	mov	$inode,r2 / r2 points to i-node
 1:
 	mov	(r2)+,(r3)+ / move rest of i-node to buffer

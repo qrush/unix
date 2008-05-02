@@ -2,7 +2,7 @@
 	jsr	r0,iget / get i-node
 	jsr	r0,setimod / set modified flag
 	decb	i.nlks / decrement the number of links
-	bgt	sysret9 / if this was not the last link to the file return
+	bgt	sysret9 / if this was not the last link to file return
 	jsr	r0,anyi / if it was, see if anyone has it open.  Then
 			/ free contents of file and destroy it.
 	br	sysret9
@@ -35,7 +35,7 @@ wdir:
 	
 sysexec:
 	jsr	r0,arg2 / arg0 in u.namep,arg1 on top of stack
-	jsr	r0,namei / namei return i-number of file named in 
+	jsr	r0,namei / namei returns i-number of file named in 
 			 / sysexec call in r1
 		br error9
 	jsr	r0,iget / get i-node for file to be executed

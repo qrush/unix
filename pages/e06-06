@@ -1,8 +1,8 @@
 	mov	u.base,r1 / address of data is in r1
-	neg	r3 / 512 - file offset (mod512..) in r3 (i.e., the number
+	neg	r3 / 512 - file offset (mod512.) in r3 (i.e., the number
 		   / of free bytes in the file block
 	cmp	r3,u.count / compare this with the number of data bytes to
-		           / be written to the f11e
+		           / be written to the file
 	blos	2f / if less than branch. Use the number of free bytes
 		   / in the file block as the number to be written
 	mov	u.count,r3 / if greater than, use the number of data bytes

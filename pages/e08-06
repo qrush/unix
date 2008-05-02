@@ -6,8 +6,8 @@
        bis     r3,(r1) / or old value of bits 9 and 10 with bits 12
        	               / and 13
 2:
-       cmp     r2,$bufp / test to see if entire-I/O queue has been
-              / scanned
+       cmp     r2,$bufp / test to see if entire I/O queue has been
+                        / scanned
        bhi    1b
        mov    (sp)+,r3
        mov    (sp)+,r2
@@ -24,11 +24,11 @@ bufaloc:
 2:
        mov    (r2)+,r5 / move pointer to word 1 of an I/O queue entry
                        / into r5
-       bit    $173000,(r5) / lock+keep+active+outstand1ng
+       bit    $173000,(r5) / lock+keep+active+outstanding
        bne    3f / branch when any of bits 9,10,12,13,14,15 are set
        	         / (i.e., buffer busy)
-       mov    r2,(sp) / save pointer to last non-busy buffer_found
-       	              / points to word 2_of I/O queue entry)
+       mov    r2,(sp) / save pointer to last non-busy buffer found
+       	              / points to word 2 of I/O queue entry)
 3:
        cmpb   (r5),cdev / is device in I/O queue entry same as current
                         / device

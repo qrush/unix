@@ -17,11 +17,11 @@
 putlu: / r1 = user process no.; r2 points to lowest priority queue
        tstb    (r2)+ / is queue empty?
        beq     1f / yes, branch
-       movb    (r2),r3 / no, save the last user processnumber in_r3
-       movb    r1,p.link-1(r3) / put pointer to user on last users- link
+       movb    (r2),r3 / no, save the "last user" process number in r3
+       movb    r1,p.link-1(r3) / put pointer to user on "last users" link
        br      2f /
 1:
-       movb    r1,-1(r2) / user is only user; put_procss no. at beginning
+       movb    r1,-1(r2) / user is only user; put process no. at beginning
                          / and at end
 2: 
        movb    r1,(r2) / user process in r1 is now the last entry on

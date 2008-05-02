@@ -10,7 +10,7 @@
        beq     1f / no
        cmp     cdev,$1 / disk or drum?
        ble     2f / yes
-       tstb    uquant / is the time quan+um = 0?
+       tstb    uquant / is the time quantum = 0?
        bne     2f / no, 2f
        mov     r5,-(sp) / yes, save r5 (buffer address)
        jsr     r0,sleep; 31. / put process to sleep in channel 31 (tape)
@@ -29,7 +29,7 @@
        movb    (r5)+,(r2)+ / move data from the I/O buffer
        dec     r3 / to the user's area in core starting at u.base
        tst     u.count / done
-       beq     1f / yes, return .
+       beq     1f / yes, return
        tst     -(r0) / no, point r0 to the argument again
        br      bread / read some more
 1:
@@ -44,7 +44,7 @@ bwrite: / write on block structured device
        inc     *u.fofp / no, increment block number
        jsr     r0,wslot / get an I/O buffer to write into
        jsr     r0,dioreg / do the necessary bookkeeping
-1: / r2 points to the users data; r5-points to the I/O buffers data area
+1: / r2 points to the users data; r5 points to the I/O buffers data area
        movb    (r2)+,(r5)+ / ; r3, has the byte count
        dec     r3 / area to the I/O buffer
        bne     1b

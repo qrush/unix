@@ -24,7 +24,7 @@ iopen: / open file whose i-number is in r1
         tst    r1 / write or read access?
         blt    2f / write, go to 2f
         jsr    r0,access; 2 / get inode into core with read access
-        cmp    r1,340. / is it a special file
+        cmp    r1,$40. / is it a special file
         bgt    3f / no. 3f
         mov    r1,-(sp) / yes, figure out
         asl    r1
@@ -36,7 +36,7 @@ iopen: / open file whose i-number is in r1
         sret    / rf0
         sret   / rk0
         sret   / tap0
-        sret   / tapl
+        sret   / tap1
         sret   / tap2
         sret   / tap3
         sret   / tap4
@@ -44,7 +44,7 @@ iopen: / open file whose i-number is in r1
         sret   / tap6
         sret   / tap7
         ocvt   / tty0
-        ocvt   / ttyl
+        ocvt   / tty1
         ocvt   / tty2
         ocvt   / tty3
         ocvt   / tty4

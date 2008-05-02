@@ -1,6 +1,6 @@
 / entry
 1:
-       cmp     r2,$bufp / bump all entrys ln bufp and put latest assigned
+       cmp     r2,$bufp / bump all entrys in bufp and put latest assigned
        blos    1f / buffer on the top (this makes if the lowest priority)
        mov     -(r2),2(r2) / job for a particular device
        br      1b
@@ -20,7 +20,7 @@ taper: / dec tape error
        dec     tcerrc / decrement the number of errors
        bne     1f / if more than 1 branch
        movb    1(r2),r3 / r2+1 points to command register upper byte
-       bic     $17,r3 / clear all but bits 8-10 (Unit Selection)
+       bic     $!7,r3 / clear all but bits 8-10 (Unit Selection)
        incb    deverr+2(r3) / set error bit for this tape unit
        br      tape3
 1: / more than 1 error
@@ -45,12 +45,12 @@ tape1: / read bn forward
        mov     4(r1),-(r0) / put word count in tcwc
        mov     $115,-(sp) / put end interrupt enable
        bit     $20000,(r1) / is "waiting to read bit" of I/O queue set?
-       beq     1f / no 1f
-       mov     $105,(sp) / yes, put and lnterrupt enable
+       beq     1f / no,  1f
+       mov     $105,(sp) / yes, put and interrupt enable
 1:
        movb    (sp)+,(r2) / move function into command register (tccm)
        bis     $4,active / set active bit
        mov     $tape3,tcstate / get ready for I/O transfer
-       br      4f / go to retisp (rtl)
+       br      4f / go to retisp (rti)
 
 tape2: / read bn bakasswards

@@ -1,7 +1,7 @@
 1:
        bit     $22000,(r5) / check bits 10, 13 (read, waiting to read)
        	                   / of I/O queue entry
-       beq     1f / branch 1f 10, 13 zero (i.e., not reading, or waiting
+       beq     1f / branch if 10, 13 zero (i.e., not reading, or waiting
        	          / to read)
        jsr     r0,idle; s.wait+2 / if buffer is reading or writing to read,
        	                         / idle

@@ -1,4 +1,4 @@
-       mov     $rkda+2,r3 / A
+       mov     $rkda+2,r3 /
        mov     ac,-(sp) / put remainder from divide on stack; gives
                         / sector number
        mov     $4,lsh / shift quotient 4 bits, to align with cyl and surf
@@ -6,7 +6,7 @@
        bis     mq,(sp) / or mq with sector; gives total disk address
        br      3f
 prf: / drum
-       bit     $1,active / test drum busy blt
+       bit     $1,active / test drum busy bit
        bne     2f / branch if bit is set
        bis     $1,active / set drum busy bit
        mov     r1,rfap / rfap points to current I/O queue entry for drum
@@ -17,7 +17,7 @@ prf: / drum
        clr     -(sp) / word
        movb    3(r1),(sp) / move high byte of physical block number into
                           / low byte of stack
-       mov     (sp)+,-(r3) / load dae with high byt. of physical block
+       mov     (sp)+,-(r3) / load dae with high byte of physical block
                            / number
 3:
        mov     (sp)+,-(r3) / load rkda register; load dar register
@@ -37,7 +37,7 @@ ptc: / tape I/O
        bne     2f
        mov     tccm,r3
        swab    r3
-       bic     $17,r3
+       bic     $!7,r3
        add     $2,r3
        cmpb    r3,(r1)
        beq     3f
@@ -50,7 +50,7 @@ ptc: / tape I/O
        movb    (r1),r3 / device
        sub     $2,r3 / now unit
        swab    r3
-       bis     $103,r3 / now rbn,for,un1t,1e
+       bis     $103,r3 / now rbn,for,unit,ie
        mov     r3,tccm
  seta: / I/O queue bookkeeping; set read/write waiting bits.
        mov     (r1),r3 / move word 1 of I/O queue entry into r3

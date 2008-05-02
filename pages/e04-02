@@ -4,23 +4,23 @@
        tstb    toutt(r0) / is the time out for this entry
        beq     2f / yes
        decb    toutt(r0) / no, decrement the time
-       bne     2f / is the time O, now
+       bne     2f / is the time 0, now
        asl     r0 / yes, 2 x r0 to get word index for tout entry
        jsr     r0,*touts(r0) / go to appropriate routine specified in this
        asr     r0 / touts entry; set r0 back to toutt index
 2:
        dec     r0 / set up r0 for next entry
-       bge     1b / finished? , no, go back `
-       br      retisp / yes, restore registers and do a rtl
+       bge     1b / finished? , no, go back
+       br      retisp / yes, restore registers and do a rti
 ttyi: / console tty input interrupt routine
        jsr     r0,setisp / save reg r1, r2, r3
        mov     *$tkb,r1 / r1 = char in tty reader buffer
        inc     *$tks / set the reader enable bit
-       bic     $!177,r1 / clear upper 9 blts of the character (strip off
-                        / 8th bit of char
+       bic     $!177,r1 / clear upper 9 bits of the character (strip off
+                        / 8th bit of char)
        cmp     r1,$'a-40 / is character upper case A,..., upper case Z.
                          / note that
-       blt     1f / lower case a ls represented by 141, upper case by
+       blt     1f / lower case a is represented by 141, upper case by
        cmp     r1,$'z-40 / 101; and lower case z by 172, upper
                          / case Z by 132.
        bgt     1f / if not upper case, branch
@@ -45,7 +45,7 @@ ttyi: / console tty input interrupt routine
        jsr     r0,wakeup; runq; 0 / no, wakeup the input process
        br      retisp / return
 2: / r1 = "}" or "delete" to get here
-       mov     tty+[ntty*8]-8+6,r2 / move console tty-buffer address to r2
+       mov     tty+[ntty*8]-8+6,r2 / move console tty buffer address to r2
        beq     2f / if 0, wakeall
        movb    r1,6(r2) / move "}" or del into "interrupt char"
                         / byte of buffer

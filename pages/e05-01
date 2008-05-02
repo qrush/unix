@@ -1,4 +1,4 @@
-/ u5 - unix
+/ u5 -- unix
 
 mget:
 	mov	*u.fofp,mq / file offset in mq
@@ -8,10 +8,10 @@ mget:
 	bit	$10000,i.flgs / lg/sm is this a large or small file
 	bne	4f / branch for large file
 	bit	$!17,r2
-	bne	3f / branch if/r2 greater than or equal to 16
+	bne	3f / branch if r2 greater than or equal to 16
 	bic	$!16,r2 / clear all bits but bits 1,2,3
 	mov	i.dskp(r2),r1 / r1 has physical block number
-	bne	2f / lf physical block num is zero then need a new block
+	bne	2f / if physical block num is zero then need a new block
 		   / for file
 	jsr	r0,alloc / allocate a new block
 	mov	r1,i.dskp(r2) / physical block number stored in i-node
@@ -22,7 +22,7 @@ mget:
 3: / adding on block which changes small file to a large file
 	jsr	r0,alloc / allocate a new block for this file; block number
 	                 /in r1
-	jsr	r0,wslot / set up I/0 buffer for write, r5 points to first
+	jsr	r0,wslot / set up I/O buffer for write, r5 points to first
 			 / data word in buffer
 	mov	$8.,r3 / next 6 instructions transfer old physical block
 		       / pointers
@@ -39,7 +39,7 @@ mget:
 	bgt	1b
 	jsr	r0,dskwr / write new indirect block on disk
 	mov	r1,i.dskp / put pointer to indirect block in i-node
-	bis	$10000,i.flgs / set large file blt in i.flgs word of i-node
+	bis	$10000,i.flgs / set large file bit in i.flgs word of i-node
 	jsr	r0,setimod / set i-node modified flag
 	br	mget
 4: / large file

@@ -7,8 +7,8 @@
 	rti	/ no return from interrupt
 
 badsys:
-	incb	u.bsys / turn on the user's bad system flag
-	mov	$3f,u.namep / point u.namep to "core\0\O"
+	incb	u.bsys / turn on the user's bad-system flag
+	mov	$3f,u.namep / point u.namep to "core\0\0"
 	jsr	r0,namei / get the i-number for the core image file
 		br 1f / error
 	neg	r1 / negate the i-number to open the core image file

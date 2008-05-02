@@ -29,7 +29,7 @@ alloc:
 	mov	r3,-(sp)
 	mov	$systm,r2 / start of inode and free storage map for drum
 	tst	cdev
-	beq	1f / drum ls device
+	beq	1f / drum is device
 	mov	$mount,r2 / disk or tape is device, start of inode and free
 	                  / storage map
 1:

@@ -2,7 +2,7 @@
 
 rtap: / read from the dec tape
 	asr	r1 / divide the i-number by 2
-	sub	$4.,r1 / (i-number/2)-r  r1
+	sub	$4.,r1 / (i-number/2)-4  r1
 	mov	r1,cdev / cdev now has device number
 	jsr	r0,bread; 578. / read in block thats in *u.fofp
 
@@ -14,7 +14,7 @@ wtap:
 				/ Maximum
 
 rrk0:
-	mov	$1,cdev / set current device to 1., disk
+	mov	$1,cdev / set current device to i., disk
 	jsr	r0,bread; 4872. / read block from disk (maximum block
 				/ number allowed on device is 4872.)
 				/ - (u.fofp) contains block number
@@ -36,13 +36,13 @@ wrf0:
 
 bread: / read a block from a block structured device
 	jsr	r0,tstdeve / error on special file I/O (only works on
-			   / tape
+			   / tape)
 	mov	*u.fofp,r1 / move block number to r1
 	mov	$2.-cold,-(sp) / "2-cold" to stack
 1:
 	cmp	r1,(r0)	/ is this block # greater than or equal to
 			/ maximum block # allowed on device
-	bhis	1f / yes, if (error)
+	bhis	1f / yes, 1f (error)
 	mov	r1,-(sp) / no, put block # on stack
 	jsr	r0,preread / read in the block into an I/O buffer
 	mov	(sp)+,r1 / return block # to r1

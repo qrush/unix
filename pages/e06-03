@@ -5,7 +5,7 @@
 	mov	(sp)+,r0 / no, do a non-local return to the caller of
 		         / 'readi' by:
 ret: / (1) pop the return address off the stack into r0
-	mov	(sp)+,r1 / (2) pup the i-number off the stack into r1
+	mov	(sp)+,r1 / (2) pop the i-number off the stack into r1
 1:
 	clr	*$ps / clear processor status
 	rts	r0 / return to address currently on top of stack
@@ -44,7 +44,7 @@ writei:
 	xmtt	/ tty5
 	xmtt	/ tty6
 	xmtt	/ tty7
-/	w1pr / 1pr
+/	w1pr / lpr
 
 wtty:
 	jsr	r0,cpass / get next character from user buffer area; if

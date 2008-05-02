@@ -8,15 +8,15 @@ ret1:
 rppt: / read paper tape
 	jsr	r0,pptic / gets next character in clist for ppt input and
 			 / places
-		br ret / it 1n r1; 1f there 1s no problem with reader, it
-		       / also enables read bit Ln prs
+		br ret / it in r1; if there 1s no problem with reader, it
+		       / also enables read bit in prs
 	jsr	r0,passc / place character in users buffer area
 	br	rppt
 
 rmem: / transfer characters from memory to a user area of core
 	mov	*u.fofp,r1 / save file offset which points to the char to
 		           / be transferred to user
-	inc	*u.fofp / increment file offset to point to 'next' char 1n
+	inc	*u.fofp / increment file offset to point to 'next' char in
 		        / memory file
 	movb	(r1),r1 / get character from memory file, put it in r1
 	jsr	r0,passc / move this character to the next byte of the

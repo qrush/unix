@@ -14,7 +14,7 @@ syslink: / name1, name2
 	jsr	r0,namei / no, get i-number of name2
 		br .+4   / not found so r1-i-number of current directory
 			 /              ii = i-number of current directory
-	br	error9 / file already exits., error
+	br	error9 / file already exists., error
 	cmp	(sp)+,cdev / u.dirp now points to end of current directory
 	bne	error9
 	mov	(sp),u.dirbuf / i-number of name1 into u.dirbuf
@@ -31,14 +31,14 @@ error9:
 	jmp	error / see 'error' routine
 
 isdir: / if the i-node whose i-number is in r1 is a directory there is an
-       / error unless super user make the call
+       / error unless super user made the call
 	tstb	u.uid / super user
 	beq	1f / yes, don't care
 	mov	ii,-(sp) / put current i-number on stack
-	jsr	r0,iget / get i-number into core (i-number in r1)
+	jsr	r0,iget / get i-node into core (i-number in r1)
 	bit	$40000,i.flgs / is it a directory
 	bne	error9 / yes, error
-	mov	(sp)+,r1 / no, put current i-number back in r1 (ii)
+	mov	(sp)+,r1 / no, put current i-number in r1 (ii)
 	jsr	r0,iget / get it back in
 1:
 	rts	r0

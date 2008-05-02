@@ -24,7 +24,7 @@
  . = orig+400
 / copy in transfer vectors
 
-	mov    $ecore,sp / put pointer to score in the stack pointer
+	mov    $ecore,sp / put pointer to ecore in the stack pointer
 	jsr    r0,copyz; 0; 14 / clear locations 0 to 14 in core
 	mov    $4,r0
 	clr    r1

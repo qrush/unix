@@ -33,7 +33,7 @@ seektell:
 sysintr: / set interrupt handling
 	jsr	r0,arg; u.intr / put the argument in u.intr
 	br	1f / go into quit routine
-	jsr	r0,arg; u.quit	/ put argument in u.quit
+	jsr	r0,arg; u.quit / put argument in u.quit
 1:
 	mov	u.ttyp,r1 / move pointer to control tty buffer to r1
 	beq	sysret4 / return to user
@@ -43,7 +43,7 @@ sysintr: / set interrupt handling
 syssetuid: / set process id
 	movb	*u.r0,r1 / move process id (number) to r1
 	cmpb	r1,u.ruid / is it equal to the real user id number
-	beq	1f / yst
+	beq	1f / yes
 	tstb	u.uid / no, is current user the super user?
 	bne	error4 / no, error
 1:

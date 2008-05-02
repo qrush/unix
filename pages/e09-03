@@ -47,10 +47,10 @@ starxmt:
 		br 1f / if no entry in clist to be output, return to
 		      / calling routine
 3:
-	bic	$!177,r1 / zero out blts 7-15 of r1
+	bic	$!177,r1 / zero out bits 7-15 of r1
 	movb	partab(r1),r3 / move "partab" entry (identified by
 			      / r1) into r3
-	bge	3f / if entry 1s greater than or equal to 0 (digit
+	bge	3f / if entry is greater than or equal to 0 (digit
 		   / 2, far left digit = 0) branch
-	bisb	200,r1 / if entry is less than 0 add 128 to ASC11
+	bisb	200,r1 / if entry is less than 0 add 128 to ASCII
 		       / code for char to be output

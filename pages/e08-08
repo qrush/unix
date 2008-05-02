@@ -5,10 +5,10 @@
        br      taper / else reverse
 
 tape3: / I/O transfer
-       bic     $30000,(r1) / clear bits 12 and 13 of I/0 queue entry
+       bic     $30000,(r1) / clear bits 12 and 13 of I/O queue entry
        jsr     r0,poke / do the I/O
-       bit     $4,active / still k sy see if pick up r-ahead, w-behind
-       bne     1f / yes I
+       bit     $4,active / still busy see if pick up r-ahead, w-behind
+       bne     1f / yes
        movb    $1,(r2) / no, indicate too bad
 1:
        jsr     r0,wakeup; runq; 31. / wait up

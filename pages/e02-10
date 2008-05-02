@@ -37,7 +37,7 @@ anyi: / r1 contains an i-number
 	neg	r1 / no complement r1
 	cmp	r1,(r2) / do they match now?
 	beq	1f / yes, transfer
-		   / i-number do not match
+		   / i-numbers do not match
 	add	$8,r2 / no, bump to next entry in fsp table
 	cmp	r2,$fsp+[nfiles*8] / are we at last entry in the table
 	blt	1b / no, check next entries i-number

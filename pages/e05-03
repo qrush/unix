@@ -26,7 +26,7 @@ free:
 	clr	r3
 	bisb	2f(r2),r3 / use mask to set bit in r3 corresponding to
 			  / (k) mod 8
-	mov	r1,1r2 / divide block number by 16
+	mov	r1,r2 / divide block number by 16
 	asr	r2
 	asr	r2
 	asr	r2

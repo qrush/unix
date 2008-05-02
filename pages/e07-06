@@ -25,10 +25,10 @@ iclose: / close file whose i-number is in r1
         ctty   / tty
         cppt   / ppt
         sret   / mem
-        sret   / rfo
+        sret   / rf0
         sret   / rk0
         sret   / tap0
-        sret   / tapl
+        sret   / tap1
         sret   / tap2
         sret   / tap3
         sret   / tap4
@@ -36,7 +36,7 @@ iclose: / close file whose i-number is in r1
         sret   / tap6
         sret   / tap7
         ccvt   / tty0
-        ccvt   / ttyl
+        ccvt   / tty1
         ccvt   / tty2
         ccvt   / tty3
         ccvt   / tty4

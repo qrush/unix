@@ -15,7 +15,7 @@
 
 setimod:
 	movb	$1,imod / set current i-node modified bytes
-	mov	s.time,i.mtim / put present tlme into file modified time
+	mov	s.time,i.mtim / put present time into file modified time
 	mov	s.time+2,i.mtim+2
 	rts	r0
 
@@ -47,10 +47,10 @@ imap: / get the byte that has the allocation bit for the i-number contained
 	rts	r0
 
 iget:
-	cmp	r1, ii / r1 = i-number of current flle
+	cmp	r1,ii / r1 = i-number of current flle
 	bne	1f
-	cmp	idev,cdev / ls device number of i-node = current device
+	cmp	idev,cdev / is device number of i-node = current device
 	beq	2f
 1:
 	tstb	imod / has i-node of current file been modified i.e.,
-	       	     / lmod set
+	       	     / imod set

@@ -39,7 +39,7 @@ intract: / interrupt action
 	cmp	(sp)+,(sp)+ / pop clock pointer
 1: / now in user area
 	mov	r1,-(sp) / save r1
-	mov	u.ttyp,r1 / pointer to tty buffer in control to r1
+	mov	u.ttyp,r1 / pointer to tty buffer in control-to r1
 	cmpb	6(r1),$177 / is the interrupt char equal to "del"
 	beq	1f / yes, 1f
 	clrb	6(r1) / no, clear the byte (must be a quit character)

@@ -18,26 +18,26 @@ wppt:
 		         / if none return to writei's calling routine
 	jsr	r0,pptoc / output character on ppt
 	br	wppt
-/w1pr:
-/	jar	r0,cpass
+/wlpr:
+/	jsr	r0,cpass
 /	cmp	r0,$'a
 /	blo	1f
 /	cmp	r1,$'z
 /	bhi	1f
 /	sub	$40,r1
 /1:
-/	jsr	r0,1ptoc
-/	br	w1pr
+/	jsr	r0,lptoc
+/	br	wlpr
 
 wmem: / transfer characters from a user area of core to memory file
 	jsr	r0,cpass / get next character from users area of core and
 		         / put it in r1
 	mov	r1,-(sp) / put character on the stack
 	mov	*u.fofp,r1 / save file offset in r1
-	inc	*u.fofp / increment f11e offset to point to next available
+	inc	*u.fofp / increment file offset to point to next available
 		        / location in file
 	movb	(sp)+,(r1) / pop char off stack, put in memory loc assigned
-		           / no 1:
+		           / to it
 	br	wmem / continue
 1:
 	jmp	error / ?

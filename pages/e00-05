@@ -14,7 +14,7 @@
                             / assembled directories header
 	movb   (r0)+,i.nlks / set no. of links from header
 	movb   (r0)+,i.uid / set user id of owner from header
-	jsr    r0,setimod / set imod=1 to indicate inode modified: also,
+	jsr    r0,setimod / set imod=1 to indicate inode modified; also,
                           / stuff time of modification into i-node
 	mov    (r0)+,u.count / set byte count for write call equal to
                              / size of directory
@@ -27,7 +27,7 @@
 
 / next 2 instructions not executed during cold boot.
 	bis    $2000,sb0 / sb0 I/O queue entry for superblock on drum;
-                         / set blt 10 to 1
+                         / set bit 10 to 1
 	jsr    r0,ppoke / read drum superblock
 1:
 	tstb   sb0+1 / has I/O request been honored (for drum)?

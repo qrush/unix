@@ -10,7 +10,7 @@ readi:
 	cmp	r1,$40. / want to read a special file (i-nodes 1,...,40 are
 		    / for special files)
 	ble	1f / yes, branch
-	jmp	dskr / no, jmp to dskr; read file with 1.-node number (:1)
+	jmp	dskr / no, jmp to dskr; read file with i-node number (r1)
 		     / starting at byte ((u.fofp)), read in u.count bytes
 1:
 	asl	r1 / multiply inode number by 2
@@ -41,9 +41,9 @@ readi:
 
 rtty: / read from console tty
 	mov	tty+[8*ntty]-8+6,r5 / r5 is the address of the 4th word of
-				    / of the control and status block _
+				    / of the control and status block
 	tst	2(r5) / for the console tty; this word points to the console
-		      / tty bufTer
+		      / tty buffer
 	bne	1f / 2nd word of console tty buffer contains number
 	           / of chars. Is this number non-zero?
 	jsr	r0,canon; ttych / if 0, call 'canon' to get a line

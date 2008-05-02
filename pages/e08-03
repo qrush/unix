@@ -1,7 +1,7 @@
        mov     (sp)+,r0 / return to routine that called writei
        jmp     ret
-tstdeve: / check whether permanent error has occured on special f11e
-         / I/0
+tstdeve: / check whether permanent error has occured on special file
+         / I/O
        mov     cdev,r1 / only works on tape; r1 has device #
        tstb    deverr(r1) / test error bit of device
        bne     1f / error
@@ -18,7 +18,7 @@ dioreg:
        blos    1f / no, branch
        mov     $512.,r3 / yes, just take 512.
 1:
-       mov     u.base,r2 / put users base in r2 ~
+       mov     u.base,r2 / put users base in r2
        add     r3,u.nread / add the number to be read to u.nread
        sub     r3,u.count / update count
        add     r3,u.base / update base
@@ -26,19 +26,19 @@ dioreg:
 
 preread:
        jsr     r0,bufaloc / get a free I/O buffer (r1 has block number)
-       br      1f / branch if block already 1n a I/O buffer
-       bis     $2000,(r5) / set read mu (bu: 100 1n 1/0 buffer)
+       br      1f / branch if block already in a I/O buffer
+       bis     $2000,(r5) / set read bit (bit 100 in I/O buffer)
        jsr     r0,poke / perform the read
 1:
-       clr     *$ps / ps = O
+       clr     *$ps / ps = 0
        rts     r0
 
 dskrd:
-       jsr     r0,bufaloc / shuffle off to bufaloc; get a free I/0 buffer
+       jsr     r0,bufaloc / shuffle off to bufaloc; get a free I/O buffer
                br 1f
        bis     $2000,(r5) / set bit 10 of word 1 of I/O queue entry
                           / for buffer
-       jsr     r0,poke / just assigned in bufalocg bit 10:1 says read
+       jsr     r0,poke / just assigned in bufaloc, bit 10=1 says read
 1:
        clr     *$ps
        bit     $22000,(r5) / if either bits 10, or 13 are 1; jump to idle
@@ -51,5 +51,5 @@ dskrd:
        rts     r0
 
 wslot:
-       jsr     r0,bufaloc / get a free I/0 buffer; pointer to first
+       jsr     r0,bufaloc / get a free I/O buffer; pointer to first
                br 1f / word in buffer in r5
