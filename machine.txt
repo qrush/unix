@@ -82,6 +82,35 @@ u0.s sets up rf0 as:
          special version that opens /dev/tap0 and reads files from it,
          creates them, chmods them and chowns them
 
+special init:
+   - seek to 65
+   again:
+      - read 512 bytes
+      - use first word as size, if zero, break out of loop
+      - call create with name at offset 4
+      - call chmod with byte at offset 2
+      - call chown with byte at offset 3
+        - read 512 bytes from tape
+        - write min(remaining len, 512) to disk
+        - decrement remaining len and loop if more left
+      - close file
+      - loop to again
+
+tape image format:
+
+  for each file:
+    first block:
+        size : word, zero for end
+        mode : byte 
+               (setuid, exec, user read, user write, other read, other write)
+        uid : byte
+        name : 8 bytes
+    followed by ((size+511) / 512) blocks of data.
+  EOF is marked by zero length file.
+
+
+
+
 -----------------------
 cpu
     probably 11/20 with 24kb  (or should that be 24k words = 48k?)
