@@ -15,7 +15,7 @@
 / zero i list
 
 1:
-	dec    r0 / r0=33.,...,1
+	dec    r1 / r1=33.,...,1
 	jsr    r0,clear / zero block 'r1' on fixed head disk
 	tst    r1
 	bgt    1b / if blocks 33,...,1 have all been zeroed, done.

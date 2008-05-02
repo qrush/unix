@@ -80,6 +80,12 @@ e00-02
 e00-03
     - left "dis addresses" typo in per original
 
+e00-04
+    - This instruction doesnt make sense: "dec    r0 / r0=33.,...,1 "
+      r0 is used as the jsr link register.  However, r1 has the
+      value of 34 prior to this.  Changed both occurances of "r0" to
+      "r1" in this code.
+
 e00-05
     - cant tell if the "O" in quotes after 1: is a O or a 0.
     - left mispelled "mormally" in comment
