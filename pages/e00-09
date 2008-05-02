@@ -51,6 +51,6 @@
 	sys    read; 9f-8b+core; 512.
 	mov    $512.,0f
 	cmp    r5,$512.
-	bhi.   3f
+	bhi    3f
 	mov    r5,0f
 3:
