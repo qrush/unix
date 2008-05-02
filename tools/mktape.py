@@ -55,6 +55,7 @@ def copyFile(out, fn) :
 root = "/tmp/s2/"
 def main() :
     f = file("tape", "wb")
+    f.write("\0" * (512 * 65))		# start at block 65
     for fn in sys.argv[1:] :
         copyFile(f, fn)
     wrEof(f)
