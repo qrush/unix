@@ -36,7 +36,7 @@ icalc: / i-node i is located in block (i+31.)/16. and begins 32.*
 	asr	r1 / r1 contains block number of block in which
 		   / i-node exists
 	jsr	r0,dskrd / read in block containing i-node i.
-	tst	r0
+	tst	(r0)
 	beq	1f / branch to wslot when argument in icalc call = 1
 	jsr	r0,wslot / set up data buffer for write (will be same buffer
 			 / as dskrd got)
