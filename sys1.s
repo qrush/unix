@@ -1,7 +1,7 @@
 rele    = 0.
 exit    = 1.
 fork    = 2.
-/ read    = 3.
+read    = 3.
 write   = 4.
 open    = 5.
 close   = 6.
