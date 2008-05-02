@@ -1,0 +1,32 @@
+        beq    1f / if 0 1f
+        mov    r3,tcsr(r1) / move p.c. status to printer control status reg
+1:
+        mov    (r2)+,tty+4(r1) / move to flag byte of tty block
+        jmp     sysret2 / return to user
+
+sysgtty: / get status of typewriter, 3 consequtive word arguments
+        jsr    r0,gtty / r1 will have offset to tty block, r2 has
+                       / destination
+        mov    rcsr(r1),(r2)+ / put reader control status in 1st word
+                              / of dest
+        mov    tcsr(r1),(r2)+ / put printer control status in 2nd word
+                              / of dest
+        mov    tty+4(r1),(r2)+ / put mode in 3rd word
+        jmp    sysret2 / return to user
+
+gtty:
+        jsr    r0,arg; u.off / put first arg in u.off
+        mov    *u.r0,r1 / put file descriptor in r1
+        jsr    r0,getf / get the i-number of the file
+        tst    r1 / is it open for reading
+        bgt    1f / yes
+        neg    r1 / no, i-number is negative, so make it positive
+1:
+        sub    $14.,r1 / get i-number of tty0
+        cmp    r1,$ntty-1 / is there such a typewriter
+        bhis   error9 / no, error
+        asl    r1 / 0%2
+        asl    r1 / 0%4 / yes
+        asl    r1 / 0%8 / multiply by 8 so r1 points to tty block
+        mov    u.off,r2 / put argument in r2
+        rts    r0 / return

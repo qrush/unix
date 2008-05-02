@@ -1,0 +1,55 @@
+sysilgins: / calculate proper illegal instruction trap address
+        jsr    r0,arg; 10 / take address from sysilgins call     , put
+                          / it in loc 8.,
+        cmp    10,$core / making it the illegal instruction trap address
+        blo    1f / is the address a user core address?  yes, go to 2f
+        cmp    10,$ecore
+        blo    2f
+1:
+        mov    $fpsym,10 / no, make 'fpsum' the illegal instruction trap
+                         / address for the system
+2:
+        br     sysret2 / return to the caller via 'sysret'
+
+sysmdate: / change the modification time of a file
+        jsr    r0,arg; u.namep / point u.namep to the file name
+        jsr    r0,namei / get its i-number
+               br error2 / no, such file
+        jsr    r0,iget / get i-node into core
+        cmpb   u.uid,i.uid / is user same as owner
+        beq    1f / yes
+        tstb   u.uid / no, is user the super user
+        bne    error2 / no, error
+1:
+        jsr    r0,setimod / fill in modification data, time etc.
+        mov    4(sp),i.mtim / move present time to
+        mov    2(sp),i.mtim+2 / modification time
+        br     sysret2
+
+sysstty: / set mode of typewriter, 3 consequtive word arguments
+        jsr    r0,gtty / r1 will have offset to tty block, r2 has source
+        mov    r2,-(sp)
+        mov    r1,-(sp) / put r1 and r2 on the stack
+1: / flush the clist wait till typewriter is quiescent
+        mov    (sp),r1 / restore r1 to tty block offset
+        movb   tty+3(r1),0f / put cc offset into getc argument
+        mov    $240,*$ps / set processor priority to 5
+        jsr    r0,getc; 0:../ put character from clist in r1
+               br .+4 / list empty, skip branch
+        br     1b / get another character until list is empty
+        mov    0b,r1 / move cc offset to r1
+        inc    r1 / bump it for output clist
+        tstb   cc(r1) / is it 0
+        beq    1f / yes, no characters to output
+        mov    r1,0f / no, put offset in sleep arg
+        jsr    r0,sleep; 0:.. / put tty output process to sleep
+        br     1b / trv to calm it down again
+1:
+        mov    (sp)+,r1
+        mov    (sp)+,r2 / restore registers
+        mov    (r2)+,r3 / put reader control status in r3
+        beq    1f / if 0, 1f
+        mov    r3,rcsr(r1) / move r.c. status to reader control status
+                           / register
+1:
+        mov    (r2)+,r3 / move pointer control status to r3

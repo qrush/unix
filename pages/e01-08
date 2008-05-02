@@ -1,0 +1,56 @@
+        movb   r3,u.fp(r2) / move entry number into next available slot
+                           / in u.fp list
+        mov    r2,*u.r0 / move index to u.fp list into r0 loc on stack
+        br     sysret2
+
+error2:
+        jmp    error / see 'error' routine
+sysret2:
+        jmp    sysret / see 'sysret' routine
+
+syscreat: / name, mode
+        jsr    r0,arg2 / put file name in u.namep put mode on stack
+        jsr    r0,namei / get the i-number
+               br  2f / if file doesn't exist 2f
+        neg    r1 / if file already exists make i-number negative
+                  / (open for writing)
+        jsr    r0,iopen /
+        jsr    r0,itrunc / truncate to 0 length
+        br     op0
+2: / file doesn't exist
+        mov    (sp)+,r1 / put the mode in r1
+        bic    $!377,r1 / clear upper byte
+        jsr    r0,maknod / make an i-node for this file
+        mov    u.dirbuf,r1 / put i-number for this new file in r1
+        br     op0 / open the file
+
+sysmkdir: / make a directopy
+        jsr    r0,arg2 / point u.namep to the file name
+        jsr    r0,namei / get the i-number
+               br .+4 / if file not found branch around error
+        br     error2 / directory already exists (error)
+        tstb   u.uid / is user the super user
+        bne    error2 / no, not allowed
+        mov    (sp)+,r1 / put the mode in r1
+        bic    $!317,r1 / all but su and ex
+        bis    $40000,r1 / directory flag
+        jsr    r0,maknod / make the i-node for the directory
+        br     sysret2 /
+
+sysclose: / close the file
+        mov    *u.r0,r1 / move index to u.fu list into r1
+        jsr    r0,fclose / close the file
+               br error2 / unknown file descriptor
+        br     sysret2
+
+sysemt:
+        jsr    r0,arg; 30 / put the argument of the sysemt call in loc 30
+        cmp    30,$core / was the argument a lower address than core
+        blo    1f / yes, rtssvm
+        cmp    30,$ecore / no, was it higher than  core  and less than
+                         / "ecore"
+        blo    2f / yes, sysret2
+1:
+        mov    $rtssym,30
+2:
+        br     sysret2

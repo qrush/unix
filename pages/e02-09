@@ -33,6 +33,7 @@ seektell:
 sysintr: / set interrupt handling
 	jsr	r0,arg; u.intr / put the argument in u.intr
 	br	1f / go into quit routine
+sysquit:
 	jsr	r0,arg; u.quit / put argument in u.quit
 1:
 	mov	u.ttyp,r1 / move pointer to control tty buffer to r1

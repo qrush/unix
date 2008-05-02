@@ -32,7 +32,7 @@ emt     = 29.
 mdate   = 30.
 smdate  = 30.
 stty    = 31.
-gtty    = 32.
+/gtty    = 32.
 ilgins  = 33.
 
 / KE11A memory map
