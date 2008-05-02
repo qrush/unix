@@ -29,4 +29,5 @@ done
 
 cd build
 $APOUT $APOUT_ROOT/bin/as ../sys1.s u?.s
+$APOUT $APOUT_ROOT/bin/nm a.out |sort > a.out.syms
 
