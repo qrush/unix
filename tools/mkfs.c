@@ -21,6 +21,10 @@ int debug=1;
 #include <dirent.h>
 #include <sys/stat.h>
 
+#ifdef linux
+#include <stdint.h>
+#endif
+
 #define RF_SIZE		1024	/* Number of blocks on RF11 */
 #define RK_SIZE		4872	/* Number of blocks on RK03 */
 #define BLKSIZE		 512	/* 512 bytes per block */

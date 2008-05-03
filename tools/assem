@@ -22,12 +22,16 @@ for f in rebuilt/u?.s ; do
     if [ $COLD = 1 ] ; then
         sed -e 's/.*init by copy.*/4;4;unkni;0;fpsym;0/' \
 	    -e 'sX\[systm-inode\]\\/2X-191.X' \
-            -e 's/mount/xmount/' \
-            -e 's/cold = 0/cold = 1/' < $f > build/$b
+            -e 's/^mount:/_mount:/' \
+            -e 's/$mount/$_mount/' \
+            -e 's/cold = 0/cold = 1/' \
+	    < $f > build/$b
     else 
         sed -e 's/.*init by copy.*/4;4;unkni;0;fpsym;0/' \
 	    -e 'sX[systm-inode]\/2X-101.X' \
-            -e 's/mount/xmount/' < $f > build/$b
+            -e 's/^mount:/xmount:/' \
+            -e 's/$mount/$xmount/' \
+            < $f > build/$b
     fi
 done
 
