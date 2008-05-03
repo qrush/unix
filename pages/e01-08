@@ -8,7 +8,7 @@ error2:
 sysret2:
         jmp    sysret / see 'sysret' routine
 
-syscreat: / name, mode
+syscreat: / name; mode
         jsr    r0,arg2 / put file name in u.namep put mode on stack
         jsr    r0,namei / get the i-number
                br  2f / if file doesn't exist 2f
@@ -24,7 +24,7 @@ syscreat: / name, mode
         mov    u.dirbuf,r1 / put i-number for this new file in r1
         br     op0 / open the file
 
-sysmkdir: / make a directopy
+sysmkdir: / make a directory
         jsr    r0,arg2 / point u.namep to the file name
         jsr    r0,namei / get the i-number
                br .+4 / if file not found branch around error
@@ -38,7 +38,7 @@ sysmkdir: / make a directopy
         br     sysret2 /
 
 sysclose: / close the file
-        mov    *u.r0,r1 / move index to u.fu list into r1
+        mov    *u.r0,r1 / move index to u.fp list into r1
         jsr    r0,fclose / close the file
                br error2 / unknown file descriptor
         br     sysret2
@@ -46,8 +46,8 @@ sysclose: / close the file
 sysemt:
         jsr    r0,arg; 30 / put the argument of the sysemt call in loc 30
         cmp    30,$core / was the argument a lower address than core
-        blo    1f / yes, rtssvm
-        cmp    30,$ecore / no, was it higher than  core  and less than
+        blo    1f / yes, rtssym
+        cmp    30,$ecore / no, was it higher than "core" and less than
                          / "ecore"
         blo    2f / yes, sysret2
 1:

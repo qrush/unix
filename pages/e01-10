@@ -4,7 +4,7 @@
         mov    (r2)+,tty+4(r1) / move to flag byte of tty block
         jmp     sysret2 / return to user
 
-sysgtty: / get status of typewriter, 3 consequtive word arguments
+sysgtty: / get status of typewriter; 3 consequtive word arguments
         jsr    r0,gtty / r1 will have offset to tty block, r2 has
                        / destination
         mov    rcsr(r1),(r2)+ / put reader control status in 1st word

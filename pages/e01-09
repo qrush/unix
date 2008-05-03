@@ -26,7 +26,7 @@ sysmdate: / change the modification time of a file
         mov    2(sp),i.mtim+2 / modification time
         br     sysret2
 
-sysstty: / set mode of typewriter, 3 consequtive word arguments
+sysstty: / set mode of typewriter; 3 consequtive word arguments
         jsr    r0,gtty / r1 will have offset to tty block, r2 has source
         mov    r2,-(sp)
         mov    r1,-(sp) / put r1 and r2 on the stack
@@ -43,7 +43,7 @@ sysstty: / set mode of typewriter, 3 consequtive word arguments
         beq    1f / yes, no characters to output
         mov    r1,0f / no, put offset in sleep arg
         jsr    r0,sleep; 0:.. / put tty output process to sleep
-        br     1b / trv to calm it down again
+        br     1b / try to calm it down again
 1:
         mov    (sp)+,r1
         mov    (sp)+,r2 / restore registers

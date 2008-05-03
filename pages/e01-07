@@ -17,11 +17,11 @@ sysopen:
         jsr    r0,arg2 / get sys args into u.namep and on stack
         jsr    r0,namei / i-number of file in r1
         br     error2 / file not found
-        tst    (sp) / is mode = 0 (2nd arg of call, 0 means, open for read)
+        tst    (sp) / is mode = 0 (2nd arg of call; 0 means, open for read)
         beq    1f / yes, leave i-number positive
         neg    r1 / open for writing so make i-number negative
 1:
-        jsr    r0,iopen / ooen file whose i-number is in r1
+        jsr    r0,iopen / open file whose i-number is in r1
         tst    (sp)+ / pop the stack and test the mode
         beq    op1 / is open for read op1
 
@@ -44,7 +44,7 @@ op1:
         cmp    r3,$[nfiles*8.] / done scanning
         blt    1b / no, back
         br     error2 / yes, error
-1: / r2 has index to u.fp list, r3, has index to fsp table
+1: / r2 has index to u.fp list; r3, has index to fsp table
         mov    r1,fsp(r3) / put i-number of open file into next available
         mov    cdev,fsp+2(r3) / entry in fsp table, put # of device in
                               / next word
