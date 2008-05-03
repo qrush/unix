@@ -3,12 +3,17 @@
 # assemble the sources
 #
 
-# settings
-APOUT=/tmp/apout2.3alpha2/apout
-APOUT_ROOT=/tmp/v7
-COLD=1
+# settings;  should contain something like:
+#   APOUT=/tmp/apout2.3alpha2/apout
+#   APOUT_ROOT=/tmp/v7
+. tools/assemv7.cfg
 
 export APOUT_ROOT
+COLD=0
+if [ "$1" = "cold" ] ; then
+    COLD=1
+fi
+echo "COLD: $COLD"
 
 tools/rebuild
 
