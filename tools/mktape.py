@@ -151,7 +151,7 @@ def sMode(m) :
 def wrFile(out, fn, d, mode, uid) :
     "write out file."
     print sMode(mode), uid, fn
-    meta = pack("HBB", len(d), mode, uid) + fn
+    meta = pack("<HBB", len(d), mode, uid) + fn
     out.write(pad(meta))
     out.write(pad(d))
 
