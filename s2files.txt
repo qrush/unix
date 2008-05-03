@@ -1,0 +1,98 @@
+This is an invetory of the s2 files that are incorporated into the
+system as compared to what files should be on a proper first edition
+system.  Some files are missing, some files are borrowed from 2nd ed
+but present as 0405 binaries, and some files are 2nd ed binaries that
+the 1st ed kernel cannot run.
+
+
+/bin
+----
+:               V2 cmd, 0405 binary
+ar
+as              V2 binary
+b               missing
+bas
+bcd             missing
+boot            missing
+cal
+cat
+cc              V2 binary
+chball          ? no idea
+check
+chmod
+chown
+cmp
+cp
+date
+db
+dbppt           missing
+dc
+df
+ds              V2 binary
+dsw
+ds              V2 binary
+dsw
+dtf             missing
+du
+echo            V2 cmd, 0405 binary
+ed
+exit            V2 cmd, 0405 binary
+fc              V2 binary
+find            V2 binary
+form
+goto            V2 cmd, 0405 binary
+hup             missing
+if              V2 cmd, 0405 binary
+lbppt           missing
+ld              V2 binary
+ln
+login           V2 cmd, 0405 binary
+ls
+mail
+maki            V2 binary
+mesg
+mkdir
+mkfs
+mount
+mv
+nm              V2 binary
+od
+pr
+rew
+rkd             missing
+rkf             missing
+rkl             missing
+rm
+rmdir
+roff
+rmdir
+roff
+sdate           missing
+sh
+size            V2 binary
+skip            ? no idea
+sort
+stat
+strip           V2 binary
+stty            V2 cmd, 0405 binary
+su
+sum
+tap
+tm
+tty
+type
+un              V2 binary
+wc
+who
+write
+
+/etc
+----
+as2             V2 binary
+getty           V2 cmd, 0405 binary
+glob
+init
+msh
+suftab
+uids
+
