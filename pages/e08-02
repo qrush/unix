@@ -28,6 +28,7 @@
    / of users data
        movb    (r5)+,(r2)+ / move data from the I/O buffer
        dec     r3 / to the user's area in core starting at u.base
+       bne     1b
        tst     u.count / done
        beq     1f / yes, return
        tst     -(r0) / no, point r0 to the argument again
