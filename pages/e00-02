@@ -12,7 +12,7 @@
        tape;300 / dec tape interrupt
        disk;300 / rk03 interrupt
  . = orig+300
-       0*4+trcv; 240; 0*4+txmt; 240 / dc11 input;output interrupt vectors
+       0*4+trcv; 240; 0*4+txmt; 240 / dc11 input,output interrupt vectors
        1*4+trcv; 240; 1*4+txmt; 240
        2*4+trcv; 240; 2*4+txmt; 240
        3*4+trcv; 240; 3*4+txmt; 240
