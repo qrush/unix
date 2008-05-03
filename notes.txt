@@ -96,6 +96,10 @@ e00-06
 
 e00-10
     - left "/ect/init" typo
+      - changed this to "/etc/init".  There is no "/ect" directory
+        on the rf0 drive at the point the cold init is run and 
+        the cold init program doesnt make any new directories, so
+        this is likely just a typo in the original printout.
 
 ------
 e01-06

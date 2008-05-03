@@ -14,7 +14,7 @@
 4:
 	5f-8b+core; 0
 5:
-	</ect/init\0>
+	</etc/init\0>
 6:
 	</dev/tap0\0>
 	.even
