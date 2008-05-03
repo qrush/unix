@@ -49,7 +49,7 @@ ocvt:
 	mov	$511,rcsr(r1) / set ready, speed, interrupt enable,
 			      / supervisor transmit
 	movb	tty+3(r1),0f / put clist id in sleep argument
-	jsr	r0,sleep; 0;..
+	jsr	r0,sleep; 0:..
 	br	1b
 1:
 	mov	tty+6(r1),r5 / put tty buffer address in r5
