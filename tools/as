@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# use the v7 assembler to assemble some userland code into an 0405 binary.
+# Requires the first .s file to set ". = . + 40014".
+#
+
+. tools/assemv7.cfg
+export APOUT_ROOT
+$APOUT $APOUT_ROOT/bin/as "$@" && tools/fixaout.py
+
+
