@@ -4,12 +4,15 @@
  *
  * Other contributors, add your name above.
  *
- * TODO: work out how to add /dev and device files
+ * TODO: add large file functionality
  *	 ensure that swap is not used on RF disk images.
  *	 deal with errors instead of exiting :-)
  *
- * $Revision: 1.17 $
- * $Date: 2008/05/04 14:20:12 $
+ *	 in the long run, have the ability to read from/write to
+ *	 existing images, a la an ftp client.
+ *
+ * $Revision: 1.18 $
+ * $Date: 2008/05/04 14:55:05 $
  */
 
 int debug=1;
@@ -518,7 +521,6 @@ int main(int argc, char *argv[])
   } else {
     disksize = RF_SIZE;
     fs_size = RF_NOSAWPSIZE;
-    icount= RF_INODES;		/* Set it up as per cold UNIX */
   }
 
   /* Create the image */
