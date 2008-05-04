@@ -8,8 +8,8 @@
  *	 ensure that swap is not used on RF disk images.
  *	 deal with errors instead of exiting :-)
  *
- * $Revision: 1.17 $
- * $Date: 2008/05/04 08:53:07 $
+ * $Revision: 1.18 $
+ * $Date: 2008/05/04 09:07:54 $
  */
 
 int debug=1;
@@ -55,7 +55,7 @@ struct v1inode {		/* Format of 1st edition i-node */
 
 /*
  * We build directories with certain limitations: first, they are all
- * directories under /; second, they all occupy 4 contiguous disk blocks,
+ * directories under /; second, most of them occupy 4 contiguous disk blocks,
  * giving us up to 64 directory entries.
  */
 #define DIRBLOCKS	4
@@ -69,7 +69,7 @@ struct v1dirent {		/* Format of 1st edition dir entry */
 struct directory {		/* Internal structure for each dir */
   uint16_t block;		/* Starting block */
   int numentries;		/* Number of entries in entry[] */
-  struct v1dirent *entry;
+  struct v1dirent *entry;	/* calloc'd later to be an array */
 };
 
 unsigned char buf[BLKSIZE];	/* A block buffer */
@@ -208,7 +208,9 @@ void add_direntry(struct directory *d, uint16_t inum, char *name)
 /*
  * Create a directory with the given name. Allocate an i-node for it, and a
  * set of blocks. Attach it to /. Return the struct allocated. If name is
- * "/", we are making the root directory itself.
+ * "/", we are making the root directory itself. numblocks is the number of
+ * disk blocks the dir will occupy, normally this is DIRBLOCKS, but / and
+ * /dev only need 1 block each.
  */
 struct directory *create_dir(char *name, int numblocks)
 {
@@ -229,13 +231,16 @@ struct directory *create_dir(char *name, int numblocks)
   d->entry= (struct v1dirent *)calloc(d->numentries, sizeof(struct v1dirent));
 
   /* Allocate an i-node and some blocks for the directory */
+  /* / always gets ROOTDIR_INUM; other dirs get allocated an inode number */
   if (strcmp(name, "/")) inum = alloc_inode();
   else inum = ROOTDIR_INUM;
   d->block = alloc_blocks(numblocks);
   if (debug) printf("In create_dir, got back block %d, %d config blks\n",
 			d->block, numblocks);
 
-  /* Mark the i-node as a directory */
+  /* Mark the i-node as a directory. Set the number of links to default 2 */
+  /* (. and the root entry), set the directory size, and write the number */
+  /* of blocks occupied into the directory's i-node. */
   inodelist[inum].flags |= I_DIR | I_UREAD | I_UWRITE | I_OREAD | I_OWRITE;
   inodelist[inum].nlinks= 2;
   inodelist[inum].size= numblocks * BLKSIZE;
@@ -359,7 +364,7 @@ void add_files(char *basedir, char *dir)
     printf("Cannot opendir %s\n", fullname); exit(1);
   }
 
-  /* Create the image directory */
+  /* Create the image directory with a default number of blocks */
   d = create_dir(dir, DIRBLOCKS);
 
   /* Walk the directory */
