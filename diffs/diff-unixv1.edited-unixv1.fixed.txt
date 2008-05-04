@@ -1,0 +1,124 @@
+--- unixv1.edited	2008-05-02 10:42:06.000000000 -0400
++++ unixv1.fixed	2008-05-02 10:43:06.000000000 -0400
+@@ -209,7 +209,7 @@
+         / zero i list
+ 
+         1:
+-                dec    r0 / r0 = 33.,...,1
++                dec    r1 / r1 = 33.,...,1
+                 jsr    r0,clear / zero block 'r1' on fixed head disk
+                 tst    r1
+                 bgt    1b / if blocks 33,...,1 have all been zeroed, done.
+@@ -246,7 +246,7 @@
+                 dec    r1 / next i-node no. = present i-node no.-1
+                 bgt    1b / has i-node 1 been initialized; no, branch
+ 
+-        / initialize i-nodes r1.,...,47. and write the root device, binary, etc.,
++        / initialize i-nodes 41.,...,47. and write the root device, binary, etc.,
+         / directories onto fixed head disk.  user temporary, initialization prog.
+ 
+         Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 4
+@@ -270,7 +270,7 @@
+                                / core and write modified i-node on drum (if any)
+                 mov    (r0)+,i.flgs / set flags in core image of inode from
+                                     / assembled directories header
+-                movb   (r0)+.i.nlks / set no. of links from header
++                movb   (r0)+,i.nlks / set no. of links from header
+                 movb   (r0)+,i.uid / set user id of owner from header
+                 jsr    r0,setimod / set imod=1 to indicate inode modified; also,
+                                   / stuff time of modification into i-node
+@@ -962,7 +962,7 @@
+                 movb   (sp),r2 / put parent process number in r2
+                 asl    r2 / multiply by 2 to get index into below tables
+                 mov    p.pid-2(r2),r2 / get process name of parent process
+-                mov    r2,8spid-2(r1) / put parent process name in parent
++                mov    r2,p.ppid-2(r1) / put parent process name in parent
+                                       / process slot for child
+                 mov    r2,*u.r0 / put parent process name on stack at location
+                                 / where r0 was saved
+@@ -2851,8 +2851,8 @@
+                 tst    r1 / is new i-number non zero
+                 beq    2f / branch if r1=0
+                 tst    cdev / is the current device number non zero (i.e., device
+-                            / / drum)
+-                bne    1f / branch if cdev / 0
++                            / != drum)
++                bne    1f / branch if cdev != 0
+                 cmp    r1,mnti / mnti is the i-number of the cross device
+                                / file (root directory of mounted device)
+                 bne    1f
+@@ -3132,7 +3132,7 @@
+                 xmtt   / tty0
+                 xmtt   / tty1
+                 xmtt   / tty2
+-                smtt   / tty3
++                xmtt   / tty3
+                 xmtt   / tty4
+                 xmtt   / tty5
+                 xmtt   / tty6
+@@ -3391,7 +3391,7 @@
+         2:
+                 rts    r0 / return
+ 
+-        ttych: / get characters from Q of characters inputted to tty
++        ttych: / get characters from Q of characters inputted from tty
+                 mov    $240,*$ps / set processor priority to 5
+                 jsr    r0,getc; 0 / takes char. off clist and puts it in r1
+                        br 1f / list is empty, go to sleep
+@@ -3751,7 +3751,7 @@
+         cppt: / close paper tape
+                 clrb   pptiflg / set pptiflg to indicate file not open
+         1:
+-                mov    $240.*$ps / set process or priority to 5
++                mov    $240,*$ps / set process or priority to 5
+                 jsr    r0,getc; 2 / remove all ppt input entries from clist
+                                   / and assign to free list
+                        br sret
+@@ -3802,7 +3802,7 @@
+                                 / I/O queue entry
+                 mov    (sp)+,cdev / put device number in cdev
+                 bis    $2000,sb1 / set the read bit
+-                jsr    r0,ppoke / read in entire file system
++                jsr    r0,ppoke / read in entire file system superblock
+         1:
+                 tstb   sb1+1 / done reading?
+                 bne    1b / no, wait
+@@ -4101,7 +4101,7 @@
+                 mov    $rkda+2,r3 /
+                 mov    ac,-(sp) / put remainder from divide on stack; gives
+                                 / sector number
+-                mov    $4,1sh / shift quotient 4 bits, to align with cyl and surf
++                mov    $4,lsh / shift quotient 4 bits, to align with cyl and surf
+                               / bits in rkda
+                 bis    mq,(sp) / or mq with sector, gives total disk address
+                 br     3f
+@@ -4448,7 +4448,7 @@
+                 bitb   $100,tty+4(r0)
+                 beq    2f / non-37 parity not allowed
+         4:
+-                bic    $!77,r1
++                bic    $!177,r1
+                 bit    $40,tty+4(r0)
+                 bne    3f / raw
+                 cmp    r1,$177
+@@ -4624,7 +4624,7 @@
+                 incb   (r2) / normal / jmp to location determined by digits
+                             / 0 and 1 of character's entry in "partab" which
+                             / is now in r3
+-                rts    r0 / non-printing
++        1:      rts    r0 / non-printing
+                 br     1f / bs
+                 br     2f / nl (line feed)
+                 br     3f / tab (horizontal tab)
+@@ -4702,9 +4702,9 @@
+         partab: / contains 3 digits for each character; digit 2 is used
+                 / to determine if 200 is to added to ASCII code digits 0
+                 / and 1 are used to depermine value for jump table.
+-                .byte 002,202,202,002,002,002,002,202
++                .byte 002,202,202,002,202,002,002,202
+                 .byte 204,010,006,212,012,214,202,002
+-                .byte 202,002,002,202,002,002,202,002
++                .byte 202,002,002,202,002,202,202,002
+                 .byte 002,202,202,002,202,002,002,202
+                 .byte 200,000,000,200,000,200,200,000
+                 .byte 000,200,200,000,200,000,000,200

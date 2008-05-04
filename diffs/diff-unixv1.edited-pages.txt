@@ -1,0 +1,3096 @@
+--- ../unixv1_080502/unixv1.edited	2008-05-02 10:42:06.000000000 -0400
++++ pages	2008-05-02 16:38:48.000000000 -0400
+@@ -1,9 +1,3 @@
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / u0 -- unix
+ 
+         cold = 0
+@@ -25,7 +19,7 @@
+         dae  = 177470 / drum address extension        rf11/rs11
+         lks  = 177546 / clock status reg              kw11-l
+         prs  = 177550 / papertape reader status       pc11
+-        prb  = 177552 /                  lmffer       pc11
++prb  = 177552 /                  buffer     pc11
+         pps  = 177554 /            punch status       pc11
+         ppb  = 177556 /            punch buffer       pc11
+         /lps = 177514   line printer status           (future)
+@@ -52,20 +46,13 @@
+         ecore = core+20000 / specifies end of user's core (4096 words)
+ 
+         /      4;4     init by copy
+-        /      unkni;0 " bus error
++/      unkni;0 " error
+         /      fpsym;0 " illg in tr
+                unkni;0 / trace and trap (see Sec. B.1 page  )
+                unkni;0 / trap
+                panic;0 / pwr
+                rtssym;0 / emt
+                sysent;0 / sys
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+          . = orig+60
+                ttyi;240 / interrupt vector tty in       ; processor level 5
+                ttyo;240 / interrupt vector tty out
+@@ -80,7 +67,7 @@
+                tape;300 / dec tape interrupt
+                disk;300 / rk03 interrupt
+          . = orig+300
+-               0*4+trcv; 240; 0*4+txmt; 240 / dc11 input,output interrupt vectors
++       0*4+trcv; 240; 0*4+txmt; 240 / dc11 input;output interrupt vectors
+                1*4+trcv; 240; 1*4+txmt; 240
+                2*4+trcv; 240; 2*4+txmt; 240
+                3*4+trcv; 240; 3*4+txmt; 240
+@@ -100,12 +87,12 @@
+                 mov    r0,(r1)+ / put value of 4 into location 2
+                 mov    $unkni,(r1)+ / put value of unkni into location 4;
+                                     / time out, bus error
+-                clr    (r1)+ / put value of 0 into location
++	clr    (r1)+ / put value of 0 into location 6
+                 mov    $fpsym,(r1)+ / put value of fpsym into location 10
+                 clr    (r1)+ / put value of 0 into location 12
+         / clear core
+                 .if cold / ignored if cold = 0
+-                halt / halt before initializing rf file system, user has
++	halt / halt before initializing rf file system; user has
+                      / last chance to reconsider
+                 .endif
+ 
+@@ -123,12 +110,6 @@
+ 
+         / allocate disk buffers; see H.0 for description
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    $bufp,r1
+         1:
+                 mov    r0,(r1)+
+@@ -178,20 +159,13 @@
+ 
+                 mov    $1024.-64.,r1 / highest drum address; high 64 blks allocated
+                                      / to UNIX
+-                mov    $p.dska,r2 / p.dska contains distaddresses for processes
++	mov    $p.dska,r2 / p.dska contains dis addresses for processes
+         1:
+                 sub    $17.,r1 / 17 blocks per process
+                 mov    r1,(r2)+
+                 cmp    r2,$p.dska+nproc+nproc
+                 bne    1b
+ 
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         / free rest of drum
+ 
+                 .if cold
+@@ -209,7 +183,7 @@
+         / zero i list
+ 
+         1:
+-                dec    r0 / r0 = 33.,...,1
++	dec    r1 / r1=33.,...,1
+                 jsr    r0,clear / zero block 'r1' on fixed head disk
+                 tst    r1
+                 bgt    1b / if blocks 33,...,1 have all been zeroed, done.
+@@ -235,7 +209,7 @@
+                 mov    $40.,r1 / set r1=i-node-number 40.
+         1:
+                 jsr    r0,iget / read i-node 'r1' from disk into inode area of
+-                               / ccre and write modified inode out (if any)
++                       / core and write modified inode out (if any)
+                 mov    $100017,i.flgs / set flags in core image of inode to indi-
+                                       / cate allocated, read (owner, non-owner),
+                                       / write (owner, non-owner)
+@@ -249,18 +223,11 @@
+         / initialize i-nodes r1.,...,47. and write the root device, binary, etc.,
+         / directories onto fixed head disk.  user temporary, initialization prog.
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+                 mov    $idata,r0 / r0=base addr. of assembled directories.
+                 mov    $u.off,u.fofp / pointer to u.off in u.fofp (holds file
+                                      / offset)
+         1:
+-                mov    (r0)+,r1/r1=41.,...,47, "0" in the assembled directory
++	mov    (r0)+,r1/r1=41.,...,47; "0" in the assembled directory
+                                / header signals last
+                 beq    1f      / assembled directory has been written onto drum
+                 jsr    r0,imap / locate the inode map bit for i-node 'r1'
+@@ -270,13 +237,13 @@
+                                / core and write modified i-node on drum (if any)
+                 mov    (r0)+,i.flgs / set flags in core image of inode from
+                                     / assembled directories header
+-                movb   (r0)+.i.nlks / set no. of links from header
++	movb   (r0)+,i.nlks / set no. of links from header
+                 movb   (r0)+,i.uid / set user id of owner from header
+                 jsr    r0,setimod / set imod=1 to indicate inode modified; also,
+                                   / stuff time of modification into i-node
+                 mov    (r0)+,u.count / set byte count for write call equal to
+                                      / size of directory
+-                mov    r0,u.base / set buffer address for write to top of'directopy
++	mov    r0,u.base / set buffer address for write to top of directory
+                 clr    u.off / clear file offset used in 'seek' and 'tell'
+                 add    u.count,r0 / r0 points to the header of the next directory
+                 jsr    r0,writei / write the directory and i-node onto drum
+@@ -284,17 +251,16 @@
+                 .endif
+ 
+         / next 2 instructions not executed during cold boot.
+-                bis    $2000,sb0 / sb0 I/O queue entry for superblock on drum,
++	bis    $2000,sb0 / sb0 I/O queue entry for superblock on drum;
+                                  / set bit 10 to 1
+                 jsr    r0,ppoke / read drum superblock
+         1:
+                 tstb   sb0+1 / has I/O request been honored (for drum)?
+                 bne    1b / no, continue to idle.
+-
+         1:
+                 decb   sysflg / mormally sysflag=0, indicates executing in system
+-                sys    exec; 2f; 1f / generates trap interrupt, trap vector =
+-                                    / sysent, 0
++	sys    exec; 2f; 1f / generates trap interrupt; trap vector =
++                            / sysent; 0
+                        br     panic / execute file/etc/init
+ 
+         1:
+@@ -310,14 +276,6 @@
+                 dec    $5
+                 bne    1b
+                 jmp    *$173700 / rom loader address
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         rtssym:
+                 mov    r0,-(sp)
+                 mov    r1,-(sp)
+@@ -372,15 +330,7 @@
+         badrts:
+                 mov    (sp)+,r1
+                 mov    (sp)+,r0
+-
+         rpsym:
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 jmp    unkni
+ 
+                 .if cold
+@@ -437,13 +387,6 @@
+                 <tap2\0\0\0\0>
+                 09.
+                 <tap3\0\0\0\0>
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 7
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 10.
+                 <tap4\0\0\0\0>
+                 11.
+@@ -500,13 +443,6 @@
+                 <init\0\0\0\0>
+          9:
+ 
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 8
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         / user directory
+ 
+                 45.
+@@ -531,7 +467,7 @@
+                 <.\0\0\0\0\0\0\0>
+         9:
+ 
+-        / initializaticn program
++/ initialization program
+ 
+                 47.
+                 100036
+@@ -563,13 +499,6 @@
+                 bhi    3f
+                 mov    r5,0f
+         3:
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.0  Page 9
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    r2,r0
+                 sys    write; 9f-8b+core; 0:..
+                 sub    r0,r5
+@@ -586,7 +515,7 @@
+         4:
+                 5f-8b+core; 0
+         5:
+-                </etc/init\0>
++	</ect/init\0>
+         6:
+                 </dev/tap0\0>
+                 .even
+@@ -598,42 +527,6 @@
+ 
+                 .endif
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.0  Page 10
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / u1 -- unix
+ 
+         unkni: / used for all system calls
+@@ -660,7 +553,7 @@
+                 mov    18.(sp),r0 / store pc in r0
+                 mov    -(r0),r0 / sys inst in r0      10400xxx
+                 sub    $sys,r0 / get xxx code
+-                asl    r0 / multiply bv 2 to jump indirect in bytes
++	asl	r0 / multiply by 2 to jump indirect in bytes
+                 cmp    r0,$2f-1f / limit of table (35) exceeded
+                 bhis   badsys / yes, bad system call
+                 bic    $341,20.(sp) / set users processor priority to 0 and clear
+@@ -689,13 +582,6 @@
+                 sysstat / 18
+                 sysseek / 19
+                 systell / 20
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 sysmount / 21
+                 sysumount / 22
+                 syssetuid / 23
+@@ -752,13 +638,6 @@
+                 mov    (sp)+,r3
+                 mov    (sp)+,r2
+                 mov    (sp)+,r1
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    (sp)+,r0
+                 mov    $s.chrgt+2,clockp
+                 decb   sysflg / turn system flag off
+@@ -815,13 +694,6 @@
+         1: / find children of this dying process, if they are zombies, free them
+                 add    $2,r2 / search parent process table for dying process's name
+                 cmp    p.ppid-2(r2),r3 / found it?
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 bne    3f / no
+                 asr    r2 / yes, it is a parent
+                 cmpb   p.stat-1(r2),$3 / is the child of this dying process a
+@@ -845,7 +717,7 @@
+                 beq    2f / if its been freed, 2f
+                 cmp    r2,$3 / is parent a zombie?
+                 beq    2f / yes, 2f
+-                movb   u.uno,r3 / mov, dying process's number to r3
++	movb	u.uno,r3 / move dying process's number to r3
+                 movb   $3,p.stat-1(r3) / make the process a zombie
+                 cmp    r2,$2 / is the parent waiting for this child to die
+                 bne    2f / yes, notify parent not to wait any more
+@@ -863,8 +735,8 @@
+                 cmp    (sp)+,(sp)+ / pop clock pointer
+         1: / now in user area
+                 mov    r1,-(sp) / save r1
+-                mov    u.ttyp,r1 / pointer to tty buffer in control-to %1
+-                cmpb   6(r1),$177 / is the interrupt char equal to  del
++	mov	u.ttyp,r1 / pointer to tty buffer in control-to r1
++	cmpb	6(r1),$177 / is the interrupt char equal to "del"
+                 beq    1f / yes, 1f
+                 clrb   6(r1) / no, clear the byte (must be a quit character)
+                 mov    (sp)+,r1 / restore r1
+@@ -878,13 +750,6 @@
+                 blo    1f
+                 jmp    *u.intr / user to do rti yes, transfer to loc core
+         1:
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 sys    1 / exit
+ 
+         syswait: / wait for a process to die
+@@ -894,12 +759,12 @@
+                 clr    r2
+                 clr    r3 / initialize reg 3
+         1:
+-                add    $2,r2 / use r2 for index into p.ppid table / search zable
++	add	$2,r2 / use r2 for index into p.ppid table / search table
+                              / of parent processes for this process name
+                 cmp    p.ppid-2(r2),r1 / r2 will contain the childs process number
+                 bne    3f / branch if no match of parent process name
+                 inc    r3 / yes, a match, r3 indicates number of children
+-                asr    r2 / r2/2 to get'index to p.stat table
++	asr	r2 / r2/2 to get index to p.stat table
+                 cmpb   p.stat-1(r2),$3 / is the child process a zombie?
+                 bne    2f / no, skip it
+                 clrb   p.stat-1(r2) / yes, free it
+@@ -938,16 +803,9 @@
+                 br     error1 / no room for a new process
+         1:
+                 movb    u.uno,-(sp) / save parent process number
+-                movb   r1,u.uno / set child proceSs number to r1
++	movb	r1,u.uno / set child process number to r1
+                 incb   p.stat-1(r1) / set p.stat entry for child process to
+                                     / active status
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    u.ttyp,r2 / put pointer to parent process' control tty
+                                  / buffer in r2
+                 beq    2f / branch, if no such tty assigned
+@@ -956,28 +814,28 @@
+                 mov    $runq+4,r2
+                 jsr    r0,putlu / put child process on lowest priority run queue
+                 asl    r1 / multiply r1 by 2 to get index into p.pid table
+-                inc    mpid / increment m.pid, get a new process name
++	inc	mpid / increment m.pid; get a new process name
+                 mov    mpid,p.pid-2(r1) / put new process name in child process'
+                                         / name slot
+                 movb   (sp),r2 / put parent process number in r2
+                 asl    r2 / multiply by 2 to get index into below tables
+                 mov    p.pid-2(r2),r2 / get process name of parent process
+-                mov    r2,8spid-2(r1) / put parent process name in parent
++	mov	r2,p.ppid-2(r1) / put parent process name in parent
+                                       / process slot for child
+                 mov    r2,*u.r0 / put parent process name on stack at location
+                                 / where r0 was saved
+-                mov    $sysret1,(sp) /
++	mov	$sysret1,-(sp) /
+                 mov    sp,u.usp / contents of sp at the time when user is
+                                 / swapped out
+                 mov    $sstack,sp / point sp to swapping stack space
+-                jsr    r0,wswap / put child procers out on drum
++	jsr	r0,wswap / put child process out on drum
+                 jsr    r0,unpack / unpack user stack
+                 mov    u.usp,sp / restore user stack pointer
+                 tst    (sp)+ / bump stack pointer
+                 movb   (sp)+,u.uno / put parent process number in u.uno
+                 mov    mpid,*u.r0 / put child process name on stack where r0
+                                   / was saved
+-                add    $2,18.(sp) / add 2 to pc on stack, gives parent
++	add	$2,18.(sp) / add 2 to pc on stack; gives parent
+                                   / process return
+                 clr    r1
+         1: / search u.fp list to find the files opened by the parent process
+@@ -1004,13 +862,6 @@
+ 
+         syswrite:
+                 jsr    r0,rw1 / get i-number in r1 of file to write
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 tst    r1 / positive i-number ?
+                 bge    error1 / yes, error 1 negative i-number means write
+                 neg    r1 / make it positive
+@@ -1067,13 +918,6 @@
+                 asr    r3 / divide by 8 to get number of the fsp entry-1
+                 asr    r3
+                 inc    r3 / add 1 to get fsp entry number
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 7
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 movb   r3,u.fp(r2) / move entry number into next available slot
+                                    / in u.fp list
+                 mov    r2,*u.r0 / move index to u.fp list into r0 loc on stack
+@@ -1130,14 +974,6 @@
+                 mov    $rtssym,30
+         2:
+                 br     sysret2
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 8
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         sysilgins: / calculate proper illegal instruction trap address
+                 jsr    r0,arg; 10 / take address from sysilgins call     , put
+                                   / it in loc 8.,
+@@ -1193,13 +1029,6 @@
+                                    / register
+         1:
+                 mov    (r2)+,r3 / move pointer control status to r3
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.1   Page 9
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 beq    1f / if 0 1f
+                 mov    r3,tcsr(r1) / move p.c. status to printer control status reg
+         1:
+@@ -1232,38 +1061,6 @@
+                 asl    r1 / 0%8 / multiply by 8 so r1 points to tty block
+                 mov    u.off,r2 / put argument in r2
+                 rts    r0 / return
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1       Section E.1   Page 10
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / u2 -- unix
+ 
+         syslink: / name1, name2
+@@ -1281,7 +1078,7 @@
+                        br .+4   / not found so r1-i-number of current directory
+                                 /              ii = i-number of current directory
+                 br     error9 / file already exists., error
+-                cmp    (sp)+,cdev / u.dirp now points to end of current dir
++	cmp	(sp)+,cdev / u.dirp now points to end of current directory
+                 bne    error9
+                 mov    (sp),u.dirbuf / i-number of name1 into u.dirbuf
+                 jsr    r0,mkdir / make directory entry for name2 in current
+@@ -1319,13 +1116,6 @@
+                                 / into the i-number portion of the entry
+                 sub    $10.,u.off / move u.off back 1 directory entry
+                 jsr    r0,wdir / free the directory entry
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    (sp)+,r1 / get i-number back
+                 jsr    r0,iget / get i-node
+                 jsr    r0,setimod / set modified flag
+@@ -1342,7 +1132,7 @@
+         1: / put characters in the directory name in u.dirbuf+2 - u.dirbuf+10
+                 movb    (r2)+,r1 / move character in name to r1
+                 beq    1f / if null, done
+-                cmp    r1,$'/ / is it a  /"?
++	cmp	r1,$'/ / is it a "/"?
+                 beq    error9 / yes, error
+                 cmp    r3,$u.dirbuf+10. / have we reached the last slot for
+                                         / a char?
+@@ -1366,7 +1156,7 @@
+                 jsr    r0,namei / namei returns i-number of file named in
+                                 / sysexec call in r1
+                        br error9
+-                jsr    r0,iget / get i-node for fil= to be executed
++	jsr	r0,iget / get i-node for file to be executed
+                 bit    $20,i.flgs / is file executable
+                 beq    error9
+                 jsr    r0,iopen / gets i-node for file with i-number given in
+@@ -1380,15 +1170,8 @@
+         1:
+                 mov    (sp)+,r5 / r5 now contains address of list of pointers to
+                                 / arguments to be passed
+-                mov    $1,u.quit / u.quit determinss handling of quits,
++	mov	$1,u.quit / u.quit determines handling of quits;
+                                  / u.quit = 1 take quit
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    $1,u.intr / u.intr determines handling of interrupts;
+                                  / u.intr = 1 take interrupt
+                 mov    $rtssym,*30 / emt trap vector set to take system routine
+@@ -1403,7 +1186,7 @@
+         1:
+                 tst    (r2)+ / argument char = "nul"
+                 bne    1b
+-                tst    -(r2) / decrement r2 by 2, r2 has addr of end of argument
++	tst	-(r2) / decrement r2 by 2; r2 has addr of end of arguent 
+                              / pointer list
+         1: / move arguments to bottom of users core
+                 mov    -(r2),r3 / (r3) last non zero argument ptr
+@@ -1422,7 +1205,7 @@
+                 br     1b / string
+         1:
+                 clrb   -(r5)
+-                bic    $1,r5 / make r5 even, r5 ooints to last word of argument
++	bic	$1,r5 / make r5 even, r5 points to last word of argument 
+                              / strings
+                 mov    $core,r2
+         1: / move argument pointers into core following argument strings
+@@ -1443,15 +1226,8 @@
+                 mov    r5,u.r0 /
+                 sub    $16.,r5 / skip 8 words
+                 mov    r5,u.sp / assign user stack pointer value, effectively
+-                               / zeroes all reqs whsn sysrele is executed
++		        / zeroes all regs when sysrele is executed
+                 jsr    r0,copyz; core; 0:0 / zero user's core
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 clr    u.break
+                 mov    r5,sp / point sp to user's stack
+                 mov    $14,u.count
+@@ -1459,7 +1235,7 @@
+                 clr    u.off / set offset in file to be read to zero
+                 jsr    r0,readi / read in first six words of user's file, starting
+                                 / at $core
+-                mov    sp,r5 / put users stacx address in r5
++	mov	sp,r5 / put users stack address in r5
+                 sub    $core+40.,r5 / subtract $core +40, from r5 (leaves
+                                     / number of words less 26 available for
+                                     / program in user core
+@@ -1496,7 +1272,7 @@
+                 neg    r1 / make it positive, then branch
+                 br     1f / to 1f
+ 
+-        sysstat: / , name of file; buffer - get files status
++sysstat: / ; name of file; buffer - get files status
+                 jsr    r0,arg2 / get the 2 arguments
+                 jsr    r0,namei / get the i-number for the file
+                        br error3 / no such file, error
+@@ -1508,13 +1284,6 @@
+         1:
+                 mov    (r2)+,(r3)+ / move rest of i-node to buffer
+                 cmp    r2,$inode+32 / done?
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 bne    1b / no, go back
+                 br     sysret3 / return through sysret
+ 
+@@ -1529,7 +1298,7 @@
+                               / fsp table
+                 movb   u.fp(r1),r1 / r1 contains number of entry in fsp table
+                 beq    1f / if its zero return
+-                asl    r1             2
++	asl	r1
+                 asl    r1 / multiply by 8 to get index into fsp table entry
+                 asl    r1
+                 add    $fsp-4,r1 / r1 is pointing at the 3rd word in the fsp entry
+@@ -1549,20 +1318,20 @@
+                 clr    cdev / clear device number
+         1:
+                 tstb   *u.namep / is the character in file name a nul
+-                beq    nig / yes, end of file name reached, branch to "nig"
+-
++	beq	nig / yes, end of file name reached; branch to "nig"
++1:
+                 jsr    r0,access; 2 / get i-node with i-number r1
+                 bit    $40000,i.flgs / directory i-node?
+                 beq    error3 / no, got an error
+                 mov    i.size,u.dirp / put size of directory in u.dirp
+-                clr    u.off / u.off is file offset used bv user
++	clr	u.off / u.off is file offset used by user
+                 mov    $u.off,u.fofp / u.fofp is a pointer to the offset portion
+                                      / of fsp entry
+         2:
+                 mov    $u.dirbuf,u.base / u.dirbuf holds a file name copied from
+                                         / a directory
+                 mov    $10.,u.count / u.count is byte count for reads and writes
+-                jsr    r0,readi / read 10. bytes of file with i-number (r1),
++	jsr	r0,readi / read 10. bytes of file with i-number (r1);
+                                 / i.e. read a directory entry
+                 tst    u.nread
+                 ble    nib / gives error return
+@@ -1571,13 +1340,6 @@
+                           / entry non zero)
+                 mov    u.off,u.dirp
+                 sub    $10.,u.dirp
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 br     2b
+         3:
+                 mov    u.namep,r2 / u.namep points into a file name string
+@@ -1590,9 +1352,9 @@
+                 beq    3f
+                 cmp    r3,$u.dirbuf+10. / have I checked all 8 bytes of file name
+                 beq    3b
+-                cmpb   (r3)+,r4 / compare char in u.namep string to f: e name
++	cmpb	(r3)+,r4 / compare char in u.namep string to file name 
+                                 / char read from
+-                beq    3b / directory: branch if chars match
++	beq	3b / directory; branch if chars match
+                 br     2b / file names do not match go to next directory entry
+         3:
+                 cmp    r3,$u.dirbuf+10. / if equal all 8 bytes were matched
+@@ -1602,7 +1364,7 @@
+         3:
+                 mov    r2,u.namep / u.namep points to char following a / or nul
+                 mov    u.dirbuf,r1 / move i-node number in directory entry to r1
+-                tst    r4 / if r4 = 0 the end of file name reac;ed, if r4 = </>
++	tst	r4 / if r4 = 0 the end of file name reached, if r4 = </>
+                           / then go to next directory
+                 bne    1b
+ 
+@@ -1634,14 +1396,7 @@
+                 beq    1f / yes
+                 jmp    error3 / no, error
+         1:
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-                jsr    r0,setimod / indicates i-node has becn modified
++	jsr	r0,setimod / indicates i-node has been modified
+                 mov    (sp)+,r2 / mode is put in r2 (u.off put on stack with
+                                 / 2nd arg)
+                 rts    r0
+@@ -1653,10 +1408,10 @@
+                 bic    $60,r2 / su & ex / yes, clear set user id and
+                                         / executable modes
+         2:
+-                movb   r2,i.flgs / move remaining mo1e to i.flgs
++	movb	r2,i.flgs / move remaining mode to i.flgs
+                 br     1f
+ 
+-        syschown: / name, owner
++syschown: / name; owner
+                 jsr    r0,isown / get the i-node and check user status
+                 tstb   u.uid / super user
+                 beq    2f / yes, 2f
+@@ -1698,13 +1453,6 @@
+                 mov    2(sp),s.time+2 / set the system time
+                 br     sysret4
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 7
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         sysbreak: / set the program break
+                 mov    u.break,r1 / move users break point to r1
+                 cmp    r1,$core / is it the same or lower than core?
+@@ -1712,7 +1460,7 @@
+                 cmp    r1,sp / is it the same or higher than the stack?
+                 bhis   1f / yes, 1f
+                 bit    $1,r1 / is it an odd address
+-                beq    2f / no, its eve:
++	beq	2f / no, its even
+                 clrb   (r1)+ / yes, make it even
+         2: / clear area between the break point and the stack
+                 cmp    r1,sp / is it higher or same than the stack
+@@ -1760,13 +1508,6 @@
+                 jsr    r0,seektell / get proper value in u.count
+                 add    u.base,u.count / add u.base to it
+                 mov    u.count,*u.fofp / put result into r/w pointer
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 8
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 br    sysret4
+ 
+         systell: / get the r/w pointer
+@@ -1802,7 +1543,8 @@
+         sysintr: / set interrupt handling
+                 jsr    r0,arg; u.intr / put the argument in u.intr
+                 br    1f / go into quit routine
+-        sysquit:jsr    r0,arg; u.quit / put argument in u.quit
++sysquit:
++	jsr	r0,arg; u.quit / put argument in u.quit
+         1:
+                 mov    u.ttyp,r1 / move pointer to control tty buffer to r1
+                 beq    sysret4 / return to user
+@@ -1822,14 +1564,7 @@
+ 
+         sysgetuid:
+                 movb   u.ruid,*u.r0 / move the real user id to (u.r0)
+-                br     sysret4 / system return, sysret
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.2  Page 9
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
++	br	sysret4 / systerm return, sysret
+ 
+         fclose:
+                 mov    r1,-(sp) / put r1 on the stack (it contains the index
+@@ -1840,7 +1575,7 @@
+                 beq    1f / yes, i-node not active so return
+                 tst    (r0)+ / no, jump over error return
+                 mov    r1,r2 / move i-number to r2
+-                mov    (sp),r1 / restore value of r1 from the stack whicl is
++	mov	(sp),r1 / restore value of r1 from the stack which is 
+                                / index to u.fp
+                 clrb   u.fp(r1) / clear that entry in the u.fp list
+                 mov    u.fofp,r1 / r1 points to 3rd word in fsp entry
+@@ -1884,51 +1619,41 @@
+         1: / i-numbers match
+                 incb   7(r2) / increment upper byte of the 4th word
+                 rts    r0 / in that fsp entry (deleted flag of fsp entry)
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.2  Page 10
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         / u3 -- unix
+ 
+         tswap:
+-                movb   u.uno,r1 / move users process numuer to r1
++       movb    u.uno,r1 / move users process number to r1
+                 mov    $runq+4,r2 / move lowest priority queue address to r2
+                 jsr    r0,putlu / create link from last user on Q to u.uno's user
+-
+         swap:
+                 mov    $300,*$ps / processor priority = 6
+-                mov    $runq,r2 / r2 ooints to runq table
++       mov     $runq,r2 / r2 points to runq table
+         1: / search runq table for highest priority process
+                 tst    (r2)+ / are there any processes to run in this Q entry
+                 bne    1f / yes, process 1f
+-                cmp    r2,$runq+6 / if zero co,pare address to end of table
++       cmp     r2,$runq+6 / if zero compare address to end of table
+                 bne    1b / if not at end, go back
+                 jsr    r0,idle; s.idlet+2 / wait for interrupt; all queues
+                                           / are empty
+                 br     swap
+         1:
+-                tst    -(r2) / restore pointer to right 0 entry
++       tst     -(r2) / restore pointer to right Q entry
+                 mov    r2,u.pri / set present user to this run queue
+                 movb   (r2)+,r1 / move 1st process in queue to r1
+-                cmpb   r1,(r2)+ / is there only 1 process in this 0 to be run
++       cmpb    r1,(r2)+ / is there only 1 process in this Q to be run
+                 beq    1f / yes
+                 tst    -(r2) / no, pt r2 back to this Q entry
+                 movb   p.link-1(r1),(r2) / move next process in line into
+                                          / run queue
+                 br     2f
+         1:
+-                clr    -(r2) / zero the entry1 no processes on the Q
++       clr     -(r2) / zero the entry; no processes on the Q
+         2: / write out core to appropriate disk area and read in new process if
+            / required
+                 clr    *$ps / clear processor status
+                 cmpb   r1,u.uno / is this process the same as the process in core?
+                 beq    2f / yes, don't have to swap
+-                mov    r0,-(sp) / no, write out core, save r0 (address in rout.
++       mov     r0,-(sp) / no, write out core; save r0 (address in rout.
+                                 / that called swap)
+                 mov    sp,u.usp / save stack pointer
+                 mov    $sstack,sp / move swap stack pointer to the stack pointer
+@@ -1941,7 +1666,7 @@
+                 jsr    r0,rswap / read new process into core
+                 jsr    r0,unpack / unpack the users stack from next to his program
+                                  / to its normal
+-                mov    u.usp,sp / location, restore stack pointer to new process
++       mov     u.usp,sp / location; restore stack pointer to new process
+                                 / stack
+                 mov    (sp)+,r0 / put address of where the process that just got
+                                 / swapped in, left off., i.e., transfer control
+@@ -1950,13 +1675,6 @@
+                 movb   $30.,uquant / initialize process time quantum
+                 rts    r0 / return
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.3  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         wswap:
+                 mov    *$30,u.emt / determines handling of emts
+                 mov    *$10,u.ilgins / determines handling of illegal instructions
+@@ -1993,12 +1711,12 @@
+                 bis    $1000,swp / set it up to write (set bit 9)
+                 jsr    r0,ppoke / write process out on swap area of disk
+         1:
+-                tstb   swp+1 / is it done writing?
++       tstb    swp+1 / is lt done writing?
+                 bne    1b / no, wait
+                 rts    r0 / yes, return to swap
+ 
+         rswap:
+-                asl    r1 / process number x2 fcr index
++       asl     r1 / process number x2 for index
+                 mov    p.break-2(r1), swp+4 / word count
+                 mov    p.dska-2(r1),swp+2 / disk address
+                 bis    $2000,swp / read
+@@ -2013,15 +1731,9 @@
+         unpack: / move stack back to its normal place
+                 mov    u.break,r2 / r2 points to end of user program
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.3  Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-                cmp    r2,$core / at begi,ning of user program yet?
++       cmp     r2,$core / at beginning of user program yet?
+                 blos   2f / yes, return
+-                cmp    r2,u.usp / 1s break above the "stack pointer before
++       cmp     r2,u.usp / is break_above the "stack pointer before
+                                 / swapping"
+                 bhis   2f / yes, return
+                 mov    $ecore,r3 / r3 points to end of core
+@@ -2044,7 +1756,7 @@
+                 movb   r1,-1(r2) / user is only user; put process no. at beginning
+                                  / and at end
+         2:
+-                movb   r1,(r2) / user process in r1 is now thc last entry on
++       movb    r1,(r2) / user process in r1 is now the last entry on
+                                / the queue
+                 dec    r2 / restore r2
+                 rts    r0
+@@ -2074,12 +1786,7 @@
+ 
+         clear:
+                 jsr    r0,wslot / get an I/O buffer set bits 9 and 15 in first
+-                                / word of I/O queue r5 point, to first data word
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.3  Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
++                          / word of I/O queue r5 points to first data word
+ 
+ 
+                                 / in buffer
+@@ -2093,68 +1800,15 @@
+                 rts    r0 / in r1
+ 
+ 
++/ u4 -- unix
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.3  Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+-        / u4 -- unix
+-
+-         setisp:
+-                mov    r1,-(sp)
+-                mov    r2,-(sp)
+-                mov    r3,-(sp)
+-                mov    clockp,-(sp)
+-                mov    $s.syst+2,clockp
+-                jmp    (r0)
++setisp:
++       mov     r1,-(sp)
++       mov     r2,-(sp)
++       mov     r3,-(sp)
++       mov     clockp,-(sp)
++       mov     $s.syst+2,clockp
++       jmp     (r0)
+ 
+         clock: / interrupt from 60 cycle clock
+                 mov    r0,-(sp) / save r0
+@@ -2196,18 +1850,11 @@
+                 cmp    r0,$touts / end of toutt table?
+                 blo    2b / no, check this entry
+                 mov    (sp)+,r0 / yes, restore r0
+-                rti    / return from,interrupt
++       rti / return from interrupt
+         1: / decrement time out counts; if 0 call subroutine
+                 mov    (sp)+,r0 / restore r0
+                 mov    $240,*$ps / set processor priority to 5
+                 jsr    r0,setisp / save registers
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.4  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    $touts-toutt-1,r0 / set up r0 as index to decrement thru
+                                          / the table
+         1:
+@@ -2215,14 +1862,13 @@
+                 beq    2f / yes
+                 decb   toutt(r0) / no, decrement the time
+                 bne    2f / is the time 0, now
+-                asl    r0 / yes, 2 x r0 to get word index for tout ertry
++       asl     r0 / yes, 2 x r0 to get word index for tout entry
+                 jsr    r0,*touts(r0) / go to appropriate routine specified in this
+                 asr    r0 / touts entry; set r0 back to toutt index
+         2:
+                 dec    r0 / set up r0 for next entry
+                 bge    1b / finished? , no, go back
+                 br     retisp / yes, restore registers and do a rti
+-
+         ttyi: / console tty input interrupt routine
+                 jsr    r0,setisp / save reg r1, r2, r3
+                 mov    *$tkb,r1 / r1 = char in tty reader buffer
+@@ -2232,7 +1878,7 @@
+                 cmp    r1,$'a-40 / is character upper case A,..., upper case Z.
+                                  / note that
+                 blt    1f / lower case a is represented by 141, upper case by
+-                cmp    r1,$'z-40 / 101, and lower case z by 172, upper
++       cmp     r1,$'z-40 / 101; and lower case z by 172, upper
+                                  / case Z by 132.
+                 bgt    1f / if not upper case, branch
+                 add    $40,r1 / if upper case, calculate the representation of its
+@@ -2265,17 +1911,11 @@
+                 br     retisp / return
+ 
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.4  Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         wakeall:
+-                mov    $39.,0f / fill arg2 of wakeup call with 39
++       mov     $39.,0f / flll arg2 of wakeup call wlth 39
+         1:
+                 jsr    r0,wakeup; runq+4; 0:.. / wakeup the processes in the
+-                dec    0b                      / wait list, decrement arg2
++       dec     0b                      / wait list; decrement arg2
+                 bge    1b / if not done, go back
+                 rts    r0
+ 
+@@ -2292,10 +1932,10 @@
+                 mov    (sp)+,r0
+                 rti    / return from interrupt
+ 
+-        ppti: / paper tape input interrupt routine
++ppti: / paper tape lnput interrupt routine
+                 jsr    r0,setisp / save registers
+                 movb   pptiflg,r1 / place "pptiflg" in r1
+-                jmp    *1f(r1) / jump to location specified by value of "pptiflg"
++       jmp     *1f(r1) / jump to location speclfled by value of "pptiflg"
+         1:
+                 retisp / file not open
+                 1f / file just opened
+@@ -2317,7 +1957,7 @@
+                 mov    *$prb,r1 / place contents ppt read buffer in r1
+                 jsr    r0,putc; 2 / place character in clist area for ppt input
+                        br .+2 / temp / if no space in clist character lost
+-                cmpb   cc+2,$50. / character count in clist area for ppt input
++       cmpb    cc+2,$50. / character count in clist area for ppt lnput
+                                  / greater than or equal to 50
+                 bhis   retisp / yes
+                 inc    *$prs / no, set reader enable bit in prs
+@@ -2328,16 +1968,10 @@
+ 
+         /lpto:
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.4  Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+ 
+         /       jsr    r0,setisp
+         /       jsr    r0,starlpt
+         /       br     retisp
+-
+         ppto: / paper tape output interrupt routine
+                 jsr    r0,setisp / save registers
+                 jsr    r0,starppt / get next character from clist, and output
+@@ -2367,7 +2001,7 @@
+                 tstb   *$tps / test console output ready bit
+                 bge    2f / branch if ready bit is clear
+                 tstb   toutt+0 / is toutt for console a zero
+-                bne    2f / if not, branch to 2f
++       bne     2f / if not; branch to 2f
+                 movb   ttyoch,r1 / put character to be output in r1
+                 bne    1f
+                 jsr    r0,getc; 1 / if char is nul, get a char from console
+@@ -2389,17 +2023,9 @@
+                 movb   $15.,toutt+0 / set time out to 15 clock ticks
+         2:
+                 rts    r0
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.4  Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-        pptito: / paper tape input'touts subrouting
+-                cmpb   pptiflg,$2 / does  pptiflg  indicate file just opened
+-                bne    1f / no, do nothing
++pptito: / paper tape input touts subrouting
++       cmpb    pptiflg,$2 / does "pptiflg" indicate file just opened
++       bne     1f / no, do nothing pyf
+                 movb   $10.,toutt+1 / yes, place 10 in tout entry for tty input
+                 tstb   *$prs+1 / is error bit set
+                 blt    1f / yes, return
+@@ -2416,7 +2042,7 @@
+         1:
+                 tstb   *$pps / is ready bit set in punch status word
+                 bge    1f / no, branch
+-                jsr    r0,getc; 3 / yes, get next char in clist for potout and
++       jsr     r0,getc; 3 / yes, get next char in clist for pptout and
+                                   / place in r1
+                        br 1f / if none, branch
+                 mov    r1,*$ppb / place character in ppt buffer
+@@ -2437,32 +2063,25 @@
+                 clrb   uquant / time quantum = 0
+         1:
+                 clrb   wlist(r3) / zero wait channel entry
+-                jsr    r0,putlu / create a link from the last user on the 0
++       jsr     r0,putlu / create a link from the last user on the Q
+                                 / to this process number that got woken
+         2:
+                 mov    (sp)+,r1 / restore r1
+                 rts    r0
+ 
+         sleep: / wait for event
+-                jsr    r0,isintr / check to see if interrupt or quit frcm user
++       jsr     r0,isintr / check to see if interrupt or quit from user
+                        br 2f / something happened / yes, his interrupt so return
+                              / to user
+-                mov    (r0)+,r1 / out number of wait channel in r1
++       mov     (r0)+,r1 / put number of wait channel in r1
+                 movb   wlist(r1),-(sp) / put old process number in there, on
+                                        / the stack
+                 movb   u.uno,wlist(r1) / put process number of process to put
+                                        / to sleep in there
+                 mov    cdev,-(sp) / nothing happened in isintr so
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.4  Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 jsr    r0,swap / swap out process that needs to sleep
+                 mov    (sp)+,cdev / restore device
+-                jsr    r0,isintr / checx for interrupt of new process
++       jsr     r0,isintr / check for interrupt of new process
+                        br 2f / yes, return to new user
+                 movb   (sp)+,r1 / no, r1 = old process number that was originally
+                                 / on the wait channel
+@@ -2479,16 +2098,16 @@
+         isintr:
+                 mov    r1,-(sp) / put number of wait channel on the stack
+                 mov    r2,-(sp) / save r2
+-                mov    u.ttyp,r1 / r1 = pointer to buffer o  process control
++       mov     u.ttyp,r1 / r1 = pointer to buffer of process control
+                                  / typewriter
+                 beq    1f / if 0, do nothing except skip return
+-                movb   6(r1),r1 / put interrupt char in tle tty buffer in r1
++       movb    6(r1),r1 / put interrupt char in the tty buffer in r1
+                 beq    1f / if its 0 do nothing except skip return
+                 cmp    r1,$177 / is interrupt char = delete?
+                 bne    3f / no, so it must be a quit (fs)
+                 tst    u.intr / yes, value of u.intr determines handling
+                               / of interrupts
+-                bne    2f / if not 0, 2f.  If zero do nothrng.
++       bne     2f / if not 0, 2f. If zero do nothing.
+         1:
+                 tst    (r0)+ / bump r0 past system return (skip)
+         4:
+@@ -2498,7 +2117,7 @@
+         3: / interrupt char = quit (fs)
+                 tst    u.quit / value of u.quit determines handling of quits
+                 beq    1b / u.quit = 0 means do nothing
+-        2: / get here because either u.intr / 0 or u.quit / 0
++2: / get here because either u.intr <> 0 or u.qult <> O
+                 mov    $tty+6,r1 / move pointer to tty block into r1
+         1: / find process control tty entry in tty block
+                 cmp    (r1),u.ttyp / is this the process control tty buffer?
+@@ -2509,84 +2128,15 @@
+                 br    4b / no process control tty found so go to 4b
+         1:
+                 mov    $240,*$ps / set processor priority to 5
+-                movb   -3(r1),0f / load getc call argument, character list
++       movb    -3(r1),0f / load getc call argument; character llst
+                                      / identifier
+                 inc    0f / increment
+         1:
+                 jsr    r0,getc; 0:.. / erase output char list for control
+                        br 4b / process tty.  This prevents a line of stuff
+                              / being typed out after you hit the interrupt
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.4  Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                              / key
+                 br     1b
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.4  Page 7
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / u5 -- unix
+ 
+         mget:
+@@ -2605,7 +2155,7 @@
+                 jsr    r0,alloc / allocate a new block
+                 mov    r1,i.dskp(r2) / physical block number stored in i-node
+                 jsr    r0,setimod / set inode modified byte (imod)
+-                jsr    r0,clear / zero out disk/drum block 'ust allocated
++	jsr	r0,clear / zero out disk/drum block just allocated
+         2:
+                 rts    r0
+         3: / adding on block which changes small file to a large file
+@@ -2633,7 +2183,7 @@
+                 br     mget
+         4: / large file
+                 mov    $-8,lsh / divide byte number by 256.
+-                bic    $!776,r2 / zero all bits but 1,2,3,4,5,6,7,8, gives offset
++	bic	$!776,r2 / zero all bits but 1,2,3,4,5,6,7,8; gives offset
+                                 / in indirect block
+                 mov    r2,-(sp) / save on stack
+                 mov    mq,r2 / calculate offset in i-node for pointer to proper
+@@ -2642,13 +2192,6 @@
+                 mov    i.dskp(r2),r1
+                 bne    2f / if no indirect block exists
+                 jsr    r0,alloc / allocate a new block
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.5  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    r1,i.dskp(r2) / put block number of new block in i-node
+                 jsr    r0,setimod / set i-node modified byte
+                 jsr    r0,clear / clear new block
+@@ -2705,13 +2248,6 @@
+                 inc    r1 / increment bit count in bit k (mod8)
+                 br     1b
+         1:
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.5  Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 tst    (sp)+ / bump sp
+                 jsr    r0,3f / have found a free block
+                 bic    r3,(r2) / set bit for this block i.e. assign block
+@@ -2722,11 +2258,11 @@
+                 mov    r3,-(sp)
+                 jsr    r0,3f / set up bit mask and word no. in free storage map
+                              / for block
+-                bis    r3,(r2) / set free storage block bit, indicates free block
++	bis	r3,(r2) / set free storage block bit; indicates free block
+         2:
+                 mov    (sp)+,r3 / restore r2, r3
+                 mov    (sp)+,r2
+-                tst    cdev / cdev = 0, block structured, drum, cdev = 1
++	tst	cdev / cdev = 0, block structured, drum; cdev = 1
+                             / mountable device
+                 bne    1f
+                 incb   smod / set super block modified for drum
+@@ -2734,10 +2270,9 @@
+         1:
+                 incb   mmod / set super block modified for mountable device
+                 rts    r0
+-
+         3:
+                 mov    r1,r2 / block number, k, = 1
+-                bic    $!7,r2 / clear all bits but 0,1,2, r2 = (k) mod (8)
++	bic	$!7,r2 / clear all bits but 0,1,2; r2 = (k) mod (8)
+                 clr    r3
+                 bisb    2f(r2),r3 / use mask to set bit in r3 corresponding to
+                                   / (k) mod 8
+@@ -2746,9 +2281,9 @@
+                 asr    r2
+                 asr    r2
+                 asr    r2
+-                bcc    1f / branch if bit 3 in r1 was 0 i.=., bit for block is in
++	bcc	1f / branch if bit 3 in r1 was 0 i.e., bit for block is in
+                           / lower half of word
+-                swab   r3 / swap bytes in r3, bit in upper half of word in free
++	swab	r3 / swap bytes in r3; bit in upper half of word in free
+                           / storage map
+         1:
+                 asl    r2 / multiply block number by 2; r2 = k/8
+@@ -2768,14 +2303,7 @@
+                 jsr    r0,iget / read in i-node for current directory (i-number
+                                / passed in r1)
+                 mov    i.flgs,r2
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.5  Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-                cmpb   i.uid,u.uid / is user same as owner of frle
++	cmpb	i.uid,u.uid / is user same as owner of file
+                 bne    1f / no, then branch
+                 asrb   r2 / shift owner read write bits into non owner
+                           / read/write bits
+@@ -2798,13 +2326,13 @@
+ 
+         imap: / get the byte that has the allocation bit for the i-number contained
+               / in r1
+-                mov    $1,mq / out 1 in the mq
++	mov	$1,mq / put 1 in the mq
+                 mov    r1,r2 / r2 now has i-number whose byte in the map we
+                              / must find
+                 sub    $41.,r2 / r2 has i-41
+                 mov    r2,r3 / r3 has i-41
+                 bic    $!7,r3 / r3 has (i-41) mod 8 to get the bit position
+-                mov    r3,lsh / move the 1 over (:-41) mod 8 positions to the left
++	mov	r3,lsh / move the 1 over (i-41) mod 8 positions to the left
+                               / to mask the correct bit
+                 asr    r2
+                 asr    r2
+@@ -2824,20 +2352,13 @@
+                 rts    r0
+ 
+         iget:
+-                cmp    r1,ii / r1 = i-number of current file
++	cmp	r1,ii / r1 = i-number of current flle
+                 bne    1f
+                 cmp    idev,cdev / is device number of i-node = current device
+                 beq    2f
+         1:
+                 tstb   imod / has i-node of current file been modified i.e.,
+                             / imod set
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.5  Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 beq    1f
+                 clrb   imod / if it has, we must write the new i-node out on disk
+                 mov    r1,-(sp)
+@@ -2851,10 +2372,10 @@
+                 tst    r1 / is new i-number non zero
+                 beq    2f / branch if r1=0
+                 tst    cdev / is the current device number non zero (i.e., device
+-                            / / drum)
+-                bne    1f / branch if cdev / 0
+-                cmp    r1,mnti / mnti is the i-number of the cross device
+-                               / file (root directory of mounted device)
++	       	     / =/ drum)
++	bne	1f / branch 1f cdev =/ 0
++	cmp	r1,mnti / mnti is the i-number of the cross devlce
++			 / file (root directory of mounted devlce)
+                 bne    1f
+                 mov    mntd,cdev / make mounted device the current device
+                 mov    rootdir,r1
+@@ -2881,8 +2402,8 @@
+                 jsr    r0,wslot / set up data buffer for write (will be same buffer
+                                 / as dskrd got)
+         1:
+-                bic    $!17,(sp) / zero all but last 4 bits, gives (i+31.) mod 16
+-                mov    (sp)+,mq / calculate offset in data buffer, 32.*(i+31.)mod16
++	bic	$!17,(sp) / zero all but last 4 bits; gives (i+31.) mod 16
++	mov	(sp)+,mq / calculate offset in data buffer; 32.*(i+31.)mod16
+                 mov    $5,lsh / for i-node i.
+                 add    mq,r5 / r5 points to first word in i-node i.
+                 mov    $inode,r1 / inode is address of first word of current i-node
+@@ -2894,16 +2415,9 @@
+                 dec    r3
+                 bgt    1b
+                 jsr    r0,dskwr / write inode out on device
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.5  Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 rts    r0
+         2:
+-                mov    (r5)+,(r1)+ / read new i-node into 'inode  area of core
++	mov	(r5)+,(r1)+ / read new i-node into "inode" area of core
+                 dec    r3
+                 bgt    2b
+                 rts    r0
+@@ -2921,7 +2435,7 @@
+                 jsr    r0,dskrd / read in block, 1st data word pointed to by r5
+                 mov    $256.,r3 / move word count into r3
+         2:
+-                mov    (r5)+,r1 / put 1st data word in r1, physical block number
++	mov	(r5)+,r1 / put 1st data word in r1; physical block number
+                 beq    3f / branch if zero
+                 mov    r3,-(sp) / save r3, r5 on stack
+                 mov    r5,-(sp)
+@@ -2946,24 +2460,6 @@
+                 rts    r0
+ 
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.5  Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         / u6 -- unix
+ 
+         readi:
+@@ -3008,7 +2504,7 @@
+         rtty: / read from console tty
+                 mov    tty+[8*ntty]-8+6,r5 / r5 is the address of the 4th word of
+                                            / of the control and status block
+-                tst    2(r5) / for the console tty, this word points to the console
++	tst	2(r5) / for the console tty; this word points to the console
+                               / tty buffer
+                 bne    1f / 2nd word of console tty buffer contains number
+                           / of chars.  Is this number non-zero?
+@@ -3020,13 +2516,6 @@
+                 movb   *4(r5),r1 / no, put character in r1
+                 inc    4(r5) / 3rd word of console tty buffer points to byte which
+                              / contains the next char.
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.6  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 dec    2(r5) / decrement the character count
+                 jsr    r0,passc / move the character to core (user)
+                 br     1b / get next character
+@@ -3034,17 +2523,17 @@
+         ret1:
+                 jmp    ret / return to caller via 'ret'
+ 
+-        rppt: / read pap,r tape
++rppt: / read paper tape
+                 jsr    r0,pptic / gets next character in clist for ppt input and
+                                 / places
+-                       br ret / it in r1, if there is no problem with reader, it
++		br ret / it in r1; if there 1s no problem with reader, it
+                               / also enables read bit in prs
+                 jsr    r0,passc / place character in users buffer area
+                 br    rppt
+ 
+         rmem: / transfer characters from memory to a user area of core
+                 mov    *u.fofp,r1 / save file offset which points to the char to
+-                                  / be trans.erred to user
++		           / be transferred to user
+                 inc    *u.fofp / increment file offset to point to 'next' char in
+                                / memory file
+                 movb   (r1),r1 / get character from memory file, put it in r1
+@@ -3083,20 +2572,12 @@
+                 movb   r1,*u.base / move a character to the next byte of the
+                                   / users buffer
+                 inc    u.base / increment the pointer to point to the next byte
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.6  Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                               / in users buffer
+                 inc    u.nread / increment the number of bytes read
+                 dec    u.count / decrement the number of bytes to be read
+-                bne    1f / any more bytes to read=, yes, branch
++	bne	1f / any more bytes to read?; yes, branch
+                 mov    (sp)+,r0 / no, do a non-local return to the caller of
+-                                / 'readi' by;
+-
++		         / 'readi' by:
+         ret: / (1) pop the return address off the stack into r0
+                 mov    (sp)+,r1 / (2) pop the i-number off the stack into r1
+         1:
+@@ -3104,10 +2585,10 @@
+                 rts    r0 / return to address currently on top of stack
+ 
+         writei:
+-                clr    u.nread / cle1r the number of bytes transmitted during
++	clr	u.nread / clear the number of bytes transmitted during
+                                / read or write calls
+                 tst    u.count / test the byte count specified by the user
+-                bgt    1f / any bytes to output, yes, branch
++	bgt	1f / any bytes to output; yes, branch
+                 rts    r0 / no, return - no writing to do
+         1:
+                 mov    r1,-(sp) / save the i-node number on the stack
+@@ -3132,28 +2613,21 @@
+                 xmtt   / tty0
+                 xmtt   / tty1
+                 xmtt   / tty2
+-                smtt   / tty3
++	xmtt	/ tty3
+                 xmtt   / tty4
+                 xmtt   / tty5
+                 xmtt   / tty6
+                 xmtt   / tty7
+-        /       wlpr / lpr
++/	w1pr / lpr
+ 
+         wtty:
+-                jsr    r0,cpass / get next character from user buffer area, if
++	jsr	r0,cpass / get next character from user buffer area; if
+                                 / none go to return address in syswrite
+                 tst    r1 / is character = null
+                 beq    wtty / yes, get next character
+         1:
+                 mov    $240,*$ps / no, set processor priority to five
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.6  Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-                cmpb   cc+1,$30. / is character count for console tty greater
++	cmpb	cc+1,$20. / is character count for console tty greater
+                                  / than 20
+                 bhis   2f / yes; branch to put process to sleep
+                 jsr    r0,putc; 1 / find place in freelist to assign to console
+@@ -3173,7 +2647,6 @@
+                                 / if none return to writei's calling routine
+                 jsr    r0,pptoc / output character on ppt
+                 br     wppt
+-
+         /wlpr:
+         /       jsr    r0,cpass
+         /       cmp    r0,$'a
+@@ -3191,7 +2664,7 @@
+                 mov    r1,-(sp) / put character on the stack
+                 mov    *u.fofp,r1 / save file offset in r1
+                 inc    *u.fofp / increment file offset to point to next available
+-                               / locaticn in file
++		        / location in file
+                 movb   (sp)+,(r1) / pop char off stack, put in memory loc assigned
+                                   / to it
+                 br     wmem / continue
+@@ -3209,17 +2682,10 @@
+                 cmp    r2,i.size / is this greater than the present size of
+                                  / the file?
+                 blos   1f / no, branch
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.6  Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-                mov    r2,i.size / yes, increase the file size to file offs,t +
++	 mov	r2,i.size / yes, increase the f11e size to file offset +
+                                  / no. of data bytes
+                 jsr    r0,setimod / set imod=1 (i.e., core inode has been
+-                                  / modified), stuff time of modificat1on into
++		           / modified), stuff tlme of modification into
+                                   / core image of i-node
+         1:
+                 jsr    r0,mget / get the block no. in which to write the next data
+@@ -3229,7 +2695,7 @@
+                           / 512, 1024,...(i.e., start of new block)
+                 cmp    u.count,$512. / if zero, is there enough data to fill an
+                                      / entire block? (i.e., no. of
+-                bhis   3f / bytes to be written greater than 512.=  yes, branch.
++	bhis	3f / bytes to be written greater than 512.? Yes, branch.
+                           / Don't have to read block
+         2: / in as no past info. is to be saved (the entire block will be
+            / overwritten).
+@@ -3246,14 +2712,14 @@
+                 dec    r3 / decrement no. of bytes to be written
+                 bne    2b / have all bytes been transferred?  No, branch
+                 jsr    r0,dskwr / yes, write the block and the i-node
+-                tst    u.count / any more data to wrrte?
++	tst	u.count / any more data to write?
+                 bne    1b / yes, branch
+                 jmp    ret / no, return to the caller via 'ret'
+ 
+         cpass: / get next character from user area of core and put it in r1
+                 tst    u.count / have all the characters been transferred (i.e.,
+                                / u.count, # of chars. left
+-                beq    1f / to be transferred = 0=) yes, branch
++	beq	1f / to be transferred = 0?) yes, branch
+                 dec    u.count / no, decrement u.count
+                 movb    *u.base,r1 / take the character pointed to by u.base and
+                                    / put it in r1
+@@ -3266,27 +2732,20 @@
+                 rts    r0 / non-local return
+ 
+         sioreg:
+-                mov    *u.fofp,r2 / file offset (in bytcs) is moved to r2
++	mov	*u.fofp,r2 / file offset (in bytes) is moved to r2
+                 mov    r2,r3 / and also to r3
+                 bis    $177000,r3 / set bits 9,...,15. of file offset in r3
+                 bic    $!777,r2 / calculate file offset mod 512.
+                 add    r5,r2 / r2 now points to 1st byte in system buffer where
+                              / data is to be placed
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.6  Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    u.base,r1 / address of data is in r1
+                 neg    r3 / 512 - file offset (mod512.) in r3 (i.e., the number
+                           / of free bytes in the file block
+-                cmp    r3,u.count / compare this wrth the number of data bytes to
++	cmp	r3,u.count / compare this with the number of data bytes to
+                                   / be written to the file
+                 blos   2f / if less than branch.  Use the number of free bytes
+                           / in the file block as the number to be written
+-                mov    u.count,r3 / if greater than, use the number of data nytes
++	mov	u.count,r3 / if greater than, use the number of data bytes
+                                   / as the number to be written
+         2:
+                 add    r3,u.nread / r3 + number of bytes xmitted during write is
+@@ -3299,50 +2758,6 @@
+                                   / file offset
+                 rts    r0
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.6  Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / u7 -- unix
+ 
+         canon:
+@@ -3354,8 +2769,8 @@
+         1:
+                 jsr    r0,*(r0) / jump to arg get char off Q of characters, sleep
+                                 / if none
+-                jsr    r0,cesc; 100 / test for $ (kill line)
+-                       br canon / character was 9 so start over
++        jsr    r0,cesc; 100 / test for @ (kill line)
++               br canon / character was @ so start over
+                 jsr    r0,cesc; 43 / test for # (erase last char. typed)
+                        br 1b / character was #, go back
+                 cmp    r1,$4 / is char eot?
+@@ -3379,7 +2794,7 @@
+ 
+         cesc: / test for erase or kill char
+                 cmp    r1,(r0)+ / char in r1 = erase or kill character?
+-                bne    1f / no, skrp return
++        bne    1f / no, skip return
+                 tst    2(r5) / yes, is char. count = 0
+                 beq    2f / yes, don't skip return
+                 dec    2(r5) / no, decrement char count
+@@ -3398,13 +2813,6 @@
+                 clr    *$ps / clear process priority
+                 rts    r0 / return
+         1: / list is empty
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    r5,-(sp) / save r5
+                 jsr    r0,sleep; 0 / put process to sleep in input wait channel
+                 mov    (sp)+,r5 / restore r5
+@@ -3421,7 +2829,7 @@
+                 inc    *$prs / set reader enable bit
+         1:
+                 jsr    r0,getc; 2 / get next character in clist for ppt input and
+-                       br 1f / place in r1, if no char in clist for ppt input
++               br 1f / place in r1; if no char in clist for ppt input
+                              / branch
+                 tst    (r0)+ / pop stack so that return will be four locations past
+                              / subroutine call
+@@ -3462,19 +2870,13 @@
+         /       jsr    r0,putc; 5 / find place in freelist to assign to printer
+                                   / and place
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                        br 1f / char in list, if none available branch to put
+                              / process to sleep
+         /       jsr    r0,starlpt / try to output character
+         /       clr    *$ps / set processor priority = 0
+         /       rts    r0 / return
+         /1:
+-        /       mov    r1,=(sp) / place character on stack
++/       mov    r1,-(sp) / place character on stack
+         /       jsr    r0,sleep; 5 / put process to sleep
+         /       mov    (sp)+,r1 / place character on stack
+         /       br     lptoc
+@@ -3525,13 +2927,6 @@
+         2:
+                 rts    r0
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         put:
+                 asr    r2 / divide r2 by 2; r2 is offset in clist
+                 mov    r2,-(sp) / save r2 on stack
+@@ -3562,7 +2957,7 @@
+                 bgt    3f / no. 3f
+                 mov    r1,-(sp) / yes, figure out
+                 asl    r1
+-                jmp    *1f-2(r1) / whrch one and transfer to it
++        jmp    *1f-2(r1) / which one and transfer to it
+         1:
+                 otty   / tty
+                 oppt   / ppt
+@@ -3587,13 +2982,6 @@
+                 ocvt   / tty7
+                 error / crd
+ 
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         2: / check open write access
+                 neg   r1 / make inode number positive
+                 jsr    r0,access; 1 / get inode in 0 core
+@@ -3630,7 +3018,7 @@
+         /       ejec / lpr
+ 
+         otty: / open console tty for reading or writing
+-                mov    $100,*$tks / set interrupt enable bit (zero others) :n
++        mov    $100,*$tks / set interrupt enable bit (zero others) in
+                                   / reader status reg
+                 mov    $100,*$tps / set interrupt enable bit (zero others) in
+                                   / punch status reg
+@@ -3651,13 +3039,6 @@
+         3:
+                 rts    r0
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         oppt: / open paper tape for reading or writing
+                 mov    $100,*$prs / set reader interrupt enable bit
+                 tstb   pptiflg / is file already open
+@@ -3708,18 +3089,11 @@
+         2: / negative i-number
+                 neg    r1 / make it positive
+                 cmp    r1,$40. / is it a special file
+-                bgt    3b / no, return
++        bgt    3b / no. return
+                 mov    r1,-(sp)
+-                asl    r1 / yes, compute jump address and transfer
++        asl    r1 / yes. compute jump address and transfer
+                 jmp    *1f-2(r1)
+         1:
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 ctty   / tty
+                 leadr  / ppt
+                 sret   / mem
+@@ -3751,7 +3125,7 @@
+         cppt: / close paper tape
+                 clrb   pptiflg / set pptiflg to indicate file not open
+         1:
+-                mov    $240.*$ps / set process or priority to 5
++        mov    $240,*$ps /set process or priority to 5
+                 jsr    r0,getc; 2 / remove all ppt input entries from clist
+                                   / and assign to free list
+                        br sret
+@@ -3771,20 +3145,14 @@
+                 clr    r1 / r1 contains a 'nul' character
+                 jsr    r0,pptoc / output the 'nul' character
+                 dec    (sp)
+-                bge    1b / last leader character output=  no, branch
++        bge    1b / last leader character output?  no, branch
+                 tst    (sp)+ / bump stack pointer
+                 br     sret / return to caller via 'sret'
+ 
+         sysmount: / mount file system; args special; name
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 7
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 jsr    r0,arg2 / get arguments special and name
+-                tst    mnti / is the i-number of the cross devrce file zero?
++        tst    mnti / is the i-number of the cross device file zero?
+                 bne    errora / no, error
+                 jsr    r0,getspl / get special files device number in r1
+                 mov    (sp)+,u.namep / put the name of file to be placed on the
+@@ -3825,7 +3193,7 @@
+                 jsr    r0,namei / get the i-number of the special file
+                        br errora / no such file
+                 sub    $4,r1 / i-number-4 rk=1,tap=2+n
+-                ble    errora / less than 0=  yes, error
++        ble    errora / less than 0?  yes, error
+                 cmp    r1,$9. / greater than 9  tap 7
+                 bgt    errora / yes, error
+                 rts    r0 / return with device number in r1
+@@ -3836,24 +3204,13 @@
+         sysreta:
+                 jmp    sysret / see 'sysret' routine
+ 
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1         Section E.7  Page 8
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / u8 -- unix
+ 
+         rtap: / read from the dec tape
+                 asr    r1 / divide the i-number by 2
+                 sub    $4.,r1 / (i-number/2)-4  r1
+                 mov    r1,cdev / cdev now has device number
+-                jsr    r0,bread; 578. / read in block tnats in *u.fofp
++	jsr	r0,bread; 578. / read in block thats in *u.fofp
+ 
+         wtap:
+                 asr    r1 / divide i-number by 2
+@@ -3865,11 +3222,11 @@
+         rrk0:
+                 mov    $1,cdev / set current device to i., disk
+                 jsr    r0,bread; 4872. / read block from disk (maximum block
+-                                       / number allowed on  evice is 4872.)
++				/ number allowed on device is 4872.)
+                                        / - (u.fofp) contains block number
+ 
+         wrk0:
+-                mov    $1,cdev / set current device to 1, disk
++	mov	$1,cdev / set current device to 1; disk
+                 jsr    r0,bwrite; 4872. / write block (u.fofp) on disk
+ 
+         rrf0:
+@@ -3900,15 +3257,8 @@
+                 bgt    1b / 2-1-cold = 0?  No, go back and read in next block
+         1:
+                 tst    (sp)+ / yes, pop stack to clear off cold calculation
+-                mov    *u.fofp,r1 / restore r1 t. initial value of the
++	mov	*u.fofp,r1 / restore r1 to initial value of the
+                                   / block #
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 cmp    r1,(r0)+ / block # greater than or equal to maximum
+                                 / block number allowed
+                 bhis   error10 / yes, error
+@@ -3949,12 +3299,12 @@
+ 
+         bwrite: / write on block structured device
+                 jsr    r0,tstdeve / test the device for an error
+-                mov    *u.fofp,r1 / put the block number rn r1
++       mov     *u.fofp,r1 / put the block number in r1
+                 cmp    r1,(r0)+ / does block number exceed maximum allowable #
+                 bhis   error10 / yes, error
+                 inc    *u.fofp / no, increment block number
+                 jsr    r0,wslot / get an I/O buffer to write into
+-                jsr    r0,dioreg / do the necessarv bookkeeping
++       jsr     r0,dioreg / do the necessary bookkeeping
+         1: / r2 points to the users data; r5 points to the I/O buffers data area
+                 movb   (r2)+,(r5)+ /   ; r3, has the byte count
+                 dec    r3 / area to the I/O buffer
+@@ -3963,21 +3313,13 @@
+                 tst    u.count / done
+                 beq    1f / yes, 1f
+                 tst    -(r0) / no, point r0 to the argument of the call
+-                br     bwrite / go hack and write next block
++       br      bwrite / go back and write next block
+         1:
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    (sp)+,r0 / return to routine that called writei
+                 jmp    ret
+-
+         tstdeve: / check whether permanent error has occured on special file
+                  / I/O
+-                mov    cdev,r1 / only works on tape, r1 has device #
++       mov     cdev,r1 / only works on tape; r1 has device #
+                 tstb   deverr(r1) / test error bit of device
+                 bne    1f / error
+                 rts    r0 / device okay
+@@ -4009,14 +3351,14 @@
+                 rts    r0
+ 
+         dskrd:
+-                jsr    r0,bufaloc / shuffle off to bufaloc, get a free I/O buffer
++       jsr     r0,bufaloc / shuffle off to bufaloc; get a free I/O buffer
+                        br 1f
+                 bis    $2000,(r5) / set bit 10 of word 1 of I/O queue entry
+                                   / for buffer
+                 jsr    r0,poke / just assigned in bufaloc, bit 10=1 says read
+         1:
+                 clr    *$ps
+-                bit    $22000,(r5) / if either bits 10, or 13 are 1, jump to idle
++       bit     $22000,(r5) / if either bits 10, or 13 are 1; jump to idle
+                 beq    1f
+                 jsr    r0,idle; s.wait+2
+                 br     1b
+@@ -4026,21 +3368,14 @@
+                 rts    r0
+ 
+         wslot:
+-                jsr    r0,bufaloc / get a free l/0 buffer, pointer to first
++       jsr     r0,bufaloc / get a free I/O buffer; pointer to first
+                        br 1f / word in buffer in r5
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         1:
+                 bit    $22000,(r5) / check bits 10, 13 (read, waiting to read)
+                                    / of I/O queue entry
+                 beq    1f / branch if 10, 13 zero (i.e., not reading, or waiting
+                           / to read)
+-                jsr    r0,idle; s.wait+2 / if buffer is reading or writing to reac,
++       jsr     r0,idle; s.wait+2 / if buffer is reading or writing to read,
+                                          / idle
+                 br     1b / till finished
+         1:
+@@ -4060,7 +3395,6 @@
+                 jsr    r0,poke
+                 clr    *$ps
+                 rts    r0
+-
+         poke:
+                 mov    r1,-(sp)
+                 mov    r2,-(sp)
+@@ -4081,29 +3415,22 @@
+                 clrb   1(r1) / do not do I/O
+                 br     2f
+         3:
+-                cmpb   r3,$1 / device id = 1, device is disk
+-                blt    prf / device id = 0, device is drum
+-                bgt    ptc / device id greater than or equal to 1, device is
++       cmpb    r3,$1 / device id = 1; device is disk
++       blt     prf / device id = 0; device is drum
++       bgt     ptc / device id greater than or equal to 1; device is
+                            / dec tape
+                 bit    $2,active / test disk busy bit
+                 bne    2f / branch if bit is set
+                 bis    $2,active / set disk busy bit
+-                mov    r1,rkap / rkap points to current I/O queue entry for drsk
++       mov     r1,rkap / rkap points to current I/O queue entry for disk
+                 mov    2(r1),mq / put physical block number in mq
+                 mov    $12.,div / divide physical block number by 12.
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    $rkda+2,r3 /
+                 mov    ac,-(sp) / put remainder from divide on stack; gives
+                                 / sector number
+-                mov    $4,1sh / shift quotient 4 bits, to align with cyl and surf
++       mov     $4,lsh / shift quotient 4 bits, to align with cyl and surf
+                               / bits in rkda
+-                bis    mq,(sp) / or mq with sector, gives total disk address
++       bis     mq,(sp) / or mq with sector; gives total disk address
+                 br     3f
+         prf: / drum
+                 bit    $1,active / test drum busy bit
+@@ -4123,7 +3450,7 @@
+                 mov    (sp)+,-(r3) / load rkda register; load dar register
+                 mov    6(r1),-(r3) / load bus address register
+                 mov    4(r1),-(r3) / load word count register
+-                mov    $103,-(sp) / 103 indicates write operaticn when loaded
++       mov     $103,-(sp) / 103 indicates write operation when loaded
+                                   / in csr
+                 bit    $2000,(r1) / if bit 10 of word 1 of I/O queue entry is
+                                   / a one
+@@ -4152,15 +3479,8 @@
+                 swab   r3
+                 bis    $103,r3 / now rbn,for,unit,ie
+                 mov    r3,tccm
+-        seta: / I/O queue bookkeeping, set read/write waiting bits.
+-                mov    (r1),r3 / move word 1 of I/O queue cntry into r3
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
++ seta: / I/O queue bookkeeping; set read/write waiting bits.
++       mov     (r1),r3 / move word 1 of I/O queue entry into r3
+                 bic    $!3000,r3 / clear all bits except 9 and 10
+                 bic    $3000,(r1) / clear only bits 9 and 10
+                 rol    r3
+@@ -4215,19 +3535,12 @@
+                 tst    (r0)+ / skip if warmed over buffer
+         1:
+                 mov    -(r2),r5 / put pointer to word 1 of I/O queue entry in r5
+-                movb   cdev,(r5) / put current device number in l/O queue entry
++       movb   cdev,(r5) / put current device number in I/O queue entry
+                 mov    r1,2(r5) / move block number into word 2 of I/O queue
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                                 / entry
+         1:
+                 cmp    r2,$bufp / bump all entrys in bufp and put latest assigned
+-                blos   1f / buffer on the top (this makes if the lowest prrority)
++       blos    1f / buffer on the top (this makes if the lowest priority)
+                 mov    -(r2),2(r2) / job for a particular device
+                 br     1b
+         1:
+@@ -4247,7 +3560,7 @@
+                 bne    1f / if more than 1 branch
+                 movb   1(r2),r3 / r2+1 points to command register upper byte
+                 bic    $!7,r3 / clear all but bits 8-10 (Unit Selection)
+-                incb   deverr+2(r3) / set error bit for this tap$ unit
++       incb    deverr+2(r3) / set error bit for this tape unit
+                 br     tape3
+         1: / more than 1 error
+                 bit    $4000,(r2) / direction of tape
+@@ -4265,7 +3578,7 @@
+         tape1: / read bn forward
+                 mov    $tcdt,r0 / move address of data register to r0
+                 cmp    (r0),2(r1) / compare block addresses
+-                blt    0b / if 1t, keep moving
++       blt     0b / if lt, keep moving
+                 bgt    taper / if gt, reverse
+                 mov    6(r1),-(r0) / put bus address in tcba
+                 mov    4(r1),-(r0) / put word count in tcwc
+@@ -4280,13 +3593,6 @@
+                 br     4f / go to retisp (rti)
+ 
+         tape2: / read bn bakasswards
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 7
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 mov    tcdt,r0 / r0 has contents of data register
+                 add    $3,r0 / overshoot
+                 cmp    r0,2(r1)
+@@ -4296,7 +3602,7 @@
+         tape3: / I/O transfer
+                 bic    $30000,(r1) / clear bits 12 and 13 of I/O queue entry
+                 jsr    r0,poke / do the I/O
+-                bit    $4,active / still busy see if pick up r-ahead. w-behind
++       bit     $4,active / still busy see if pick up r-ahead, w-behind
+                 bne    1f / yes
+                 movb   $1,(r2) / no, indicate too bad
+         1:
+@@ -4305,7 +3611,7 @@
+ 
+         drum: / interrupt handler
+                 jsr    r0,setisp / save r1,r2,r3, and clockp on the stack
+-                jsr    r0,trapt; dcs; rfap; 1 / check for stray interruut or
++       jsr     r0,trapt; dcs; rfap; 1 / check for stray interrupt or
+                                               / error
+                        br 3f / no, error
+                 br     2f / error
+@@ -4341,15 +3647,8 @@
+                 mov    sc,-(sp)
+                 jsr    r0,poke
+                 mov    (sp)+,sc
+-                mov    (sp)+,mq / pop them off Stack
++       mov     (sp)+,mq / pop them off stack
+                 mov    (sp)+,ac
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 8
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         4:
+                 jmp    retisp / u4-3
+ 
+@@ -4367,53 +3666,6 @@
+                 tst    (r0)+ / skip on error
+         2:
+                 jmp    (r0)
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.8   Page 9
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / u9 -- unix
+ 
+         trcv:
+@@ -4432,7 +3684,7 @@
+                 mov    clockp,-(sp)
+                 mov    $s.syst+2,clockp
+                 sub    $trcv+4,r0 / 0%4 / calculate offset for tty causing
+-                asl    r0 / 0%8 / this interruot
++	asl	r0 / 0%8 / this interrupt
+                 mov    rcsr(r0),r2
+                 mov    rcbr(r0),r1
+                 tst    r2
+@@ -4448,7 +3700,7 @@
+                 bitb   $100,tty+4(r0)
+                 beq    2f / non-37 parity not allowed
+         4:
+-                bic    $!77,r1
++	bic	$!177,r1
+                 bit    $40,tty+4(r0)
+                 bne    3f / raw
+                 cmp    r1,$177
+@@ -4469,13 +3721,6 @@
+                 mov    $12,r1
+         3:
+                 bitb   $4,tty+4(r0)
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 beq    3f
+                 cmp    r1,$'A
+                 blo    3f
+@@ -4515,7 +3760,6 @@
+                 jsr    r0,wakeup; runq; 0:.. / call wakeup for process
+         2:
+                 jmp    retisp
+-
+         txmt:
+                 jsr    r0,1f
+                 jsr    r0,1f
+@@ -4532,13 +3776,6 @@
+                 mov    clockp,-(sp)
+                 mov    $s.syst+2,clockp
+                 sub    $txmt+4,r0 / 0%4 / offset in cc
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 2
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 asl    r0 / 0%8
+                 jsr    r0,starxmt
+                 jmp    retisp
+@@ -4560,12 +3797,12 @@
+                 cmpb   cc+1(r1),$10. / is char count for tty output greater
+                                      / than or equal to 10
+                 bhi    1f / yes
+-                mov    r1,0f / no, make offset an arg of  wakeup
++	mov	r1,0f / no, make offset an arg of "wakeup"
+                 inc    0f / increment arg of wakeup
+                 jsr    r0,wakeup; runq+2; 0:.. / wakeup process identified
+                                                / by wlist
+         1: / entry specified by argument in 0:
+-                mov    (sp),r1 / 0%8 / r1 contains 8xtty number
++	mov	(sp),r1 / 0%8 / r1 contains tty number
+                 asr    r1
+                 asr    r1
+                 asr    r1 / 0%1 r1 contains tty number
+@@ -4580,7 +3817,7 @@
+                 clrb   tty+2(r2) / clear third byte
+                 tst    r1 / is third byte = 0
+                 bne    3f / no, r1 contains a non nul character
+-                movb   tty+3(r2),0f / yes, make byte 4 arg of  getc
++	movb	tty+3(r2),0f / yes, make byte 4 arg of "getc"
+                 inc    0f / increment arg to make it tty output list of
+                           / clist
+                 jsr    r0,getc; 0:.. / obtain next character in clist for tty
+@@ -4589,27 +3826,21 @@
+                              / calling routine
+         3:
+                 bic    $!177,r1 / zero out bits 7-15 of r1
+-                movb   partab(r1),r3 / move  partab  entry (identified by
++	movb	partab(r1),r3 / move "partab" entry (identified by
+                                      / r1) into r3
+                 bge    3f / if entry is greater than or equal to 0 (digit
+                           / 2, far left digit = 0) branch
+                 bisb   200,r1 / if entry is less than 0 add 128 to ASCII
+                               / code for char to be output
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 3
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 bic    $!177,r3 / to make it teletype code and then clear
+                                 / bits 7-15 of r3
++
+         3:
+                 mov    (sp),r2 / r2 contains 8xtty number
+                 bit    $4,rcsr(r2) / is carrier present for tty
+                 beq    starxmt / no carrier flush
+                 mov    r1,-(sp) / yes, place character to be output on stack
+-                cmp    r1,$11 / is character  ht
++	cmp	r1,$11 / is character "ht"
+                 bne    3f / no
+                 bitb   $2,tty+4(r2) / is tab to space flag for tty set
+                                     / (bit 1 of byte 5 in "tty" buffer area)
+@@ -4624,7 +3855,7 @@
+                 incb   (r2) / normal / jmp to location determined by digits
+                             / 0 and 1 of character's entry in "partab" which
+                             / is now in r3
+-                rts    r0 / non-printing
++1:	rts	r0 / non-printing
+                 br     1f / bs
+                 br     2f / nl (line feed)
+                 br     3f / tab (horizontal tab)
+@@ -4634,7 +3865,7 @@
+         1:
+                 decb   (r2) / col decrement column count in byte 2 of "tty"
+                             / area
+-                bge    1f / if count > 0 return to calling routine
++	bge	1f / if count >=0 return to calling routine
+                 clrb   (r2) / col set column count = 0
+                 br     1f
+         2:
+@@ -4643,8 +3874,8 @@
+                 bitb   $20,3(r2) / cr flag is bit 4 of 5th byte of "tty"
+                                  / area = 1
+                 beq    2f / no (only lf to be handled)
+-                movb   $15,1(r2) / place  cr  in 3rd byte of "tty" area
+-                                 / (character leftover after  lf )
++	movb	$15,1(r2) / place "cr" in 3rd byte of "tty" area
++			  / (character leftover after "lf" )
+         2:
+                 movb   (r2),r3 / place present column count in r3
+                 beq    1f / return to calling routine if count = 0
+@@ -4658,13 +3889,6 @@
+         3:
+                 bitb   $2,3(r2) / is bit 1 of 5th byte of "tty" area = 1
+                                 / (tab to space bit set)
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 4
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 beq    3f / no
+                 incb   (r2) / increment column count
+                 bitb   $7,(r2) / are bits 0, 1 and 2 set at col 0%8
+@@ -4693,7 +3917,7 @@
+                 mov    (sp),r2 / 0%8 r2 contains 8xtty number
+                 asr    r2
+                 asr    r2
+-                asr    r2 / 0=1 r2 contains tty number
++	asr	r2 / 0%1 r2 contains tty number
+                 movb   r3,toutt+3(r2) / place value for tout entry into tout
+                                       / table
+         1:
+@@ -4701,10 +3925,10 @@
+ 
+         partab: / contains 3 digits for each character; digit 2 is used
+                 / to determine if 200 is to added to ASCII code digits 0
+-                / and 1 are used to depermine value for jump table.
+-                .byte 002,202,202,002,002,002,002,202
++	/ and 1 are used to determine value for jump table.
++	.byte 002,202,202,002,202,002,002,202
+                 .byte 204,010,006,212,012,214,202,002
+-                .byte 202,002,002,202,002,002,202,002
++	.byte 202,002,002,202,002,202,202,002
+                 .byte 002,202,202,002,202,002,002,202
+                 .byte 200,000,000,200,000,200,200,000
+                 .byte 000,200,200,000,200,000,000,200
+@@ -4721,19 +3945,12 @@
+ 
+         xmtt:
+                 jsr    r0,cpass / get next character from user buffer area
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 5
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-                 tst    r1 / rs character nul
++	tst	r1 / is character nul
+                  beq    xmtt / yes, get next character
+          1:
+                 mov    $240,*$ps / set processor priority equal to 5
+                 mov    (sp),r2 / r2 contains i node number of file
+-                asl    r2 / 0%2+28 / multiply inode number by 2
++	asl	r2 / 0%2+28 / multlply inode number by 2
+                 sub    $21.,r2 / 0%2+7 / subtract 21 from 2x inumber to
+                                / get cc, cf, cl offset
+                 mov    r2,0f / make offset arg of putc
+@@ -4755,7 +3972,7 @@
+                 br     xmtt / get next character
+         2:
+                 mov    r1,-(sp) / place character on stack
+-                mov    0b,0f / make offset rnto cc, cf, cl table arg of
++	mov	0b,0f / make offset into cc, cf, cl table arg of
+                              / sleep (identifies location in wlist)
+                 jsr    r0,sleep; 0:.. / put process to sleep
+                 mov    (sp)+,r1 / remove character from stack
+@@ -4784,16 +4001,9 @@
+         2:
+                 jsr    r0,canon; rcvch / process a line of characters in
+                                        / clist and place results in tty buffer
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 6
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                                        / area
+         1:
+-                tst    (sp)+ / incrcment sp
++	tst	(sp)+ / increment sp
+         1:
+                 tst    2(r5) / is char count for tty buffer = 0
+                 beq    1f / yes
+@@ -4818,7 +4028,7 @@
+                 mov    $240,*$ps / set processor priority = 5
+                 jsr    r0,getc; 0:.. / get next character off clist
+                        br 2f / clist empty
+-                clr    *$ps / set processor prrority = 0
++	clr	*$ps / set processor priority = 0
+                 rts    r0
+         2:
+                 mov    0b,0f / make "getc" arg an arg for "sleep"
+@@ -4831,31 +4041,24 @@
+                 sub    $28.,r1 / 0%2 calculate tty table offset
+                 mov    r1,r2
+                 asl    r1 / 0%4
+-                asl    r1 / 0=8
++	asl	r1 / 0%8
+                 mov    r1,-(sp)
+-                add    $6,r2 / calculate clrst id  clist offset
++	add	$6,r2 / calculate clist id  clist offset
+                 movb   r2,tty+3(r1) / put clist id in tty table
+         1:
+                 mov    (sp),r1
+                 bit    $4,rcsr(r1) / carrier detect bit set
+                 bne    1f / if so, branch
+-                mov    $511,rcsr(r1) / set ready, speed. interrupt enable,
++	mov	$511,rcsr(r1) / set ready, speed, interrupt enable,
+                                      / supervisor transmit
+                 movb   tty+3(r1),0f / put clist id in sleep argument
+-                jsr    r0,sleep; 0:..
++	jsr	r0,sleep; 0;..
+                 br     1b
+         1:
+                 mov    tty+6(r1),r5 / put tty buffer address in r5
+                 tstb   (r5) / first byte of tty buffer = 0
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 7
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+                 bne    1f / if not, branch
+-                mov    $511,rcsr(r1) / set ccntrol bits for receiver
++	mov	$511,rcsr(r1) / set control bits for receiver
+                 mov    $511,tcsr(r1) / set control bits for transmitter
+                 movb   $210,tty+4(r1) / put 210 in tty table word 3 / set flags
+         1:
+@@ -4875,49 +4078,6 @@
+         1:
+                 jmp    sret
+ 
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.9   Page 8
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+-
+         / ux -- unix
+ 
+         systm:
+@@ -4974,12 +4134,6 @@
+         toutt:  .=.+16.; touts: .=.+32.
+         runq:   .=.+6
+ 
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.10  Page 1
+-
+-
+-                               UNIX IMPLEMENTATION
+-
+-
+         wlist:  .=.+40.
+         cc:     .=.+30.
+         cf:     .=.+31.
+@@ -5026,15 +4180,383 @@
+                 u.uno:   .=.+1
+          . = core
+ 
++/ sh -- command interpreter
++	mov	sp,r5
++	mov	r5.shel larg / save orig sp in shel larg
++	cdpb	B(r5),$'- / was this sh calleZd by init or loginx~
++	bne	2f / no
++	sys	intr; O / yes, turn off interrupts
++	sys	quit; O
++2:
++	sys	getuid / who is user
++	tst	r0 / is it superuser
++	bne	2f / no
++	movb	$'#,at / yes, set new prompt symbol
++2:
++	cmn	(r5),$l / tty input?
++	ble	newline / yes, call with '-(or with no command
++		        / file name)
++	clr	rO / no, set ttv
++	sys	close / close it
++	mov	4(r5),0f / get new file name
++	sys	open; O:..; 0 / open it
++	bec	1f / branch if no error
++	jsr	r5,error / error in file name
++		/<Input not found\n\O>: .even
++	sys	exit
++1:
++	clr	at / clear prompt character, if reading non-tty
++		   / input file
++newline:
++	tst	at / is there a prompt symbol
++	beq	newcom / no
++	mov	$1,rO / yes
++	sys	write; at; 2. / print prompt
++newcom:
++	mov	shellarq,sp /
++	mov	$parbuf,r3 / initialize command list area
++	mov	$parp,r4 / initialize command list pointers
++	clr	infile / initialize alternate input
++	clr	outfile / initialize alternate output
++	clr	glflag / initialize global flag
++newarg:
++	jsr	pc,blank / squeeze out leading blanks
++	jsr	r5,delim / is new character a ; \n or &
++		br 2f / yes
++	mov	r3,-(sp) I no, push arg pointer onto stack
++	cmp	rO,$'< / new input file?
++	bne	1f / no
++	mov	(sp).infile / yes, save arg pointer
++	clr	(sp) / clear pointer
++	br	3f
++1:
++	cmp	r0,$'> / new output file?
++	bne	newchar / no
++	mov	(sp),outfile / yes, save arg pointer
++	clr	(sp) / clear pointer
++	br	3f
+ 
++newchar:
++	cmp	$' .r0 / is character a blank
++	beq	1f / branch if it is (blank as arg separator)
++	cmp	$’\n+200,r0 / treat \n preceded by \
++	beq	1f / as blank
++	jsr	pc,putc / put this character in parbuf list
++3:
++	jsr	pc,getc / get next character
++	jsr	r5,delim / is char a : \n or &,
++		br 1f / yes
++	br	newchar / no, start new character tests
++1:
++	clrb	(r3)+ / end name with \0 when read blank, or
++		      / delim
++	mov	(sp)+,(r4)+ / move are ant! to par? location
++	bne	1f / if (sp)=O, in file or out file points to arg
++	tst	-(r4) / so ignore dummy (O), in pointer list
++1:
++	jsr	r5,delim / is char a : \n or &.
++		br 2f / yes
++	br	newarg / no, start newarg processing
++2:
++	clr	(r4) / \n, &, or ; takes to here (end of arg list)
++		     / after ’dellm’ call
++	mov	r0,-(sp) / save delimter in stack
++	jsr	pc,docom / go to exec command in parbuf
++	cmpb	(sp),$’& / get a new command without wait?
++	beq	newcom / yes
++	tst	r1 / was chdir just executed or line ended with
++		   / ampersand?
++	beq	2f / yes
++1:
++	sys	wait / no, wait for new process to terminate
++		     / command executed)
++	bcs	2f / no, children not previously waited for
++	cmp	r0,r1 / is this my child
++	bne	1b
++2:
++	cmp	(sp),$’\n / was delimiter a new line
++	beq	newline / yes
++	br	newcom / no, pick up next command
++docom:
++	sub	$parp,r4 / out arg count in r4
++	bne	1f / any arguments?
++	clr	r1 / no, line ended with ampersand
++	rts	pc / return from call
++1:
++	jsr	r5,chcom; qchdir / is command chdir?
++		br 2f / command not chdir
++	cmp	r4,$4 / prepare to exec chdir, 4=aro count x 2
++	beq	3f
++	jsr	r5,error / go to print error
++		<Arg count\n\0>; .even
++	br	4f
++3:
+ 
++	mov	parp+2,0f / more directory name to sys coll
++	sys	chdir; 0:0 / exec chdir
++	bec	4f / no error exit
++	jsr	r5,error / go to print error
++		<Bad directory\n\0>; .even / this diagnostic
++4:
++	clr	r1 / set r1 to zero to dkip wait
++	rts	pc / and return
++2:
++	jsr	r5,chcom: qloqin / is command looin?
++		br 2f / not loqin, no to fork
++	sys	exec; parbuf: parp / exec login
++	sys	exec; binpb: parp / or /bin/login
++2: / no error return??
++	sys	fork / generate sh child process for command
++		br newproc / exec command with new process
++	bec	1f / no error exit, old orocess
++	jsr	r5,error / go to print error
++		<Try again\n\0>; .even / this diaonostic
++	jmp	newline / and return for next try
++1:
++	mov	r0,r1 / save id of child sh
++	rts	pc / return to “jsr pc, docom“ call in parent sh
+ 
++error:
++	movb	(r5)+,och / pick up diagnostic character
++	beq	1f / 0 is end of line
++	mov	$1,r0 / set for tty output
++	sys	write; och; 1 / print it
++	br	error / continue to get characters
++1:
++	inc	r5 / inc r5 to point to return
++	bic	$!,r5 / make it even
++	clr	r0 / set for input
++	sys	seek;,O; 2 / exit from runcom. skip to end of
++		           / input file
++chcom: / has no effect if tty input
++	mov	(r5)+,r1 / glogin gchdir r1, bump r5
++	mov	$parbuf,r2 / command address r2 ’login’
++1:
++	movb	(r1)+,r0 / is this command ’chdir’
++	cmpb	(r2)+,r0 / compare command name byte with 'login’
++		         / or ’chdir’
++	bne	1f / doesn’t compare
++	tst	r0 / is this
++	one	1b / end of names
++	tst	(r5)+ / yes, bump r5 again to execute login
++		/ chdir
++1:
++	rts	r5 / no, return to exec command
++putc:
++	cmp	r0,$'' / single quote?
++	beq	1f / yes
++	cmp	r0,$’" / double quote
++	beq	1f / yes
+ 
++	bic	$!177,r0 / no, remove 200, if present
++	movb	r0,(r3)+ / store character in parbuf
++	rts	po
++1:
++	mov	r0,-(sp) / push quote mark onto stack
++1:
++	jsr	pc,getc / get a quoted charactef
++	cmp  | r0.$’\n / is it end or line
++	bne	2f / no
++	jsr	r5,error / yes, indicate missing quote mark
++		<"’ imbalance\n\0)>; .even
++	jmp	newline / ask for new line
++2:
++	cmp	r0,(sp) / is this closing quote mark
++	beq	1f / yes
++	bic	$!177,r0 / no, strip off 200 if present
++	movb	r0,(r3)+ / store quoted character in parbuf
++	br	1b / continue
++1:
++	tst	(sp)+ / pop quote mark off stack
++	’ rts bc‘, return
++/ thp‘e new process
++newproc:
++	mov	infile,0f / move pointer to new file name
++	beq	lf / branch if no alternate read file given
++	tstb	*0f
++	beq	3f / branch if no file name miven
++	clr	rO / set tty input file name
++	sys	close / close it
++	sys	open; 0:..; 0 / open new input file for reading
++	bcc	1f / branch if input file ok
++3:
++	jsr	r5,error / file not ok, print error
++		<Input file\n\0>: .even / this diagnostic
++	sys	exit / terminate this process and make narent sh
++1:
++	mov	outfile,r2 / more pointer to new file name
++	beq	1f / branch if no alternate write file
++	cmpb	(r2),$’> / is > at beqinninrg of file name?
++	bne	4f / branch if it isn’t
++	inc	r2 / yes, increment pointer
++	mov	r2,0f
++	svs	open; O:..; 1 / open file for writing
++	bec	3f / if no error
++4:
++	mov	r2,0f
++	sys	creat; 0:..; 17 / create new file with this name
++	bec	3f / branch it no error
++2:
++	jsr	r5,error
++		<Output file\n\O>; .even
++	sys	exit
++3:
++	sys	close / close the new write file
+ 
++	mov	r2,0f / move new name to open
++	mov	$1,r0 / set ttv file name
++	sys	close / close it
++	sys	open; 0:..; 1 / ooen new output file, it now has
++		              / file descriptor 1
++	sys	seek; 0; 2 / set pointer to current end of file
++1:
++	tst	glflag / was *, ? or [ encountered?
++	bne	1f / yes
++	sys	exec; parbuf; parp / no, execute this commend
++	sys	exec; binpb; parp / or /bin/this command
++2:
++	sys	stat; binpb; inbuf / if can’t execute does it
++		                   / exist?
++	bes	2f / branch if it doesn’t
++	mov	$shell,parp-2 / does exist, not executable
++	mov	$binpb,parp / so it must be
++	svs	exec; shell; parp-2 / a command file, get it with
++		                    / sh /bin/x (if x name of file)
++2:
++	jsr	r5,error / a return for exec is the diaonostic
++		<No command\n\O>; .even
++	sys	exit
++1:
++	mov	$glob,parp-2 / prepare to process *,?
++	sys	exec; glob: parp-2 / execute modified command
++	br	2b
+ 
++delim:
++	cmp	r0,$'\n / is character a newline
++	beq	1f
++	cmp	r0,S’& / ls it &
++	beq	1f / yes
++	cmu	r0,$'; / is it ;
++	beq	1f / yes
++	cmp	r0,$’? / is it ?
++	beq	3f
++	cmp	r0,$’[ / is it beginning of character string
++		       / (for glob)
++	bne	2f
++3:
++	inc	glflag / ? or * or [ set flag
++2:
++	tst	(r5)+ / bump to process all except \n,:,&
++1:
++	rts	r5
++blank:
++	jsr	pc,getc / get next character
++	cmp	$' ,r0 / leadino blanks
++	beq	blank / yes, ’squeeze out'
++	cmp	r0,$200+'\n / new—line preceded by \ is translated
++	beq	blank / into blank
++	rts	pc
++getc:
+ 
++	tat	param / are we substituting for $n
++	bne	2f/ yes
++	mov	inbufp,r1 / no, move normal input pointer to r1
++	cmp	r1,einbuf / end of input line?
++	bne	1f / no
++	jsr	pc,netbuf / vas. put next console line in buffer
++	br	gotc
++1:
++	movb	(r1)+,r0 / move byte from input buffer to r0
++	mov	r1,inbufp / increment routine
++	bis	escap,r0 / if last character was \ this adds
++		         / 200 to current character
++	clr	escap / clear, so escap normally zero
++	cmp	r0,$’\\ / note that \\ is equal \ in as
++	beq	1f
++	cmp	r0,$’$ / is it $
++	beq	3f / yes
++	rts	pc / no
++1:
++	mov	$200,escap / mark presence of \ in command line
++	br	getc / get next character
++2:
++	movb	*param,r0 / pick up substitution character put in
++		          / r0
++	beq	1f / if end of substitution arc, branch
++	inc	param / if not end, set for next character
++	rts	pc / return as though character in ro is normal
++		   / input
++1:
++	clr	param / unset substitution pointer
++	br	getc / get next char in normal input
++3:
++	jsr	pc,getc / get digit after $
++	sub	$’0,r0 / strip off zone bits
++	cmp	r0,$9, / compare with digit 9 
++	clos	1f / less than or equal 9
++	mov	$9.,r0 / if larger than 9, force 9
++1:
++	mov	shellarg,r1 / get pointer to stack for
++		            / this call of shell
++	inc	r0 / digit +1
++	cmp	r0,(r1) / is it less than # of args in this call
++	bge	getc / no, ignore it. so this $n is not replaced
++	asl	r0 / yes, multiply by 2 (to skip words)
++	add	r01,r0 / form pointer to aro pointer (-2)
++	mov	2(r0),param / more arg pointer to param
++	br	getc / go to get substitution arg for $n
++getbuf:
++	mov	$inbuf,r0 / move inout buffer address
++	mov	r0,inbufp / to inout buffer pointer
++	mov	r0,einbuf / and initialize pointer to end of
++		          / character string
++	dec	r0 / decrement pointer so can utilize normal
++		   / l00p starting at If
++	mov	r0,0f / initialize address for readlng 1st char
++
++1:
++	inc	0f / this routine filles inbuf with line from
++		   / console - if there is cnc
++	clr	r0 / set for tty inout
++	sys	read; O:O; I / read next char into inbuf
++	bcs	xit1 / error exit
++	tst	r0 / a zero input is and of file
++	beq	xit1 / exit
++	inc	einbuf / eventually einbuf points to \n
++		       / (+1) or this line
++	cmp	0b,$1nbuf+256. / have we exceeded innut buffer size
++	bhis	xit1 / if so, exit assume some sort of binary
++	cmpb	*0b,$’\n / end of line?
++	bne	1b / no, go to get next char
++	rts	pc / yes, return
++xit1:
++	sys	exit
++quest:
++	<?\n>
++at:
++	<@ >
++qchdir:
++	<chdir\0>
++glogin:
++	<login\0> -
++shell:
++	</bin/sh\0> .
++glob:
++	</etc/g10b\0>
++binpb:
++	</bin/>
++parbuf: .=.+1000.
++	.even
++param:	.=.+2
++glflaq:	.=.+2
++infile: .=.+2 
++outfile:.=.+2
++	.=.+2 / room for glob
++parp:	.=.+200.
++inbuf:	.=.+256.
++escap:	.=.+2
++inbufp: .=.+2
++einbuf:	.=.+2
++och:	.=.+2
++shellarg:.=.+2
+ 
+-
+-
+-
+-        Issue D  Date  3/17/72     ID IMO.1-1        Section E.10  Page 2
