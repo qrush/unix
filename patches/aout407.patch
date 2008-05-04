@@ -1,0 +1,36 @@
+diff -ru rebuilt/u2.s build/u2.s
+--- rebuilt/u2.s	2008-05-04 09:18:31.000000000 -1000
++++ build/u2.s	2008-05-04 10:09:15.000000000 -1000
+@@ -177,6 +177,32 @@
+ 			     / number of words less 26 available for
+ 			     / program in user core
+ 	mov	r5,u.count /
++
++	/ 0407 binary support added may 2008.
++	br	1f
++bsz:	0	/ XXX is there a reg that I can use over a call to readi?
++1:
++	cmp	core,$407
++	bne	e407
++	add	$4,u.off / skip last two header words
++	mov	$core,r4
++	mov	r4,u.base / continue reading at core.
++	mov	core+2,r5
++	add	core+4,r5 / r5 = text+data size
++	mov	core+6,bsz / save bss size, we're going to overwrite core
++	/ XXX fix me, I dont quite understand what to do here or
++	/ what is done in the similar code below e407:
++	/ cmp	r5, u.count / see if theres enough room
++	/ bgt	1f
++	mov	r5,u.count / read text+data into core
++	jsr	r0,readi
++	add	bsz,u.nread / add bss
++	mov	u.nread,u.break
++	jsr	r0,iclose
++	br	sysret3
++e407:
++	/ end 0407 support
++
+ 	cmp	core,$405 / br .+14 is first instruction if file is
+ 			  / standard a.out format
+ 	bne	1f / branch, if not standard format

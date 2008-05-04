@@ -21,7 +21,7 @@ rebuild() {
     #r ini e12
 }
 
-p() { echo ' ' $1; patch -s -p1 <../patches/$1; }
+p() { echo ' ' $1; patch -s -p1 <../patches/$1.patch; }
 
 patches() {
     test -d build || mkdir build
@@ -29,11 +29,11 @@ patches() {
     echo patching...
     cp rebuilt/* build
     cd build
-    p vec0407.patch
-    p fixV7div.patch
-    if [ "$1" = "cold" ] ; then 
-        p cold.patch 
-    fi
+    p vec0407
+    p fixV7div
+    for x in "$@" ; do
+        p $x
+    done
 }
 
 
