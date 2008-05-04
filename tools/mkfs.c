@@ -8,8 +8,8 @@
  *	 ensure that swap is not used on RF disk images.
  *	 deal with errors instead of exiting :-)
  *
- * $Revision: 1.16 $
- * $Date: 2008/05/03 13:22:43 $
+ * $Revision: 1.17 $
+ * $Date: 2008/05/04 08:53:07 $
  */
 
 int debug=1;
@@ -244,7 +244,11 @@ struct directory *create_dir(char *name, int numblocks)
 
 
   /* If the directory is not /, attach it to rootdir */
-  if (strcmp(name, "/")) add_direntry(rootdir, inum, name);
+  if (strcmp(name, "/")) {
+    add_direntry(rootdir, inum, name);
+    /* Update rootdir's nlinks in its inode */
+    inodelist[ROOTDIR_INUM].nlinks++;
+  }
 
   /* and add entries for . and .. */
   add_direntry(d, ROOTDIR_INUM, "..");
