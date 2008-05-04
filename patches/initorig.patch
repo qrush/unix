@@ -1,0 +1,9 @@
+diff -u rebuilt/init.s build/init.s
+--- rebuilt/init.s	2008-05-04 13:04:51.000000000 -1000
++++ build/init.s	2008-05-04 13:05:35.000000000 -1000
+@@ -1,4 +1,5 @@
+ / init -- process control initialization
++. = . + 40014
+ 
+ mount = 21.
+ 

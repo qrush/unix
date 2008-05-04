@@ -21,3 +21,6 @@ vec0407.patch
     just uncomments the first three vectors.  This would not be necessary
     if we had a proper 0405 assembler.
 
+initorig.patch
+    Fix a deficiency in tools/as -- requires ". = . + 40014" at the
+    start of each program.
