@@ -4,9 +4,12 @@
  *
  * Brad Parker <brad@heeltoe.com> 5/2008
  */
+#include <sys/types.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/uio.h>
+#include <unistd.h>
 
 /* Binary loader.
 
@@ -114,7 +117,7 @@ load(int fd, char *buf, int bufsize)
 	return 0;
 }
 
-int
+void
 finish(int fd, int origin)
 {
 	mk_hdr(fd, 0, origin);
@@ -208,11 +211,10 @@ process(char *inf, char *outf)
 }
 
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	char *filename = "a.out";
 	char *output_filename = "loadfile";
-	int fd;
 
 	verbose = 0;
 
