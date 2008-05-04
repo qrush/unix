@@ -8,8 +8,8 @@
  *	 ensure that swap is not used on RF disk images.
  *	 deal with errors instead of exiting :-)
  *
- * $Revision: 1.12 $
- * $Date: 2008/05/02 13:37:55 $
+ * $Revision: 1.16 $
+ * $Date: 2008/05/03 13:22:43 $
  */
 
 int debug=1;
@@ -21,13 +21,11 @@ int debug=1;
 #include <dirent.h>
 #include <sys/stat.h>
 
-#ifdef linux
-#include <stdint.h>
-#endif
-
-#define RF_SIZE		1024	/* Number of blocks on RF11 */
-#define RK_SIZE		4872	/* Number of blocks on RK03 */
 #define BLKSIZE		 512	/* 512 bytes per block */
+#define RF_SIZE		1024	/* Number of blocks on RF11 */
+#define RF_NOSAWPSIZE    944	/* RF11 blocks excluding swap */
+#define RF_INODES	 512	/* Cold UNIX sets 512 i-nodes on RF */
+#define RK_SIZE		4864	/* Number of blocks on RK03, should be 4872 */
 #define INODE_RATIO	   4	/* Disksize to i-node ratio */
 #define ROOTDIR_INUM	  41	/* Special i-number for / */
 
@@ -62,7 +60,6 @@ struct v1inode {		/* Format of 1st edition i-node */
  */
 #define DIRBLOCKS	4
 #define DIRENTPERBLOCK	(BLKSIZE/sizeof(struct v1dirent))
-#define NUMDIRENTRIES	DIRBLOCKS*DIRENTPERBLOCK
 
 struct v1dirent {		/* Format of 1st edition dir entry */
   uint16_t inode;
@@ -71,12 +68,13 @@ struct v1dirent {		/* Format of 1st edition dir entry */
 
 struct directory {		/* Internal structure for each dir */
   uint16_t block;		/* Starting block */
-  struct v1dirent entry[NUMDIRENTRIES];
+  int numentries;		/* Number of entries in entry[] */
+  struct v1dirent *entry;
 };
 
 unsigned char buf[BLKSIZE];	/* A block buffer */
 uint16_t disksize;		/* Number of blocks on disk */
-uint16_t icount;		/* Number of i-nodes created */
+uint16_t icount=0;		/* Number of i-nodes created */
 uint16_t nextfreeblock;		/* The next free block available */
 uint8_t *freemap;		/* In-memory free-map */
 uint8_t *inodemap;		/* In-memory inode bitmap */
@@ -89,11 +87,14 @@ FILE *diskfh;			/* Disk filehandle */
 /* Write the superblock out to the image */
 void write_superblock(void)
 {
+  uint16_t freemapsize= disksize / 8;
+  uint16_t inodemapmapsize= icount / 8;
+
   if (debug) printf("Writing freemap and inodemap from block 0\n");
   fseek(diskfh, 0, SEEK_SET);
-  fwrite(&disksize, sizeof(disksize), 1, diskfh);
+  fwrite(&freemapsize, sizeof(freemapsize), 1, diskfh);
   fwrite(freemap, sizeof(uint8_t), (disksize / 8), diskfh);
-  fwrite(&icount, sizeof(icount), 1, diskfh);
+  fwrite(&inodemapmapsize, sizeof(inodemapmapsize), 1, diskfh);
   fwrite(inodemap, sizeof(uint8_t), ((icount - ROOTDIR_INUM) / 8), diskfh);
   if (debug) {
     long posn= ftell(diskfh);
@@ -182,15 +183,18 @@ void add_direntry(struct directory *d, uint16_t inum, char *name)
   if (d == NULL) {
     printf("I need a struct directory * please\n"); exit(1);
   }
+#if 0
+  /* Removed for /dev/creation */
   if (inum < ROOTDIR_INUM) {
     printf("Illegal inum %d in add_direntry\n", inum); exit(1);
   }
+#endif
   if (name && strlen(name) > 8) {
     printf("Name %s too long\n", name); exit(1);
   }
 
   /* Find an entry in the directory which is empty */
-  for (i = 0; i < NUMDIRENTRIES; i++) {
+  for (i = 0; i < d->numentries; i++) {
     if (d->entry[i].inode == 0) {
       d->entry[i].inode = inum;
       strncpy(d->entry[i].name, name, 8);
@@ -206,31 +210,45 @@ void add_direntry(struct directory *d, uint16_t inum, char *name)
  * set of blocks. Attach it to /. Return the struct allocated. If name is
  * "/", we are making the root directory itself.
  */
-struct directory *create_dir(char *name)
+struct directory *create_dir(char *name, int numblocks)
 {
   struct directory *d;
-  uint16_t inum;
+  uint16_t inum, blk;
+  int i;
+
+  if (numblocks > 8) {
+    printf("Can't allocate >8 blocks per directory\n"); exit(1);
+  }
 
   if (name && strlen(name) > 8) {
     printf("Name %s too long\n", name); exit(1);
   }
 
   d = (struct directory *)calloc(1, sizeof(struct directory));
+  d->numentries= numblocks * DIRENTPERBLOCK;
+  d->entry= (struct v1dirent *)calloc(d->numentries, sizeof(struct v1dirent));
 
   /* Allocate an i-node and some blocks for the directory */
   if (strcmp(name, "/")) inum = alloc_inode();
   else inum = ROOTDIR_INUM;
-  d->block = alloc_blocks(DIRBLOCKS);
+  d->block = alloc_blocks(numblocks);
+  if (debug) printf("In create_dir, got back block %d, %d config blks\n",
+			d->block, numblocks);
 
   /* Mark the i-node as a directory */
   inodelist[inum].flags |= I_DIR | I_UREAD | I_UWRITE | I_OREAD | I_OWRITE;
+  inodelist[inum].nlinks= 2;
+  inodelist[inum].size= numblocks * BLKSIZE;
+  for (i=0, blk=d->block; i < numblocks; i++, blk++)
+    inodelist[inum].block[i]= blk;
+
 
   /* If the directory is not /, attach it to rootdir */
   if (strcmp(name, "/")) add_direntry(rootdir, inum, name);
 
   /* and add entries for . and .. */
-  add_direntry(d, inum, ".");
   add_direntry(d, ROOTDIR_INUM, "..");
+  add_direntry(d, inum, ".");
 
   if (debug)
     printf("Created dir for %s, inum %d\n", name, inum);
@@ -246,10 +264,11 @@ void write_dir(struct directory *d, char *name)
 
   if (debug)
     printf("Writing dir %s of %d blocks from block %d (offset 0x%x) on\n",
-			name, DIRBLOCKS, d->block, d->block * BLKSIZE);
+			name, d->numentries / DIRENTPERBLOCK, d->block,
+			d->block * BLKSIZE);
 
   fseek(diskfh, d->block * BLKSIZE, SEEK_SET);
-  fwrite(&(d->entry), sizeof(d->entry), 1, diskfh);
+  fwrite(d->entry, d->numentries * sizeof(struct v1dirent), 1, diskfh);
 }
 
 /* Create a file in a given directory. Returns the first block number. */
@@ -337,7 +356,7 @@ void add_files(char *basedir, char *dir)
   }
 
   /* Create the image directory */
-  d = create_dir(dir);
+  d = create_dir(dir, DIRBLOCKS);
 
   /* Walk the directory */
   while ((dp = readdir(D)) != NULL) {
@@ -372,6 +391,55 @@ void add_files(char *basedir, char *dir)
 
   /* And write the directory out */
   write_dir(d, dir);
+}
+
+/* Following the cold UNIX rf output, make /dev. In /dev,
+ * make devices with specific i-nums, which I guess act like
+ * early major/minor device numbers.
+ */
+void add_devdir(void)
+{
+  struct dev {
+    char *name;
+    uint16_t inum;
+  } devlist[] = {
+	{ "tty", 1 },
+	{ "ppt", 2 },
+	{ "mem", 3 },
+	{ "rf0", 4 },
+	{ "rk0", 5 },
+	{ "tap0", 6 },
+	{ "tap1", 7 },
+	{ "tap2", 8 },
+	{ "tap3", 9 },
+	{ "tap4", 10 },
+	{ "tap5", 11 },
+	{ "tap6", 12 },
+	{ "tap7", 13 },
+	{ "tty0", 14 },
+	{ "tty1", 15 },
+	{ "tty2", 16 },
+	{ "tty3", 17 },
+	{ "tty4", 18 },
+	{ "tty5", 19 },
+	{ "tty6", 20 },
+	{ "tty7", 21 },
+	{ "lpr",  22 },
+	{ "tty8", 1 },
+	{ NULL, 0 },
+  };
+
+  struct directory *d;
+  int i;
+
+  d = create_dir("dev", 1);	/* cold UNIX only uses 1 block */
+
+  for (i=0; devlist[i].name !=NULL; i++) {
+    add_direntry(d, devlist[i].inum, devlist[i].name);
+  }
+
+  /* And write the directory out */
+  write_dir(d, "dev");
 }
 
 /*
@@ -430,14 +498,24 @@ int main(int argc, char *argv[])
 {
   int i;
   int numiblocks;
+  int fs_size;		/* Equal to disksize - any swap */
 
   /* Get the image name and the type of disk */
   if (argc != 4) usage();
   if (strcmp(argv[3], "rk") && strcmp(argv[3], "rf")) usage();
 
   /* Set the disk size */
-  if (argv[3][1] == 'k') disksize = RK_SIZE;
-  else disksize = RF_SIZE;
+  if (argv[3][1] == 'k') {	/* RK device */
+
+    /* XXX: I can't seem to go past 4864 to 4872 blocks, and I haven't */
+    /* worked out why yet. */
+    disksize = RK_SIZE;
+    fs_size = RK_SIZE;
+  } else {
+    disksize = RF_SIZE;
+    fs_size = RF_NOSAWPSIZE;
+    icount= RF_INODES;		/* Set it up as per cold UNIX */
+  }
 
   /* Create the image */
   diskfh = fopen(argv[2], "w+");
@@ -446,7 +524,7 @@ int main(int argc, char *argv[])
   }
 
   /* Make the image full-sized */
-  for (i = 0; i < disksize; i++)
+  for (i = 0; i < fs_size; i++)
     fwrite(buf, BLKSIZE, 1, diskfh);
 
   /* Create the free-map: fortunately RK_SIZE and RF_SIZE are divisible by 8 */
@@ -459,16 +537,23 @@ int main(int argc, char *argv[])
   block_inuse(0); block_inuse(1);
 
   /* Choose disksize/INODE_RATIO as the number of i-nodes to allocate */
+  /* if we haven't already given icount a value. */
   /* Make sure that it is divisible by 8 */
-  icount = 8 * (disksize / INODE_RATIO / 8);
+  if (icount==0)
+    icount = 8 * (disksize / INODE_RATIO / 8);
 
   /* Create the inode bitmap and inode list */
   inodemap = (char *)calloc(1, (icount - ROOTDIR_INUM) / 8);
   inodelist = (struct v1inode *)calloc(icount, sizeof(struct v1inode));
 
   /* Mark special i-nodes 0 to ROOTDIR_INUM-1 as allocated */
-  for (i = 0; i < ROOTDIR_INUM; i++)
-    inodelist[i].flags |= I_ALLOCATED;
+  /* We follow the output of cold UNIX here. */
+  for (i = 0; i < ROOTDIR_INUM; i++) {
+    inodelist[i].flags |= I_ALLOCATED|I_UREAD|I_UWRITE|I_OREAD|I_OWRITE;
+    inodelist[i].nlinks= 1;
+    inodelist[i].uid= 1;
+    inodelist[i].mtime[3]= 0x38;
+  }
 
   /* INODEPERBLOCK i-nodes fit into a block, so work out how many blocks the */
   /* inodelist occupies. Round up to ensure a partial block => full block */
@@ -484,7 +569,10 @@ int main(int argc, char *argv[])
   /* Mark the root directory i-node (ROOTDIR_INUM) as in-use */
   /* Create the root directory */
   inode_inuse(ROOTDIR_INUM);
-  rootdir = create_dir("/");
+  rootdir = create_dir("/", 1);	/* cold UNIX only uses 1 block */
+
+  /* Now create the /dev directory by hand */
+  add_devdir();
 
   /* Walk the top directory argument, dealing with the subdirs */
   process_topdir(argv[1]);
