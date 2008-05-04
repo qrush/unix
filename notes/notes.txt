@@ -108,6 +108,11 @@ e01-06
     - "mov $sysret1,(sp)" has written correction for "-(sp)".  Using
 
 --------------------
+e02-03
+    - "mov     $rtssym,*30" in sysexec is incorrect.  It overwrites
+      the first byte of the rtssym function with the rtssym address.
+      It should read "move $rtssym,30" which writes the address of
+      rtssym to the trap vector.
 e02-05
     - label "1:" is overstruck with "/" in the listing.  leaving the
       label in place.  Should be reviewed for semantic meaning.

@@ -1,6 +1,6 @@
 	mov	$1,u.intr / u.intr determines handling of interrupts;
 			  / u.intr = 1 take interrupt
-	mov	$rtssym,*30 / emt trap vector set to take system routine
+	mov	$rtssym,30 / emt trap vector set to take system routine
 	mov	$fpsym,*10 / reserved instruction trap vector set to take 
 			   / system routine
 	mov	$sstack,sp / stack space used during swapping
