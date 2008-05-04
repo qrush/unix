@@ -1,0 +1,12 @@
+diff -ru rebuilt/u0.s build/u0.s
+--- rebuilt/u0.s	2008-05-03 08:27:03.000000000 -1000
++++ build/u0.s	2008-05-04 08:28:00.000000000 -1000
+@@ -122,7 +122,7 @@
+ 	mov    $sb0,(r1)+            / I/O queue entry drum
+ 	mov    $sb1,(r1)+ / I/O queue entry disk (mounted device)
+ 	mov    $swp,(r1)+ / I/O queue entry core image being swapped
+-	mov    $[systm-inode]\/2,sb0+4 / sets up initial buffers per
++	mov    $-109.,sb0+4 / sets up initial buffers per
+                                        / format given in
+ 	mov    $systm,sb0+6 / memory map
+ 	mov    $-512.,sb1+4

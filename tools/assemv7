@@ -9,31 +9,13 @@
 . tools/assemv7.cfg
 
 export APOUT_ROOT
-COLD=0
-if [ "$1" = "cold" ] ; then
-    COLD=1
-fi
-echo "COLD: $COLD"
 
-tools/rebuild
+# build sources from pages and generate patched sources in "build"
+# if "cold" is passed in, the "cold" option will be patched on.
+tools/rebuild "$@"
 
-# fix "mount" issue which 1ed as cant deal with
-# and also fix up the vector table in u0.s since
-# the result is a slightly different format a.out that doesnt
-# include the header in the text segment
-test -d build || mkdir build
-for f in rebuilt/u?.s ; do
-    b=`basename $f`
-    if [ $COLD = 1 ] ; then
-        sed -e 's/.*init by copy.*/4;4;unkni;0;fpsym;0/' \
-            -e 's/\[systm-inode\]\\\//-109./' \
-            -e 's/cold = 0/cold = 1/' < $f > build/$b
-    else 
-        sed -e 's/.*init by copy.*/4;4;unkni;0;fpsym;0/' \
-            -e 's/\[systm-inode\]\\\//-109./' < $f > build/$b
-    fi
-done
-
+# assemble the kernel from patched sources and generate symbols
+# and build a simh loadable file.
 cd build
 $APOUT $APOUT_ROOT/bin/as ../sys1.s u?.s
 $APOUT $APOUT_ROOT/bin/nm a.out |sort > a.out.syms

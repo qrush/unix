@@ -1,19 +1,41 @@
 #!/bin/sh
 
-m() { cat pages/$2 > rebuilt/$1.s; }
+r() { cat pages/$2-* > rebuilt/$1.s; }
 
-test -d rebuilt || mkdir rebuilt
+rebuild() {
+    test -d rebuilt || mkdir rebuilt
 
-m u0 e00-*
-m u1 e01-*
-m u2 e02-*
-m u3 e03-*
-m u4 e04-*
-m u5 e05-*
-m u6 e06-*
-m u7 e07-*
-m u8 e08-*
-m u9 e09-*
-m ux e10-*
-#m sh e11-*
-#m ini e12-*
+    echo rebuilding...
+    r u0 e00
+    r u1 e01
+    r u2 e02
+    r u3 e03
+    r u4 e04
+    r u5 e05
+    r u6 e06
+    r u7 e07
+    r u8 e08
+    r u9 e09
+    r ux e10
+    #r sh e11
+    #r ini e12
+}
+
+p() { echo ' ' $1; patch -s -p1 <../patches/$1; }
+
+patches() {
+    test -d build || mkdir build
+
+    echo patching...
+    cp rebuilt/* build
+    cd build
+    p vec0407.patch
+    p fixV7div.patch
+    if [ "$1" = "cold" ] ; then 
+        p cold.patch 
+    fi
+}
+
+
+rebuild
+patches "$@"

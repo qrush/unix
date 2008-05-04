@@ -1,0 +1,16 @@
+diff -r -u rebuilt/u0.s build/u0.s
+--- rebuilt/u0.s	2008-05-03 08:27:03.000000000 -1000
++++ build/u0.s	2008-05-04 08:25:41.000000000 -1000
+@@ -45,9 +45,9 @@
+ core = orig+40000  / specifies beginning of user's core
+ ecore = core+20000 / specifies end of user's core (4096 words)
+ 
+-/      4;4     init by copy
+-/      unkni;0 " error
+-/      fpsym;0 " illg in tr
++       4;4     / init by copy
++       unkni;0 / " error
++       fpsym;0 / " illg in tr
+        unkni;0 / trace and trap (see Sec. B.1 page  )
+        unkni;0 / trap
+        panic;0 / pwr

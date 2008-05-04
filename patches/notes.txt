@@ -1,0 +1,23 @@
+cold.patch -
+    Sets the "cold" flag to one to build a kernel that bootstraps the
+    root filesystem.
+
+fixV7div.patch
+    The instruction
+       mov    $[systm-inode]\/2,sb0+4 / sets up initial buffers per
+    assembles incorrectly with the v7 assembler we are using because
+    it does an unsigned divide by two on a negative number.  We patch
+    the correct value "-109." in for the expression.  This is fragile
+    and will break if systm or inode move around due to code changes.
+
+vec0407.patch
+    The v7 assembler builds an 0407 a.out file.  The original sources
+    used an 0405 a.out file in which the a.out header occupied the first
+    six words of the text segment.  The sources accomodate this in two
+    ways 1) they comment out the first 3 vectors.  2) they have code
+    which patches those first six vectors back to their proper values.
+    When building with the v7 assembler the first work around will
+    result in the other vectors having an incorrect offset.  This patch
+    just uncomments the first three vectors.  This would not be necessary
+    if we had a proper 0405 assembler.
+

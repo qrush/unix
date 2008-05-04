@@ -1,0 +1,11 @@
+diff -ru rebuilt/u0.s build/u0.s
+--- rebuilt/u0.s	2008-05-03 08:27:03.000000000 -1000
++++ build/u0.s	2008-05-04 08:29:31.000000000 -1000
+@@ -1,6 +1,6 @@
+ / u0 -- unix
+ 
+-cold = 0 
++cold = 1 
+ orig = 0 . / orig = 0. relocatable
+ 
+ rkda = 177412 / disk address reg            rk03/rk11
