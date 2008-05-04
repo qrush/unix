@@ -56,7 +56,7 @@ e11-01 to e11-07 (7) - sh
    reviewed:
 e12-01 to e12-04 (4) - init 
    we have a binary for init already
-   assigned:
+   assigned: tim newsham, complete
    reviewed:
 
 
@@ -272,3 +272,9 @@ e11-04
    - Line 8 has what resembles a "|", not sure if this is a screwup or
      not. Preserved, and assuming it's a "|".
    - line 21/22: I have no idea.
+---------------------
+e12-01
+   - "rko5" in comments left as is (vs "rk05")
+   - acceped overwritten "ttyx" over the obscured original "xxxx"
+
+

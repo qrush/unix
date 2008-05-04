@@ -17,8 +17,8 @@ rebuild() {
     r u8 e08
     r u9 e09
     r ux e10
-    #r sh e11
-    #r ini e12
+    r sh e11
+    r init e12
 }
 
 p() { echo ' ' $1; patch -s -p1 <../patches/$1.patch; }

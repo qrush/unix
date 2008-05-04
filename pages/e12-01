@@ -1,0 +1,55 @@
+/ init -- process control initialization
+
+mount = 21.
+
+	sys	intr; 0 / turn off interrupts
+	sys 	quit; 0
+	cmp	csw,$73700 / single user?
+	bne	if / no
+help:
+	clr	r0 / yes
+	sys	close / close current read
+	mov	$1,r0 / and write
+	sys	close / files
+	sys	open; ctty; 0 / open control tty
+	sys	open; ctty; 1 / for read and write
+	sys	exec; shell; shellp / execute shell
+	br	help / keep trying
+1:
+	mov	$'0,r1 / prepare to change
+1 :
+	movb	r1,tapx+8 / mode of dec tape drive x, where
+	sys	chmod; tapx; 17 / x=0 to 7, to read/write by owner or
+	inc	r1 / non-owner mode
+	cmp	r1,$'8 / finished?
+	blo	1b / no
+	sys	mount; rk0; usr / yes, root file on mounted rko5
+				/ disk ls /usr
+	sys	creat; utmp; 16 / truncate /tmp/utmp
+	sys	close / close it
+	movb	$'x,zero+8. / put identifier in output buffer
+	jsr	pc.wtmprec / go to write accting info
+	mov	$itab,r1 / address of table to r1
+
+/ create shell processes
+
+1:
+	mov	(r1)+,r0 / 'x, x=0, 1... to r0
+	beq	1f / branch if table end
+	movb	r0,ttyx+8 / put symbol in ttyx
+	jsr	pc,dfork / go to make new init for this ttyx
+	mov	r0,(r1)+ / save child id in word offer '0, '1,...etc.
+	br	1b / set up next child
+
+/ wait for process to die
+
+1:
+	sys	wait / wait for user to terminate process
+	mov	$itab,r1 / initialize for search
+
+/ search for process id
+
+2:
+	tst	(r1)+ / bump r1 to child id location
+	beq	1b / ? something silly
+	cmp	r0,(r1)+ / which process has terminated

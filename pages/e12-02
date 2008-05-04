@@ -1,0 +1,56 @@
+	bne	2b / not this one
+
+/ take name out of utmp
+
+	sub	$4, r1 / process is found, point x' to 'x
+		       / for it
+	mov	r1,-(sp) / save address on stack
+	mov	(r1),r1 / move 'x to r1
+	sub	$'0,r1 / remove zone bits from character
+	asl	r1 / generate proper
+	asl	r1 / offset
+	asl	r1 / for
+	asl	r1 / seek
+	mov	r1,0f / move it to offset loc for seek
+	mov	$zero,r1
+2:
+	clr	(r1)+ / ccear-
+	cmp	r1,$zero+16. / output buffer
+	blo	2b / area
+	sys	open; utmp; 1 / open file for writing
+	bes	2f / if can't open, create user anyway
+	mov	r0,r1 / save file desc
+	sys	seek; 0:..; 0 / move to proper pointer position
+	mov	r1,r0 / not required
+	sys	write; zero; 16. / zero this position in
+	mov	r1,r0 / restore file descriptor
+	sys	close / close file
+
+/ re-create user process
+
+2:
+	mov	(sp)+,r1 / restore 'x to r1
+	mov	(r1)+,r0 / move it to r0
+	movb	r0,ttyx+8 / get correct ttyx
+	movb	r0,zero+8 / move identifier to output buffer
+	jsr	pc,wtmprec / go to write accting into
+	jsr	pc,dfork / fork
+	mov	r0,(r1)+ / save id of child
+	br	1b / go to wait for next process end
+
+dfork:
+	mov	r1,r2
+	sub	$itab+2,r2 / left over
+	asl	r2 / from previous
+	asl	r2 / version of code
+	mov	r2,offset
+	sys	fork
+		br 1f / to new copy of init
+	bes	dfork / try again
+	rts	pc / return
+1 :
+	sys	quit; 0 / new init turns off
+	sys	intr; 0 / interrupts
+	sys	chown; ttyx; 0 / change owner to super user
+	sys	chmod; ttyx; 15 / changemode to read/write owner,
+				/ write non-owner

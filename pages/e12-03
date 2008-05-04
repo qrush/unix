@@ -1,0 +1,55 @@
+	sys	open; ttyx; 0 / open this ttyx for reading
+			      / and wait until someone calls
+	bes	help1 / branch if trouble
+	sys	open; ttyx; 1 / open this ttyx for writing after
+			      / user call
+	bes	help1 / branch if trouble
+	sys	exec; getty; gettyp / getty types <login> and
+				    / executes login which logs user
+				    / in and executes sh-
+	sys	exit / HELP!
+
+help1:
+	jmp	help / trouble
+
+wtmprec:
+	sys	time / get time
+	mov	ac,zero+10. / more to output
+	mov	mq,zero+12. / buffer
+	sys	open; wtmp; 1 / open accounting file
+	bes	2f
+	mov	r0,r2 / save file descriptor
+	sys	seek; 0; 2 / move pointer to end of file
+	mov	r2,r0 / not required
+	sys	write; zero; 16. / write accting info
+	mov	r2,r0 / restore file descriptor
+	sys	close / close file
+2:
+	rts	pc
+
+ctty:	</dev/tty\0>
+shell:	</bin/sh\0>
+shellm:	<-\0>
+tapx:	</dev/tapx\0>
+rk0:	</dev/rk0\0>
+utmp:	</tmp/utmp\0>
+wtmp:	</tmp/wtmp\0>
+ttyx:	</dev/ttyx\0>
+getty:	</etc/qetty\0>
+usr:	</usr\0)
+	.even
+
+shellp:	shellm
+	0
+gettyp:	getty
+	0
+itab:
+	'0; ..
+	'1; ..
+	'2; ..
+	'3; ..
+	'4; ..
+	'5; ..
+	'6; ..
+	'7; ..
+	0
