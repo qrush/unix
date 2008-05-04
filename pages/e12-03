@@ -36,7 +36,7 @@ utmp:	</tmp/utmp\0>
 wtmp:	</tmp/wtmp\0>
 ttyx:	</dev/ttyx\0>
 getty:	</etc/qetty\0>
-usr:	</usr\0)
+usr:	</usr\0>
 	.even
 
 shellp:	shellm

@@ -5,7 +5,7 @@ mount = 21.
 	sys	intr; 0 / turn off interrupts
 	sys 	quit; 0
 	cmp	csw,$73700 / single user?
-	bne	if / no
+	bne	1f / no
 help:
 	clr	r0 / yes
 	sys	close / close current read
@@ -28,7 +28,7 @@ help:
 	sys	creat; utmp; 16 / truncate /tmp/utmp
 	sys	close / close it
 	movb	$'x,zero+8. / put identifier in output buffer
-	jsr	pc.wtmprec / go to write accting info
+	jsr	pc,wtmprec / go to write accting info
 	mov	$itab,r1 / address of table to r1
 
 / create shell processes
