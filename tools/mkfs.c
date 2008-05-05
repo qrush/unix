@@ -11,15 +11,17 @@
  *	 in the long run, have the ability to read from/write to
  *	 existing images, a la an ftp client.
  *
- * $Revision: 1.18 $
- * $Date: 2008/05/04 14:55:05 $
+ * $Revision: 1.19 $
+ * $Date: 2008/05/05 00:08:01 $
  */
 
 int debug=1;
 
 #include <sys/types.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -31,13 +33,15 @@ int debug=1;
 #define RK_SIZE		4864	/* Number of blocks on RK03, should be 4872 */
 #define INODE_RATIO	   4	/* Disksize to i-node ratio */
 #define ROOTDIR_INUM	  41	/* Special i-number for / */
+#define NUMDIRECTBLKS      8	/* Only 8 direct blocks in an i-node */
+#define BLKSPERINDIRECT  256	/* 256 block pointers in an indirect block */
 
 struct v1inode {		/* Format of 1st edition i-node */
   uint16_t flags;
   uint8_t nlinks;
   uint8_t uid;
   uint16_t size;
-  uint16_t block[8];
+  uint16_t block[NUMDIRECTBLKS];
   uint8_t ctime[4];		/* To ensure correct alignment */
   uint8_t mtime[4];		/* on 32-bit platforms */
   uint16_t unused;
@@ -167,9 +171,9 @@ int alloc_inode(void)
  * Allocate N contiguous blocks. Returns the first block number,
  * or dies if this is impossible.
  */
-int alloc_blocks(int n)
+uint16_t alloc_blocks(int n)
 {
-  int i, firstblock = nextfreeblock;
+  uint16_t i, firstblock = nextfreeblock;
 
   if (nextfreeblock + n >= disksize) {
     printf("Unable to allocate %d more blocks\n", n); exit(1);
@@ -178,6 +182,40 @@ int alloc_blocks(int n)
     block_inuse(i);
   nextfreeblock += n;
   return (firstblock);
+}
+
+/* Allocate N contiguous blocks, and write a single indirect block
+ * with those block numbers in it. Return the indirect block number;
+ * the contiguous blocks come directly after the indirect block.
+ */
+int alloc_indirect_blocks(int n)
+{
+  uint16_t blkptr[BLKSPERINDIRECT];	/* Blk pointers in the indirect blk */
+  uint16_t indirect_blknum;		/* Number of the indirect block */
+  uint16_t i,b;
+
+  if ( n > BLKSPERINDIRECT) {
+    printf("Unable to allocate more than %d blocks in indirect\n", n); exit(1);
+  }
+
+  /* Obtain N+1 blocks, the first will be the indirect block */
+  indirect_blknum= alloc_blocks(n+1);
+  if (debug)
+    printf("Allocated %d blocks, indirect is block %d\n", n+1, indirect_blknum);
+
+  /* Fill the indirect block with the block numbers */
+  memset(blkptr, 0, BLKSIZE);
+  for (i=0,b=indirect_blknum+1; i< n; i++, b++)
+    blkptr[i]= b;
+
+  /* Write the indirect bock out to the image */
+  fseek(diskfh, indirect_blknum * BLKSIZE, SEEK_SET);
+  fwrite(blkptr, BLKSIZE, 1, diskfh);
+  if (debug)
+    printf("Wrote indirect block at %d\n", indirect_blknum);
+
+  /* Return the indirect block number */
+  return(indirect_blknum);
 }
 
 /* Add a filename and i-number to the given directory */
@@ -280,7 +318,7 @@ void write_dir(struct directory *d, char *name)
 
 /* Create a file in a given directory. Returns the first block number. */
 /* Does not actually copy the file's bits onto the image. */
-/* At present we cannot deal with large files, i.e. > 8 blocks */
+/* At present we cannot deal with very large files, i.e. > 1 indirect block */
 int create_file(struct directory *d, char *name, int size)
 {
   uint16_t inum;
@@ -293,22 +331,32 @@ int create_file(struct directory *d, char *name, int size)
   if (name == NULL) {
     printf("I need a filename please\n"); exit(1);
   }
-  if (size > 8 * BLKSIZE) {
-    printf("File %s is a large file, skipping", name); return (0);
+  if (size > BLKSPERINDIRECT * BLKSIZE) {
+    printf("File %s is a very large file, skipping", name); return (0);
   }
 
   /* Allocate an i-node and some blocks for the directory */
   inum = alloc_inode();
   numblocks = (size + BLKSIZE - 1) / BLKSIZE;
-  firstblock = alloc_blocks(numblocks);
+
+  /* Get either that many blocks, or an indirect block if a large file */
+  /* and put the list of blocks in the i-node */
+  if (numblocks > NUMDIRECTBLKS) {
+    firstblock = alloc_indirect_blocks(numblocks);
+    inodelist[inum].flags |= I_LARGEFILE;
+    inodelist[inum].block[0] = firstblock;
+    firstblock++;		/* So that we return the 1st data block */
+  } else {
+    firstblock = alloc_blocks(numblocks);
+    for (i = 0, blk = firstblock; i < numblocks; i++, blk++)
+      inodelist[inum].block[i] = blk;
+  }
 
   /* Make the i-node reflect the file */
   inodelist[inum].flags |= I_EXEC | I_UREAD | I_UWRITE | I_OREAD | I_OWRITE;
   inodelist[inum].nlinks = 1;
   inodelist[inum].uid = 0;
   inodelist[inum].size = size;
-  for (i = 0, blk = firstblock; i < numblocks; i++, blk++)
-    inodelist[inum].block[i] = blk;
 
   /* Add the i-node and filename to the directory */
   add_direntry(d, inum, name);
@@ -380,8 +428,8 @@ void add_files(char *basedir, char *dir)
     if (!S_ISREG(sb.st_mode)) continue;
 
     /* Skip if it's too big */
-    if (sb.st_size > 8 * BLKSIZE) {
-      printf("Skipping large file %s for now\n", fullname); continue;
+    if (sb.st_size > BLKSPERINDIRECT * BLKSIZE) {
+      printf("Skipping very large file %s for now\n", fullname); continue;
     }
 
     /* Skip if the name is too long */
@@ -503,6 +551,7 @@ void usage(void)
 
 int main(int argc, char *argv[])
 {
+  int makedevflag=0;	/* Do we make the /dev directory? */
   int i;
   int numiblocks;
   int fs_size;		/* Equal to disksize - any swap */
@@ -513,7 +562,6 @@ int main(int argc, char *argv[])
 
   /* Set the disk size */
   if (argv[3][1] == 'k') {	/* RK device */
-
     /* XXX: I can't seem to go past 4864 to 4872 blocks, and I haven't */
     /* worked out why yet. */
     disksize = RK_SIZE;
@@ -521,6 +569,7 @@ int main(int argc, char *argv[])
   } else {
     disksize = RF_SIZE;
     fs_size = RF_NOSAWPSIZE;
+    makedevflag=1;
   }
 
   /* Create the image */
@@ -578,7 +627,8 @@ int main(int argc, char *argv[])
   rootdir = create_dir("/", 1);	/* cold UNIX only uses 1 block */
 
   /* Now create the /dev directory by hand */
-  add_devdir();
+  if (makedevflag)
+    add_devdir();
 
   /* Walk the top directory argument, dealing with the subdirs */
   process_topdir(argv[1]);
