@@ -1,0 +1,11 @@
+This is a start on a disassembler for PDP-11 a.out Unix binaries. There's
+still a lot to do. Right now I am concentrating on V1 and V2 binaries. I
+have re-used code from Apout, so later on we can also do binaries from
+V5/B6/V7, 2.9 and 2.11 BSD. I'd also like to parse symbol tables, but
+that's for later.
+
+I need to deal with the bss and initialised data sections of a binary.
+
+Lots to do, and it's very frustrating.
+
+Warren Toomey, Mon May  5 2008
