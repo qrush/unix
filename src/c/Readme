@@ -1,0 +1,26 @@
+This directory contains the last1120c C compiler, as described by Dennis
+Ritchie on his web page http://cm.bell-labs.com/cm/cs/who/dmr/primevalC.html
+
+You can use the Apout emulator and the C compiler from the s2 tape to
+recompile the last1120c compiler. After installing the new compiler
+binaries, last1120c can recompile itself.
+
+Here are the instructions. First, compile and install the Apout emulator.
+Make sure that you turned -DEMUV1 on in the Makefile.
+
+Unpack the V1 executables from the s2 tape and unpack them in a suitable
+area, e.g /usr/local/src/V1. Set the environment variable APOUT_ROOT to
+this directory name.
+
+Change into the last1120c directory, and edit the shell script mak
+so that it reflects the value of APOUT_ROOT that you have chosen.
+Then simply run the mak shell script natively. This will build the the
+front-end command, cc, and the two passes of the C compiler: c0 and c1.
+
+If you want, you can now move c0 and c1 into $APOUT_ROOT/usr/lib, replacing
+the original c0 and c1, and then use the shell script mak again to rebuild
+c0 and c1 using themselves. Similarly, you can replace $APOUT_ROOT/bin/cc
+with the cc created here.
+
+Once we get the C compiler executing in the V1 environment, a new mak
+script will be written to allow you to rebuild the C compiler on top of V1.
