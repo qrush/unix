@@ -24,3 +24,7 @@ vec0407.patch
 initorig.patch
     Fix a deficiency in tools/as -- requires ". = . + 40014" at the
     start of each program.
+
+ecore.patch
+    Increase the amount of memory user programs have, so that the last1120
+    C compiler will run.
