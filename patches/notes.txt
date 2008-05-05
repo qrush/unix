@@ -31,3 +31,6 @@ ecore.patch
 
 upcase.patch
     Allow uppercase keyboard input and the } character.
+
+fastout.patch
+    Remove output delays for mechanical teletypes, so output goes faster.

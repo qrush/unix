@@ -1,0 +1,23 @@
+--- rebuilt/u4.s	Mon May  5 21:40:27 2008
++++ build/u4.s	Mon May  5 21:39:35 2008
+@@ -214,13 +214,14 @@
+        bne     1f
+        movb    $15,ttyoch / put a cr in ttyoch
+ 1:
+-       cmp     r1,$11 / char = ht
+-       bne     1f
+-       movb    $15.,toutt+0 / set time out to 15 clock tics
++       / output delays removed, we don't have mechanical ttys, May 5 2008
++       / cmp     r1,$11 / char = ht
++       / bne     1f
++       / movb    $15.,toutt+0 / set time out to 15 clock tics
+ 1:
+-       cmp     r1,$15 / char = cr
+-       bne     2f
+-       movb    $15.,toutt+0 / set time out to 15 clock ticks
++       / cmp     r1,$15 / char = cr
++       / bne     2f
++       / movb    $15.,toutt+0 / set time out to 15 clock ticks
+ 2:
+        rts     r0
+ pptito: / paper tape input touts subrouting
