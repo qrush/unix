@@ -1,0 +1,29 @@
+--- rebuilt/u4.s	Mon May  5 20:58:29 2008
++++ build/u4.s	Mon May  5 20:58:14 2008
+@@ -73,17 +73,19 @@
+        inc     *$tks / set the reader enable bit
+        bic     $!177,r1 / clear upper 9 bits of the character (strip off
+                         / 8th bit of char)
+-       cmp     r1,$'a-40 / is character upper case A,..., upper case Z.
++       / uppercase to lowercase conversion removed May 5 2008
++       / cmp     r1,$'a-40 / is character upper case A,..., upper case Z.
+                          / note that
+-       blt     1f / lower case a is represented by 141, upper case by
+-       cmp     r1,$'z-40 / 101; and lower case z by 172, upper
++       / blt     1f / lower case a is represented by 141, upper case by
++       / cmp     r1,$'z-40 / 101; and lower case z by 172, upper
+                          / case Z by 132.
+-       bgt     1f / if not upper case, branch
+-       add     $40,r1 / if upper case, calculate the representation of its
++       / bgt     1f / if not upper case, branch
++       / add     $40,r1 / if upper case, calculate the representation of its
+                       / lower case counter part
+ 1:
+-       cmp     r1,$175 / char = "}"? Note: may be quit char (fs)
+-       beq     2f / yes 2f
++       / deletion of } characters removed May 5 2008
++       / cmp     r1,$175 / char = "}"? Note: may be quit char (fs)
++       / beq     2f / yes 2f
+        cmp     r1,$177 / char = "del" ?
+        beq     2f / yes, 2f
+        jsr     r0,putc; 0 / put char in r1 on clist entry

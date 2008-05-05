@@ -28,3 +28,6 @@ initorig.patch
 ecore.patch
     Increase the amount of memory user programs have, so that the last1120
     C compiler will run.
+
+upcase.patch
+    Allow uppercase keyboard input and the } character.
