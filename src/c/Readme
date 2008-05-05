@@ -22,5 +22,6 @@ the original c0 and c1, and then use the shell script mak again to rebuild
 c0 and c1 using themselves. Similarly, you can replace $APOUT_ROOT/bin/cc
 with the cc created here.
 
-Once we get the C compiler executing in the V1 environment, a new mak
-script will be written to allow you to rebuild the C compiler on top of V1.
+The C compiler can now mostly rebuild itself on the V1 kernel, except the c1
+pass which doesn't work yet. The v1mak shell script can be run on V1 to
+rebuild everything from source.
