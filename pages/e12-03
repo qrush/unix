@@ -35,7 +35,7 @@ rk0:	</dev/rk0\0>
 utmp:	</tmp/utmp\0>
 wtmp:	</tmp/wtmp\0>
 ttyx:	</dev/ttyx\0>
-getty:	</etc/qetty\0>
+getty:	</etc/getty\0>
 usr:	</usr\0>
 	.even
 
