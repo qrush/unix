@@ -1,7 +1,7 @@
 diff -ru rebuilt/u2.s build/u2.s
---- rebuilt/u2.s	2008-05-04 09:18:31.000000000 -1000
-+++ build/u2.s	2008-05-04 10:09:15.000000000 -1000
-@@ -177,6 +177,32 @@
+--- rebuilt/u2.s	2008-05-04 15:29:30.000000000 -1000
++++ build/u2.s	2008-05-04 15:45:52.000000000 -1000
+@@ -177,6 +177,33 @@
  			     / number of words less 26 available for
  			     / program in user core
  	mov	r5,u.count /
@@ -24,8 +24,9 @@ diff -ru rebuilt/u2.s build/u2.s
 +	/ bgt	1f
 +	mov	r5,u.count / read text+data into core
 +	jsr	r0,readi
-+	add	bsz,u.nread / add bss
-+	mov	u.nread,u.break
++	mov	u.nread,u.break / break = core + nread + bss
++	add	$core,u.break
++	add	bsz,u.break
 +	jsr	r0,iclose
 +	br	sysret3
 +e407:
