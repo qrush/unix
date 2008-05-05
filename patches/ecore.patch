@@ -1,0 +1,11 @@
+--- rebuilt/u0.s	Mon May  5 17:57:35 2008
++++ build/u0.s	Mon May  5 17:57:54 2008
+@@ -43,7 +43,7 @@
+ .endif
+ 
+ core = orig+40000  / specifies beginning of user's core
+-ecore = core+20000 / specifies end of user's core (4096 words)
++ecore = core+40000 / specifies end of user's core (4096 words)
+ 
+        4;4     / init by copy
+        unkni;0 / " error
