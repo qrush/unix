@@ -1,0 +1,18 @@
+This directory contains files used to populate the root and usr 
+filesystems.
+
+Historic binaries
+These binaries are from the "1972_stuff" folder in the TUHS archive.
+
+  root - files from s2.tar.gz, excluding the usr directory, used
+         to populate the rf0 filesystem.
+  usr  - files from s2.tar.gz under the usr directory, used to populate
+         the rk0 filesystem.
+
+
+Newly built binaries
+These binaries were built recently while reconstructing the system:
+
+  new/etc/init - built from jun72 printout sources for init.s
+                 with modifications to spawn getty on tty8 (console) only.
+
