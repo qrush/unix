@@ -5,8 +5,6 @@ echo Building c00; cc -c c00.c
 echo Building c01; cc -c c01.c
 echo Building c02; cc -c c02.c
 echo Building c03; cc -c c03.c
-echo Building c10; cc -c c10.c
-echo Building c11; cc -c c11.c
 echo Building c0t; as c0t.s; mv a.out c0t.o
 echo Building c0;  cc c0*.o; mv a.out c0; chmod 022 c0
 echo
