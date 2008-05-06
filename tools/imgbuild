@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Build rf0.dsk and rk0.dsk filesystem images from the files in fs/.
+# At present there are no command-line options.
+
+rf_img=rf0.dsk
+rk_img=rk0.dsk
+
+if [ ! -d fs ]
+then echo 'No fs/ directory, are you running this in the correct dir?'; exit 1
+fi
+if [ ! -d build ]
+then echo 'No build/ directory, are you running this in the correct dir?'
+     exit 1
+fi
+if [ ! -x tools/mkfs ]
+then echo "tools/mkfs doesn't exist, looks like you need to compile it"; exit 1
+fi
+
+# Remove any existing build/root and build/usr
+rm -rf build/root build/usr
+
+# Copy the original files into build. I would prefer to use cp, but I don't
+# think it can exclude the .svn directories
+# cp -R fs/root build
+# cp -R fs/usr  build
+rsync -a --exclude .svn fs/root build
+rsync -a --exclude .svn fs/usr build
+
+# Update certain files as required
+# cp -R -f fs/new/etc build/root
+rsync -a --exclude .svn fs/new/etc build/root
+
+# Now build the two images
+tools/mkfs build/root $rf_img rf
+tools/mkfs build/usr $rk_img rk
