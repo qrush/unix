@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# assemble the sources
+#
+if [ ! -d tools ]
+then echo 'No tools/ directory, are you running this in the correct dir?'
+     exit 1
+fi
+
+# settings;  should contain something like:
+#   APOUT=/tmp/apout2.3alpha2/apout
+. tools/assemv2.cfg
+
+APOUT_ROOT=../fs/root
+export APOUT_ROOT
+
+# build sources from pages and generate patched sources in "build"
+# if "cold" is passed in, the "cold" option will be patched on.
+tools/rebuild v2_as "$@"
+
+# assemble the kernel from patched sources and generate symbols
+# and build a simh loadable file.
+cd build
+
+# create sys1.s
+echo 'fpsym = 0   / define fpsym even though we cannot use it' > sys1.s
+echo '.. = 0 .    / ensure a.out starts at location 0, not 040000' >> sys1.s
+
+# assemble it all
+$APOUT $APOUT_ROOT/bin/as sys1.s u?.s
+$APOUT $APOUT_ROOT/bin/nm a.out |sort > a.out.syms
+../tools/ml
+
