@@ -11,11 +11,9 @@
  *	 in the long run, have the ability to read from/write to
  *	 existing images, a la an ftp client.
  *
- * $Revision: 1.19 $
- * $Date: 2008/05/05 00:08:01 $
+ * $Revision: 1.20 $
+ * $Date: 2008/05/06 08:56:17 $
  */
-
-int debug=1;
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -81,6 +79,15 @@ struct directory {		/* Internal structure for each dir */
   struct v1dirent *entry;
 };
 
+#define PERMLISTSIZE 500
+struct fileperm {		/* We read an external file to determine */
+  char *name;			/* a list of struct fileperms which we can */
+  uint16_t flags;		/* apply to the files which we add to the */
+  uint8_t uid;			/* filesystem. */
+  uint32_t mtime;
+} permlist[PERMLISTSIZE];
+
+
 unsigned char buf[BLKSIZE];	/* A block buffer */
 uint16_t disksize;		/* Number of blocks on disk */
 uint16_t icount=0;		/* Number of i-nodes created */
@@ -92,6 +99,8 @@ struct v1inode *inodelist;	/* In-memory i-node list */
 struct directory *rootdir;	/* The root directory */
 
 FILE *diskfh;			/* Disk filehandle */
+int debug=0;			/* Enable debugging output */
+
 
 /* Write the superblock out to the image */
 void write_superblock(void)
@@ -243,6 +252,26 @@ void add_direntry(struct directory *d, uint16_t inum, char *name)
   d->nextfree++;
 }
 
+/* Search for an return a struct fileperm pointer, given a directory
+ * and filename. If no match is found, NULL is returned.
+ */
+struct fileperm *search_fileperm(char *dir, char *file)
+{
+  int i;
+  char name[BLKSIZE];
+
+  snprintf(name, BLKSIZE, "%s/%s", dir, file);
+  if (debug) printf("Searching permlist for %s\n", name);
+
+  for (i=0; permlist[i].name; i++) {
+    if (!strcmp(permlist[i].name, name)) {
+      if (debug) printf("Found permlist entry for %s\n", name);
+      return(&permlist[i]);
+    }
+  }
+  return(NULL);
+}
+
 /*
  * Create a directory with the given name. Allocate an i-node for it, and a
  * set of blocks. Attach it to /. Return the struct allocated. If name is
@@ -319,10 +348,11 @@ void write_dir(struct directory *d, char *name)
 /* Create a file in a given directory. Returns the first block number. */
 /* Does not actually copy the file's bits onto the image. */
 /* At present we cannot deal with very large files, i.e. > 1 indirect block */
-int create_file(struct directory *d, char *name, int size)
+int create_file(struct directory *d, char *name, int size, struct fileperm *p)
 {
   uint16_t inum;
   uint16_t firstblock;
+  uint32_t epoch=0;
   int i, blk, numblocks;
 
   if (d == NULL) {
@@ -353,10 +383,23 @@ int create_file(struct directory *d, char *name, int size)
   }
 
   /* Make the i-node reflect the file */
-  inodelist[inum].flags |= I_EXEC | I_UREAD | I_UWRITE | I_OREAD | I_OWRITE;
   inodelist[inum].nlinks = 1;
-  inodelist[inum].uid = 0;
   inodelist[inum].size = size;
+
+  /* If we have existing permissions, use them. Otherwise, just */
+  /* make some default permissions and set uid to 0 */
+  if (p) {
+    inodelist[inum].uid = p->uid;
+    memcpy(inodelist[inum].mtime, &p->mtime, sizeof(uint32_t));
+    memcpy(inodelist[inum].ctime, &p->mtime, sizeof(uint32_t));
+    inodelist[inum].flags |= I_MODFILE | p->flags;
+  } else {
+    inodelist[inum].uid = 0;
+    memcpy(inodelist[inum].mtime, &epoch, sizeof(uint32_t));
+    memcpy(inodelist[inum].ctime, &epoch, sizeof(uint32_t));
+    inodelist[inum].flags |= I_MODFILE | I_EXEC | I_UREAD | I_UWRITE |
+							 I_OREAD | I_OWRITE;
+  }
 
   /* Add the i-node and filename to the directory */
   add_direntry(d, inum, name);
@@ -400,6 +443,7 @@ void add_files(char *basedir, char *dir)
   struct stat sb;
   char fullname[BLKSIZE];
   uint16_t firstblock;
+  struct fileperm *perms;
 
   /* Get the full external directory name */
   snprintf(fullname, BLKSIZE, "%s/%s", basedir, dir);
@@ -437,9 +481,12 @@ void add_files(char *basedir, char *dir)
       printf("Skipping long filename %s for now\n", fullname); continue;
     }
 
+    /* Search for any known permissions for this file */
+    perms= search_fileperm(dir, dp->d_name);
+
     /* Create the file's i-node */
     /* and copy the file into the image */
-    firstblock = create_file(d, dp->d_name, sb.st_size);
+    firstblock = create_file(d, dp->d_name, sb.st_size, perms);
     copy_file(fullname, firstblock, sb.st_size);
   }
   closedir(D);
@@ -539,29 +586,122 @@ void process_topdir(char *topdir)
   closedir(D);
 }
 
+/* Open and parse the file to obtain a list of V1 file owner/perm/dates.
+ * The file has a very specific format. Lines before '======' are ignored.
+ * After that, each line represents one file, and has pcre line format:
+ *
+ *
+ *   ^[-xu][-r][-w][-r][-w] +\d+.*\/\S+ *\d+
+ *
+ * First 5 chars represent x=executable, u=setuid, r=read, w=write.
+ * Spaces separate the permissions and the decimal userid.
+ * Then we look for a / which begins the full pathname.
+ * Spaces seperate the full pathname and the timestamp which is in 1/60th
+ * of a second since the beginning of the year.
+ */
+void read_permsfile(char *file)
+{
+  FILE *zin;
+  char linebuf[BLKSIZE];
+  char *cptr, *sptr;
+  int posn=0;
+
+  if (file==NULL) return;
+  if ((zin= fopen(file, "r"))==NULL) return;
+
+  /* Find line beginning with = */
+  while (1) {
+    if (fgets(linebuf, BLKSIZE-1, zin)==NULL) {
+      fclose(zin); return;
+    }
+    if (linebuf[0]== '=') break;
+  }
+
+  /* Now read and parse each line */
+  while (1) {
+    if ((posn >= PERMLISTSIZE) || (fgets(linebuf, BLKSIZE-1, zin)==NULL)) {
+      fclose(zin); return;
+    }
+
+    /* Skip if junk permissions */
+    if (linebuf[0] != '-' && linebuf[0] != 'x' && linebuf[0] != 'u')
+      continue;
+
+    /* Get the permissions */
+    permlist[posn].flags=0;
+    if (linebuf[0] == 'x') permlist[posn].flags |= I_EXEC;
+    if (linebuf[0] == 'u') permlist[posn].flags |= I_SETUID;
+    if (linebuf[1] == 'r') permlist[posn].flags |= I_UREAD;
+    if (linebuf[2] == 'w') permlist[posn].flags |= I_UWRITE;
+    if (linebuf[3] == 'r') permlist[posn].flags |= I_OREAD;
+    if (linebuf[4] == 'w') permlist[posn].flags |= I_OWRITE;
+
+    /* Get the userid */
+    permlist[posn].uid= strtol(&linebuf[5], NULL , 10);
+    
+    /* Search for the full pathname, skip line if not found */
+    if ((cptr= strchr(linebuf, '/'))==NULL) continue;
+
+    /* Find the space after the full name, skip if not found */
+    /* Null-terminate the filename */
+    if ((sptr= strchr(cptr, ' '))==NULL) continue;
+    *(sptr++)= '\0';
+
+    /* Copy the pathname minus the leading slash */
+    /* However, if it starts with "/usr/", skip "/usr/" */
+    if (!strncmp(cptr, "/usr/", 5))
+      cptr+= 5;
+    else
+      cptr++;
+    permlist[posn].name= strdup(cptr);
+
+    /* Finally get the timestamp */
+    permlist[posn].mtime= strtol(sptr, NULL , 10);
+
+    if (debug) {
+      printf("0%2o %2d %10d %s\n", permlist[posn].flags, permlist[posn].uid,
+			permlist[posn].mtime, permlist[posn].name);
+    }
+    posn++;
+  }
+}
+
 
 void usage(void)
 {
-  printf("Usage: mkfs topdir image rk/rf\n");
+  printf("Usage: mkfs [-d] [-p permsfile] topdir image rk/rf\n");
   printf("\ttopdir is an existing dir which holds bin/, etc/, tmp/ ...\n");
   printf("\timage will be the image created\n");
   printf("\tlast argument is either 'rk' or 'rf'\n");
+  printf("\t-d enables debugging output\n");
+  printf("\t-p reads the named file to obtain a list of V1 file permissions\n");
   exit(1);
 }
 
 int main(int argc, char *argv[])
 {
   int makedevflag=0;	/* Do we make the /dev directory? */
-  int i;
+  int i,ch;
   int numiblocks;
-  int fs_size;		/* Equal to disksize - any swap */
+  int fs_size;		/* Equal to disksize minus any swap */
+
+  /* Get any optional arguments */
+  while ((ch = getopt(argc, argv, "dp:")) != -1) {
+    switch (ch) {
+	case 'd': debug=1; break;
+	case 'p': read_permsfile(optarg); break;
+    }
+  }
+
+  argc -= optind;
+  argv += optind;
 
   /* Get the image name and the type of disk */
-  if (argc != 4) usage();
-  if (strcmp(argv[3], "rk") && strcmp(argv[3], "rf")) usage();
+  if (argc != 3) usage();
+  if (strcmp(argv[2], "rk") && strcmp(argv[2], "rf")) usage();
 
   /* Set the disk size */
-  if (argv[3][1] == 'k') {	/* RK device */
+  if (argv[2][1] == 'k') {	/* RK device */
     /* XXX: I can't seem to go past 4864 to 4872 blocks, and I haven't */
     /* worked out why yet. */
     disksize = RK_SIZE;
@@ -573,9 +713,9 @@ int main(int argc, char *argv[])
   }
 
   /* Create the image */
-  diskfh = fopen(argv[2], "w+");
+  diskfh = fopen(argv[1], "w+");
   if (diskfh == NULL) {
-    printf("Unable to create image %s\n", argv[2]); exit(1);
+    printf("Unable to create image %s\n", argv[1]); exit(1);
   }
 
   /* Make the image full-sized */
@@ -584,7 +724,7 @@ int main(int argc, char *argv[])
 
   /* Create the free-map: fortunately RK_SIZE and RF_SIZE are divisible by 8 */
   /* Make all the blocks free to start with */
-  freemap = (char *)malloc(disksize / 8);
+  freemap = (uint8_t *)malloc(disksize / 8);
   for (i = 0; i < disksize / 8; i++)
     freemap[i] = 0xff;
 
@@ -598,7 +738,7 @@ int main(int argc, char *argv[])
     icount = 8 * (disksize / INODE_RATIO / 8);
 
   /* Create the inode bitmap and inode list */
-  inodemap = (char *)calloc(1, (icount - ROOTDIR_INUM) / 8);
+  inodemap = (uint8_t *)calloc(1, (icount - ROOTDIR_INUM) / 8);
   inodelist = (struct v1inode *)calloc(icount, sizeof(struct v1inode));
 
   /* Mark special i-nodes 0 to ROOTDIR_INUM-1 as allocated */
@@ -631,7 +771,7 @@ int main(int argc, char *argv[])
     add_devdir();
 
   /* Walk the top directory argument, dealing with the subdirs */
-  process_topdir(argv[1]);
+  process_topdir(argv[0]);
 
   /* Write out the root directory */
   write_dir(rootdir, "/");
