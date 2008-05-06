@@ -1,10 +1,31 @@
 The directories root/ and usr/ contain the files from the "s2-bits tape", 
-which Dennis Ritchie extracted from an old DECtape at Bell Labs. Here are
-his notes.
+which Dennis Ritchie extracted from an old DECtape at Bell Labs, which is
+available here:
 
-        s2-bits Is not source, but a dump of (parts of) /bin, /etc,
-                /usr/lib, and bits of a few other directories.
+     http://www.tuhs.org/Archive/PDP-11/Distributions/research/1972_stuff/
 
+Dennis notes that "s2-bits is not source, but a dump of (parts of) /bin,
+/etc, /usr/lib, and bits of a few other directories".
+
+
+Layout
+------
+The files on the "s2-bits tape" are split into two directories:
+
+  root - files from s2.tar.gz, excluding the usr directory, used
+         to populate the rf0 filesystem.
+  usr  - files from s2.tar.gz under the usr directory, used to populate
+         the rk0 filesystem.
+
+Binaries which have been built recently while reconstructing the system
+are in the new/ directory, and include:
+
+  new/etc/init - built from jun72 printout sources for init.s
+                 with modifications to spawn getty on tty8 (console) only.
+
+
+File Permissions
+----------------
 The following list gives details of all the files in the s2-bits tap-format
 archive. The first columns are a direct copy of a listing done with the
 emulated 1st Edition tap(1) from the s2-bits tape.
