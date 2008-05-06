@@ -22,8 +22,10 @@ vec0407.patch
     if we had a proper 0405 assembler.
 
 initorig.patch
-    Fix a deficiency in tools/as -- requires ". = . + 40014" at the
+    Fix a deficiency in tools/as -- requires ".. = 40014" at the
     start of each program.
+    Also make tty8 (console) the only tty in the init tab.  The other
+    tty's are causing panics right now.
 
 ecore.patch
     Increase the amount of memory user programs have, so that the last1120
