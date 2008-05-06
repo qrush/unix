@@ -1,0 +1,155 @@
+Bugs in Binaries
+----------------
+
+One of the V5 C compiler passes requires -DZERO_MEMORY: it must not
+initialise a variable properly. V5 and V6 ar(1) do not close a file
+descriptor after writing has finished. If Apout is compiled with
+stream buffering, when this file is copied it is truncated. Either
+turn off Apout stream buffering (a performance penalty), or patch
+ar.s to behave itself. The patch is:
+
+*** ar.s.orig   Thu Jan 14 09:40:46 1999
+--- ar.s        Thu Jan 14 09:41:12 1999
+***************
+*** 444,449 ****
+--- 444,451 ----
+        bes     crterr
+        mov     r0,afo
+        sys     write; magic; 2
++       mov     tfo,r0          / need to close before reading
++       sys     close
+  1:
+        mov     tfi,r0
+        sys     read; buf; 512.
+
+
+Floating-point Limitations
+--------------------------
+
+PDP-11 doubles are treated as floats. FEA/FEC don't exist.
+FP errors are not dealt with. Mistrust FP results for now.
+
+Limitations for 7th Edition Emulation in Apout 2.3
+--------------------------------------------------
+
+Note that V5 and V6 binaries are considered V7 binaries. Overlay
+binaries (type 0405) are not recognised.
+
+The errno values on the native system are not translated back to
+the V7 errno values. There is normally a 1-to-1 mapping, but V7
+only had 32 errno values; native errno values above this are going
+to confuse the emulated application.
+
+The following system calls are not implemented, and return an 
+EPERM error to the application: phys(2), prof(2), ptrace(2),
+acct(2), mount(2), umount(2), times(2). The following system
+calls are ignored: lock(2), stime(2).
+
+The following systems calls are only partially implemented:
+
+    signal(2):		Only SIG_DFL and SIG_IGN are implemented.
+    stty(2), gtty(2):	These should work, but V7 stty(1) doesn't work.
+    ioctl(2):		Only enough to emulate stty(2) amd gtty(2).
+
+The emulated applications use the native filesystem. Native filenames bigger
+than 14 characters are truncated to 14 characters before being passed to
+the application. In a similar way, inode numbers bigger than 65,536 are
+truncated modulo 65,536 before being passed to the application.
+
+Limitations for 5th & 6th Edition Emulation in Apout 2.3
+--------------------------------------------------------
+
+There seems to be a bug in V5/V6 ctime() which stops dates after
+November 1999 being displayed correctly. Apout works around this
+problem by modifying dates returned from system calls to be in
+the year 1998 if they are 1999 or later.
+
+Limitations for 2.9BSD Emulation in Apout 2.3
+---------------------------------------------
+
+At present, 2.9BSD binaries are treated as V7 binaries, so the limitations
+above apply. This also means that overlays are not understood, and also the
+2.9-specific system calls have not yet been implemented.
+
+Limitations for 2.11BSD Emulation in Apout 2.3
+----------------------------------------------
+
+Flags passed as arguments to the 2.11 syscalls are promoted to 32-bit
+ints and passed to the native syscall. The errno values on the native
+system are not translated back to the 2.11 errno values. To find out
+what syscalls have been implemented, grep for the word DONE in bsdtrap.c.
+
+The following 2.11 syscalls are not handled:
+
+	S_GETSOCKOPT, S_SETSOCKOPT, S_SELECT,
+	S_RECVMSG, S_SENDMSG, S_SENDTO, 
+	S_SIGBLOCK, S_SIGPAUSE, S_SIGRETURN,
+	S_SIGSETMASK, S_SIGSTACK, S_SIGVEC
+
+Limitations for 1st Edition Emulation in Apout 2.3
+--------------------------------------------------
+
+This is still in the experimental stages, with some problems with time
+values. The KE11A emulation is also incomplete. However, the following
+0405-magic binaries from Dennis Ritchie's s2.tar archive are known to work:
+
+	cat, cp, date, echo, ls, mkdir, sh, wc
+
+Most of the others seem to work as well, but I haven't tested them completely.
+The list of 0405-magic files on the s2 archive is:
+
+	bin/:   	bin/mv
+	bin/ar  	bin/od
+	bin/bas 	bin/pr
+	bin/cat 	bin/rew
+	bin/chball      bin/rmdir
+	bin/check       bin/roff
+	bin/chown       bin/sh
+	bin/cmp 	bin/skip
+	bin/cp  	bin/sort
+	bin/date        bin/stat
+	bin/db  	bin/stty
+	bin/dc  	bin/su
+	bin/df  	bin/sum
+	bin/du  	bin/tap
+	bin/echo        bin/tm
+	bin/ed  	bin/tty
+	bin/exit        bin/wc
+	bin/form        bin/who
+	bin/goto        bin/write
+	bin/if  	etc/getty
+	bin/login       etc/glob
+	bin/ls 		etc/init
+	bin/mail        etc/msh
+	bin/mesg        /tc/suftab
+	bin/mkdir
+
+The following 1st Edition system calls are not yet emulated: GTTY, STTY, TELL.
+
+Limitations for 2nd Edition Emulation in Apout 2.3
+--------------------------------------------------
+
+The few 2nd Edition binaries with 0407-magic on the s2 archive can now
+be run with Apout. Essentially, they receive the same environment as
+the 1st Edition binaries, with a few small syscall differences. Note
+that, at present, I don't have a copy of the V2 manuals, so I can
+guarantee that 2nd Edition emulation still needs work.
+
+However, the emulation is good enough to allow the C compiler on the s2
+archive to compile the last1120c C compiler on Dennis Ritchie's homepage.
+
+The list of 0407-magic files in the s2 archive is below. I have starred
+those binaries that I know work with Apout.
+
+ *  bin/as		    usr/fort/fc1
+ *  bin/cc		    usr/fort/fc2
+    bin/ds		    usr/fort/fc3
+    bin/fc		    usr/fort/fc4
+    bin/find		    usr/jack/a.out
+ *  bin/ld		    usr/jack/x.o
+    bin/maki		 *  usr/lib/c0
+    bin/nm		 *  usr/lib/c1
+ *  bin/size		    usr/lib/crt0.o
+    bin/strip		    usr/lib/fr0.o
+    bin/un		    usr/sys/a.out
+ *  etc/as2

@@ -1,0 +1,72 @@
+		    Things to do in the Apout Emulator
+		    ----------------------------------
+
+Ensure stream buffering works!
+
+	Do some decent testing and code reading to make me happier.
+
+Speed Apout up
+
+	The biggest bottlenecks are the effective address calculations
+	in ea.c. After compiling 2.11BSD /sys/GENERIC kernel with a
+	gprof'd apout, we get:
+
+	  %   cumulative   self              self     total           
+ 	time   seconds   seconds    calls  ms/call  ms/call  name    
+       64.9       3.64     3.64                             .mcount (123)
+  	6.1       3.99     0.34  1609635     0.00     0.00  load_src [5]
+  	5.6       4.30     0.31  1665976     0.00     0.00  mov [4]
+  	5.3       4.60     0.30        2   148.44   959.47  run <cycle 1> [3]
+  	3.4       4.79     0.19  1238127     0.00     0.00  load_dst [7]
+  	2.2       4.91     0.12   602275     0.00     0.00  store_dst [10]
+  	1.3       4.98     0.08   374121     0.00     0.00  loadb_src [12]
+  	1.3       5.05     0.07   672481     0.00     0.00  store_dst_2 [13]
+  	1.2       5.12     0.07   365911     0.00     0.00  cmp [6]
+  	1.1       5.18     0.06   323386     0.00     0.00  movb [8]
+  	1.1       5.24     0.06   515335     0.00     0.00  bne [15]
+
+	Everything else is below 1%. It doesn't look like there is
+	much room for improvement, maybe 10% worth?
+
+	We could go to having 65,536 separate functions, one for
+	each possible instruction. That would mean a large reorganisation
+	of the source, and would result in a significantly larger
+	binary for apout.
+
+	I've broken open some of the mov() functions which has improved
+	things a few percent. I did expand itab[] to 64K entries, but
+	the improvement was negligible. However, I should come back &
+	revisit this sometime.
+
+	Would it be worth adding STREAM_BUFFERING into bsdtrap.c? Possibly.
+	After a GENERIC kernel compile, I found that reads averaged 580
+	chars/read, writes averaged 115 chars/write. However, after getting
+	buffering to work in bsdtrap.c, I found that it actually slowed down
+	the GENERIC kernel compile, so I've left the code in but disabled it.
+
+Finish off 2.11BSD emulation
+
+	Finish off all the missing syscalls. This means I will have to
+	learn how the new signal stuff actually works. Emulating signals
+	is going to be really interesting, I can see!
+	
+	Enumerate and write all of the ioctls: yucko. That means all of
+	the terminal stuff, blah!
+
+Fix up the floating-point
+
+	If the UNIX binaries never use the FP error handling, then don't
+	bother to implement it. We should, however, implement doubles.
+	We should spend some time to ensure that the FP operations are
+	accurate, both in terms of FP accuracy, and in giving results
+	as if they were on a real PDP-11.
+
+Make it work on big-endian machines
+
+	This would cause a lot of heartache in the code. It's not that
+	pretty now, but can you imagine the #ifdefs once big-endian
+	support is added? I guess some well-written macros could help.
+
+Tidy up the code
+
+	In particular, aout.c is a mess. Should be more modular.

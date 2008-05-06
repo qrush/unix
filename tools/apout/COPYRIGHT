@@ -1,0 +1,46 @@
+The Apout simulator is copyright Warren Toomey, and is protected by the
+following notice.
+
+/* Apout is a PDP-11 a.out simulator.
+ * 
+ * For information contact:
+ * 
+ * Email:  wkt@tuhs.org
+ * FTP:    ftp://minnie.tuhs.org/pup/PDP-11/Sims/Apout
+ * 
+ * Copyright 1995-2002, Warren Toomey
+ * 
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies. Warren Toomey
+ * makes no representations about the suitability of this software for any
+ * purpose.  It is provided "as is" without expressed or implied warranty.
+ */
+
+------
+
+The parts of Apout that deal with PDP-11 instruction emulation are derived
+from the PDP-11 simulator written by Eric A. Edwards, and are protected by
+the following notice.
+
+/* Parts of Apout are derived from 'pdp', a PDP-11 simulator.
+ * 
+ * For information contact:
+ * 
+ * Computer Science House
+ * Attn: Eric Edwards
+ * Box 861
+ * 25 Andrews Memorial Drive
+ * Rochester, NY 14623
+ * 
+ * Email:  mag@potter.csh.rit.edu
+ * FTP:    ftp.csh.rit.edu:/pub/csh/mag/pdp.tar.Z
+ * 
+ * Copyright 1994, Eric A. Edwards
+ * 
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies.  Eric A. Edwards
+ * makes no representations about the suitability of this software for any
+ * purpose.  It is provided "as is" without expressed or implied warranty.
+ */

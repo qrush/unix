@@ -1,0 +1,16 @@
+aout.c 		Fri Sep 17 13:00:33 EST 1999
+branch.c	Fri Sep 17 13:00:33 EST 1999
+bsd_ioctl.c	Fri Sep 17 13:03:34 EST 1999
+bsd_signal.c
+bsdtrap.c
+cpu.c		Fri Sep 17 15:04:05 EST 1999 bits to do
+debug.c		Fri Sep 17 15:04:01 EST 1999
+double.c	Fri Sep 17 15:08:46 EST 1999
+ea.c		Fri Sep 17 15:10:51 EST 1999
+fp.c
+itab.c 		Fri Sep 17 13:00:33 EST 1999
+ke11a.c
+magic.c		Fri Sep 17 13:00:33 EST 1999
+main.c
+single.c
+v7trap.c

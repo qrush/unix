@@ -1,0 +1,173 @@
+2.3 Beta1: to 10th June 2002
+----------------------------
+
+Changed debug statements in cpu.c to be TrapDebug statements as I was
+seeing output from these in the output file of 2.11BSD /lib/cpp.
+
+The problem with scripts has also been fixed, finally. I was passing
+the wrong path into the shell arguments.
+
+On a 1.6GHz Pentium 4 running FreeBSD 4.5, a make depend; make of the
+2.11BSD GENERIC kernel takes 72 seconds.
+
+2.3 Alpha3: to 1st June 2001
+----------------------------
+
+Added patches from Wilhelm B. Kloke wb@vestein.arb-phys.uni-dortmund.de
+to get Apout to run the Algol 68 binaries found which were added into
+the Unix Archive.
+
+A few changes for better Linux compilation. However, stream buffering
+doesn't seem to work on Linux, at least RedHat 6.2.
+
+2.3 Alpha2: to 10th Jan 2000
+----------------------------
+
+Added partial support for 0407-magic binaries from 2nd Edition. At
+present, this is enough for the C compiler on Dennis Ritchie's s2.tar
+archive to work. It's also good enough for the C compiler to recompile
+the last1120c compiler, and for the last1120c compiler to recompile itself.
+
+Added code to support 512-byte block seeks on /dev files for 1st Edition
+binaries. This was required to get tap(1) to work. This should really
+only force 512-byte seeks on specific /dev/files, not all of them.
+
+A significant rearrangement of the code in aout.c was done to make it
+more logical. I wouldn't say it was much tidier than before, though.
+
+A redefinition of sigset_t in NetBSD stopped Apout from being compiled
+there. Thanks to Soren, bsdsignal.c was modified to fix this problem.
+
+Some small changes to the output from -inst to make it look better.
+Added a WRITEBASE #define to help improve performance just a bit more.
+
+2.3 Alpha1: to 2nd Jan 2000
+---------------------------
+
+Added nearly complete support for 0405-magic binaries from 1st Edition,
+including emulating the KE11A extended arithmetic element. Still some
+work needed here on both the trap handling and KE11A support. Thanks to
+Tim Shoppa (shoppa@trailing-edge.com) for his eae code. The 0407-magic
+binaries from Dennis Ritchie's s2.tar archive are not yet supported. I
+need the V2/V3 manuals from Norman Wilson for this.
+
+Some tidying up of the code has been done, using LCLINT and by hand.
+I've made a Debug() macro which make the code look a bit cleaner.
+
+Some memory leaks removed. Natives exec()s now inherit the original
+environment, not the emulated one. Some mov() functions split into
+separate functions to help improve performance. Added a workaround
+for date handling in V5/V6 ctime(): see tail of v7trap.c.
+
+Stream buffering variables consolidated into main.c and some bugs
+removed (e.g "rw" -> "w+"). 2.11BSD emulation now has stream buffering,
+but it is turned off by default as it doesn't seem to provide any
+improvement in performance.
+
+2.2 Alpha9: to 2nd Mar 1999
+---------------------------
+
+I've added magic numbers for some 2.9BSD binaries: all 2.9 binaries
+run in the V7 environment, which seems to work but I'm sure that
+2.9 != V7.
+
+With help from Jonathan Naylor (g4klx@g4klx.demon.co.uk), and some work
+myself, I've managed to compile Apout under RedHat Linux 2.2. There are
+some 2.11BSD syscalls not implemented as a result, but I can recompile
+the V7 and the 2.11BSD kernels, which is a good indicator.
+
+
+2.2 Alpha8: to 15th Jan 1999
+----------------------------
+
+These changes came about due to my attempt to compile the UNIX `nsys'
+kernel source code, dated 1973, with the 5th Edition development tools.
+
+Added better detection of some special UNIX a.out binaries: the
+environment for these binaries was being incorrectly set by aout.c.
+There is now a magic.c which fixes the problem. See also LIMITATIONS
+for a note of bugs in some a.out binaries.
+
+Modified v7trap.c to be much cleaner, and to look a bit more like
+bsdtrap.c. Introduced several small bugs in V5/V6/V7 syscall emulation,
+notably pipe() and dup(), by the cleanup. These are fixed.
+
+
+2.2 Alpha7: to 11th Jan 1999
+----------------------------
+
+Modified the code to handle the syscall differences between
+V6 and V7: note that V5 and V6 are syscall identical. V6 has
+a different seek() and stat() to V7.
+
+Added a new file for 2.11BSD ioctls, did many of the terminal
+ioctls, and a few more syscalls. Now 2.11 vi runs. However,
+longjmp() doesn't work yet, because it requires working signals.
+
+Changed some types and #ifdefs for NetBSD and OpenBSD: thanks Soren!
+
+
+2.2 Alpha6: to 6th Jan 1999
+---------------------------
+
+Bugfixes: none that I can think of.
+
+Enhancements: tidied the code up somewhat. Changed uint -> u_int
+throughout. Added support for execution of native binaries: now I can
+run vi from inside 2.11 bin/sh, yay! Finally wrote the long-overdue
+manual page. Added RCS tags to all sources. Ensured that it compiled on
+FreeBSD 3.x and 2.1.x: I need to take it home for FreeBSD 2.2.x.
+
+
+2.2 Alpha5: to 5th Jan 1999
+---------------------------
+
+Bugfixes: fixed malloc bug, which was a too-large blksize from stat/fstat.
+Fixed the gtty/stty emulation, which was causing make to break.
+
+Enhancements: Apout can now run shell scripts. 2.11BSD overlay binaries
+are now supported, which is good news. I can now compile the 2.11 GENERIC
+kernel with no manual intervention. On a Pentium II 350MHz, this takes
+4:16secs with an optimised Apout.
+
+
+2.2 Alpha4: to 2nd Jan 1999
+---------------------------
+
+Fixed more deficiencies in the 2.11BSD emulation, in particular
+fork(), vfork() and sbrk(). The argv/envp environment is better
+but still not totally correct, I think. Finally got the correct
+code for 2.11 readdir().
+
+We now have a semi-working FP emulation. It's enough to keep 2.11
+happy, but it isn't very good. It will do for now.
+
+Many of the 2.11BSD syscalls are now implemented. Most are not
+verified, but a lot of 2.11BSD commands run, including sh, make,
+cc, date, cal. ls(1) goes into an infinite loop when doing ls -l,
+the inf. loop is in malloc(3). By substituting malloc(3) from
+Minix 1.3, this problem goes away. I don't know if it's a bug
+in the emulator, or in the 2.11 malloc() code.
+
+
+2.2 Alpha3 to 5th Dec 1998
+--------------------------
+
+Reorganised bsdtrap.[ch], and started work on the
+2.11BSD emulated syscalls; this is surprisingly
+easy for many of them.
+
+
+Changes from 2.1 to 2.2
+-----------------------
+
+ + General code tidying up and niggling bug removal.
+ + Code optimisation to speed things up, although
+   I haven't quantified the improvement yet.
+ + Separation of the binary loader and trap handlers
+   from the main program. This doesn't do anything now,
+   but it will make the emulation of several PDP-11
+   environments (e.g 2.11BSD, RT-11) much easier to do.
+ + Finished getting the stream buffering of I/O to work.
+   I still don't know why fdopen doesn't work on "rw".
+ + Some extra trap functionality, e.g basic signal handling.

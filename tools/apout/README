@@ -1,0 +1,140 @@
+	       Apout -- Simulate PDP-11 Unix a.out binaries
+			    Version 2.3 Beta 1
+
+		     Warren Toomey  wkt@tuhs.org
+			        June 2002
+
+Introduction
+------------
+This program is a user-level simulator for UNIX a.out binaries. Binaries
+for V1, V2, V5, V6, V7, 2.9BSD and 2.11BSD can be run with this simulator.
+The user-mode PDP-11 instructions are simulated, and TRAP instructions
+are emulated by calling equivalent native-mode system calls.
+
+The advantages of an a.out simulator over a full-blown PDP-11 simulator are:
+
+   + system calls can be done natively, thus speeding up execution
+   + the simulator is less of a CPU-hog than a full-blown PDP-11 simulator
+   + you don't need a simulated operating system or a simulated file system
+
+Apout can be obtained via anonymous ftp at minnie.tuhs.org in the
+directory pub/PDP-11/Sims/Apout. The directory pub/PDP-11/Sims/Apout/UnixBins
+contains tar archives of a.out binaries from several versions of UNIX.
+
+Status
+------
+The program is now at release 2.3 Alpha2. Most of the binaries from V5, V6
+and V7 run fine. All of the V5/V6/V7 system calls are caught, but some are
+ignored and some generate EPERM errors. The V1, V2, 2.9BSD and 2.11BSD
+environments are still under construction: see the file LIMITATIONS for
+details. Finally, the simulator won't run on a big-endian machine.
+
+INSTALLATION
+------------
+I have only tested this program on FreeBSD 2.x and 3.x, and on RedHat
+Linux 2.2. It should compile on a 32-bit little-endian machine with
+some form of Unix; you may need to change some header file includes etc.
+See `defines.h' for the details. In particular, if your system doesn't have
+types for:
+
+	int8_t, int16_t, int32_t, u_int8_t, u_int16_t, u_int32_t
+
+or if your compiler doesn't have char=1 byte, short= 2 bytes, int=4 bytes,
+then alter the relevant typedefs in `defines.h'.
+
+The Makefile has two sets of CFLAGS/LDFLAGS: one set is for debugging, and
+the other set is for speed. If you define the C pre-processor macro `DEBUG',
+then this includes debugging code into the program. I use it quite heavily
+when trying to fix niggling problems.
+
+If you remove the -DEMU211 macro definition from the Makefile, the emulation
+of 2.11BSD will not be compiled in to the simulator. Similarly, if you remove
+the -DEMUV1 macro definition from the Makefile, the emulation of 1st and 2nd
+Edition UNIX will not be compiled in to the simulator. By default, EMUV1
+is disabled.
+
+
+Once you have configured apout, now type `make'. Hopefully, things will
+compile ok. You will eventually get the `apout' program.
+
+Now go find an old PDP-11 UNIX binary, e.g 7th Edition cal, and say:
+
+	% setenv APOUT_ROOT /		# for now
+	% apout cal 1970
+
+If the simulator is working, the calendar for 1970 will be printed out.
+The V7 shell works, and from there, you can run other programs.
+
+	% apout sh
+	# ls -l
+	    output of ls
+	#
+
+Finally, install apout in /usr/local/bin, and the manual page apout.1 in
+the appropriate place. If you can't use the man page because of incompatible
+macros, then apout.0 is a text file which has the pre-formatted man page.
+
+DEBUG OPTIONS
+-------------
+When debugging is compiled in, the program has several options:
+
+	-inst	turns on instruction tracing, which is _very_ verbose
+	-trap	turns on TRAP tracing; not all syscalls have debugging code
+	-jsr	prints out the details of each jsr and rts
+	-fp	prints out some details of floating-point instructions
+
+All debugging output goes out to the file `apout.dbg'. These debugging options
+are mainly used for testing apout, and so the output in apout.dbg may not be
+very useful to you.
+
+ENVIRONMENT VARIABLES
+---------------------
+Apout has the concept of a simulated root filesystem for the simulated PDP-11
+binaries. When working with filenames, if the filenames are relative, they
+stay relative. If the filenames are absolute (i.e /usr/...), then apout
+prepends the value of the environment variable APOUT_ROOT to the filename.
+This allows you to say:
+
+	# setenv APOUT_ROOT /usr/misc/v7root
+
+before running apout to set the `root' of the filesystem wherever you want.
+You MUST set APOUT_ROOT before running apout.
+
+TODO
+----
+There's lots to do. Here's what I'd like to do, in a somewhat ordered list.
+
+	+ Verify that the instruction simulation and	high priority
+	     the syscalls all work correctly
+	+ Complete some of the syscalls that are	med priority
+	     not fully simulated
+	+ Speed the simulator up 			med priority
+
+SOURCE ORGANISATION
+-------------------
+
+main.c		parses any arguments, loads the binary and calls run()
+cpu.c		holds the main instruction decode/execute loop
+itab.c		holds function lookup tables for all instructions
+ea.c		holds functions to decode the PDP-11 addressing modes
+debug.c		holds strings for all emulated opcodes
+
+single.c	single.c, double.c and branch.c hold most of the functions
+double.c	 which perform the PDP-11 user-mode instructions. The code
+branch.c	 in these files comes from a PDP-11 simulator by Eric Edwards
+fp.c		partially emulates FP instructions
+
+aout.c		determines what type of a.out the binary is, and what UNIX
+magic.c		 environment to set up. If V5/V6/V7, trap instructions fall
+v7trap.c	 into v7trap.c which runs them using native system calls
+v7trap.h
+
+v1trap.c	if the binary is a 1st or 2nd Edition binary, traps fall
+v1trap.h	 into v1trap.c, which likewise does the syscalls natively
+ke11a.c		emulates the KE11A extended arithmetic unit, used by V1/V2
+
+bsdtrap.c	if the binary is a 2.11BSD binary, trap instructions fall
+bsdtrap.h	 into bsdtrap.c, which likewise does the syscalls natively
+bsd_ioctl.c	2.11BSD ioctl calls are handled with this file
+
+defines.h	holds function & typedef prototypes and useful cpp macros
