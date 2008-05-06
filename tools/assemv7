@@ -2,6 +2,10 @@
 #
 # assemble the sources
 #
+if [ ! -d tools ]
+then echo 'No tools/ directory, are you running this in the correct dir?'
+     exit 1
+fi
 
 # settings;  should contain something like:
 #   APOUT=/tmp/apout2.3alpha2/apout
