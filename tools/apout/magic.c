@@ -6,8 +6,8 @@
  * a.out header. If it matches any of the checksums below, it returns
  * the appropriate environment value. Otherwise, it returns IS_UNKNOWN.
  *
- * $Revision: 1.13 $
- * $Date: 2000/01/10 01:31:48 $
+ * $Revision: 1.14 $
+ * $Date: 2008/05/06 23:31:53 $
  */
 #include "defines.h"
 
@@ -43,6 +43,7 @@ static struct spec_aout S[]= {
 	{ 0x19a42, IS_V5 },	/* V5 bin/chown */
 	{ 0x19b342, IS_V6 },	/* V6 usr/bin/nroff */
 	{ 0x19f682, IS_V6 },	/* V6 usr/fort/fc1 */
+	{ 0x1ae00,  IS_V2 },	/* V2 bin/strip */
 	{ 0x1b102, IS_V5 },	/* V5 bin/strip */
 	{ 0x1ba02, IS_V6 },	/* V6 bin/strip */
 	{ 0x1c342, IS_V5 },	/* V5 bin/cat */
