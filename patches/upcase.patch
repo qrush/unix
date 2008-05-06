@@ -1,10 +1,15 @@
---- rebuilt/u4.s	Mon May  5 20:58:29 2008
-+++ build/u4.s	Mon May  5 20:58:14 2008
-@@ -73,17 +73,19 @@
+--- rebuilt/u4.s	Wed May  7 01:50:25 2008
++++ build/u4.s	Wed May  7 09:50:17 2008
+@@ -73,17 +73,24 @@
         inc     *$tks / set the reader enable bit
         bic     $!177,r1 / clear upper 9 bits of the character (strip off
                          / 8th bit of char)
 -       cmp     r1,$'a-40 / is character upper case A,..., upper case Z.
++       / cr to lf conversion May 7 2008
++       cmp     r1,$15	/ if we receive a cr
++       bne     0f
++       mov     $12,r1   / convert it into an lf
++0:
 +       / uppercase to lowercase conversion removed May 5 2008
 +       / cmp     r1,$'a-40 / is character upper case A,..., upper case Z.
                           / note that
