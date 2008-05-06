@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# use the v7 assembler to assemble some userland code into an 0405 binary.
+# use the v2 assembler to assemble some userland code into an 0405 binary.
 # Requires the first .s file to set ". = . + 40014".
 #
 # example, mount.s:
 #   exit  = 1.
 #   write = 4.
 #   mount = 21.
-#   . = . + 40014
+#   .. = 40014
 #   
 #        mov     $1,r0
 #        sys     write; rk0; 8.
