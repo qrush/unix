@@ -11,8 +11,8 @@
  *	 in the long run, have the ability to read from/write to
  *	 existing images, a la an ftp client.
  *
- * $Revision: 1.20 $
- * $Date: 2008/05/06 08:56:17 $
+ * $Revision: 1.21 $
+ * $Date: 2008/05/06 09:22:07 $
  */
 
 #include <sys/types.h>
@@ -630,7 +630,7 @@ void read_permsfile(char *file)
     /* Get the permissions */
     permlist[posn].flags=0;
     if (linebuf[0] == 'x') permlist[posn].flags |= I_EXEC;
-    if (linebuf[0] == 'u') permlist[posn].flags |= I_SETUID;
+    if (linebuf[0] == 'u') permlist[posn].flags |= I_SETUID | I_EXEC;
     if (linebuf[1] == 'r') permlist[posn].flags |= I_UREAD;
     if (linebuf[2] == 'w') permlist[posn].flags |= I_UWRITE;
     if (linebuf[3] == 'r') permlist[posn].flags |= I_OREAD;
