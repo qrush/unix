@@ -1,0 +1,80 @@
+--- u0.s	Wed May  7 01:20:13 2008
++++ ../a/u0.s	Wed May  7 01:19:38 2008
+@@ -126,7 +126,7 @@
+                                        / format given in
+ 	mov    $systm,sb0+6 / memory map
+ 	mov    $-512.,sb1+4
+-	mov    $mount,sb1+6
++	mov    $_mount,sb1+6
+ 	mov    $user,swp+6
+ 
+ / set devices to interrupt
+--- u1.s	Wed May  7 01:20:13 2008
++++ ../a/u1.s	Wed May  7 01:21:56 2008
+@@ -474,7 +474,7 @@
+         br     sysret2
+ 
+ sysstty: / set mode of typewriter; 3 consequtive word arguments
+-        jsr    r0,gtty / r1 will have offset to tty block, r2 has source
++        jsr    r0,_gtty / r1 will have offset to tty block, r2 has source
+         mov    r2,-(sp)
+         mov    r1,-(sp) / put r1 and r2 on the stack
+ 1: / flush the clist wait till typewriter is quiescent
+@@ -507,7 +507,7 @@
+         jmp     sysret2 / return to user
+ 
+ sysgtty: / get status of typewriter; 3 consequtive word arguments
+-        jsr    r0,gtty / r1 will have offset to tty block, r2 has
++        jsr    r0,_gtty / r1 will have offset to tty block, r2 has
+                        / destination
+         mov    rcsr(r1),(r2)+ / put reader control status in 1st word
+                               / of dest
+@@ -516,7 +516,7 @@
+         mov    tty+4(r1),(r2)+ / put mode in 3rd word
+         jmp    sysret2 / return to user
+ 
+-gtty:
++_gtty:
+         jsr    r0,arg; u.off / put first arg in u.off
+         mov    *u.r0,r1 / put file descriptor in r1
+         jsr    r0,getf / get the i-number of the file
+--- u5.s	Wed May  7 01:20:13 2008
++++ ../a/u5.s	Wed May  7 01:19:38 2008
+@@ -85,7 +85,7 @@
+ 	mov	$systm,r2 / start of inode and free storage map for drum
+ 	tst	cdev
+ 	beq	1f / drum is device
+-	mov	$mount,r2 / disk or tape is device, start of inode and free
++	mov	$_mount,r2 / disk or tape is device, start of inode and free
+ 	                  / storage map
+ 1:
+ 	mov	(r2)+,r1 / first word contains number of bytes in free
+@@ -152,7 +152,7 @@
+ 	    		    / with block bit in it
+ 	tst	cdev
+ 	beq	1f / cdev = 0 indicates device is drum
+-	add	$mount-systm,r2 / address of word of free storage map for
++	add	$_mount-systm,r2 / address of word of free storage map for
+ 				/ mountable device with bit of block to be
+ 				/ freed
+ 1:
+@@ -204,7 +204,7 @@
+ 			  / block for drum
+ 	tst	cdev / is the device the disk
+ 	beq	1f / yes
+-	add	$mount-systm,r2 / for mounted device, r2 points to 1st word
++	add	$_mount-systm,r2 / for mounted device, r2 points to 1st word
+ 				/ of its super block
+ 1:
+ 	add	(r2)+,(sp) / get byte address of allocation bit
+--- ux.s	Wed May  7 01:20:13 2008
++++ ../a/ux.s	Wed May  7 01:19:38 2008
+@@ -21,7 +21,7 @@
+ 	i.ctim: .=.+4
+ 	i.mtim: .=.+4
+ 	. = inode+32.
+-mount:	.=.+1024.
++_mount:	.=.+1024.
+ proc:
+ 	p.pid:  .=.+[2*nproc]
+ 	p.dska: .=.+[2*nproc]

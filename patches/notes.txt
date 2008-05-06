@@ -1,4 +1,4 @@
-cold.patch -
+cold.patch
     Sets the "cold" flag to one to build a kernel that bootstraps the
     root filesystem.
 
@@ -34,3 +34,7 @@ upcase.patch
 
 fastout.patch
     Remove output delays for mechanical teletypes, so output goes faster.
+
+v2_as.patch
+    Defines mount as _mount, gtty as _gtty, so that these symbols will not
+    conflict with the pre-defined symbols in the V2 assembler.
