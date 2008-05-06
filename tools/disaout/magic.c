@@ -8,10 +8,9 @@
  * a.out header. If it matches any of the checksums below, it returns
  * the appropriate environment value. Otherwise, it returns IS_UNKNOWN.
  *
- * $Revision: 1.1 $
- * $Date: 2008/04/30 03:46:29 $
+ * $Revision: 1.2 $
+ * $Date: 2008/05/06 01:09:01 $
  */
-#include <stdio.h>
 #include "aout.h"
 
 struct spec_aout {

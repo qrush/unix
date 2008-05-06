@@ -1,12 +1,9 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "aout.h"
-
 
 /* This code borrowed from Apout */
 
 extern int special_magic(u_int16_t *cptr);
+extern void load_0407_symbols(FILE *zin, int offset, int size, int base);
 
 int Binary;                  /* Type of binary this a.out is */
 u_int8_t *ispace, *dspace;    /* Instruction and Data spaces */
@@ -153,11 +150,14 @@ int load_a_out(const char *file, struct exec * e)
         e->a_entry = V12_MEMBASE;
         dbase = &(ispace[e->a_text + V12_MEMBASE]);
         bbase = &(ispace[e->a_text + e->a_data + V12_MEMBASE]);
-      } else
-      {
+      } else {
         dbase = &(ispace[e->a_text]);
         bbase = &(ispace[e->a_text + e->a_data]);
       }
+
+  				/* If there is a symbol table, load it */
+      if (e->a_syms)
+        load_0407_symbols(zin, 16 + e->a_text + e->a_data,e->a_syms,e->a_entry);
       break;
     case ANY_ROTEXT:
       					/* Move back to end of V5/6/7 header */
@@ -258,6 +258,7 @@ int load_a_out(const char *file, struct exec * e)
   				/* Now clear the bss */
   if ((bbase != 0) && (e->a_bss != 0))
     memset(bbase, 0, (size_t) e->a_bss);
+
 
   (void) fclose(zin);
   return (0);

@@ -2,8 +2,13 @@
  * aout.h - parse and load the contents of a UNIX a.out file, for several
  * flavours of PDP-11 UNIX
  * 
- * $Revision: 1.6 $ $Date: 2008/05/01 03:23:21 $
+ * $Revision: 1.7 $ $Date: 2008/05/06 01:09:01 $
  */
+#include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #define EIGHT_K		 8192
 #define PDP_MEM_SIZE      65536	/* Size of inst-space and data-space */
@@ -54,6 +59,24 @@ struct exec {
   /* overlay, we have to rewind to undo */
   /* the read of this section */
 };
+
+/* Symbol table entries for 0407 binaries */
+struct sym0407 {
+  u_int8_t  name[8];
+  u_int16_t type;
+  u_int16_t addr;
+};
+
+#define ASYM_UNDEFINED	00
+#define ASYM_ABSOLUTE	01
+#define ASYM_TEXT	02
+#define ASYM_DATA	03
+#define ASYM_BSS	04
+#define ASYM_UNDEFEXT	40
+#define ASYM_ABSEXT	41
+#define ASYM_TEXTEXT	42
+#define ASYM_DATAEXT	43
+#define ASYM_BSSDEXT	44
 
 /*
  * Because V5, V6, V7 and 2.11BSD share several magic numbers in their a.out

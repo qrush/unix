@@ -1,7 +1,6 @@
 /* List of system calls, per UNIX version */
 #include "aout.h"
 
-
 struct syscallinfo v1syscalls[]= {
 	{ "rele", 0 },
 	{ "exit", 0 },

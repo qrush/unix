@@ -1,10 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "aout.h"
 
 extern int load_a_out(const char *file, struct exec *E);
 extern int printins(int addr);
 extern void patch_symbols(void);
+extern void print_symtables(void);
 extern u_int8_t *ispace, *dspace;	/* Instruction and Data spaces */
 extern int doprint;
 int onepass = 0;		/* Only do a single pass */
@@ -70,6 +69,7 @@ int main(int argc, char *argv[])
     doprint = 0;
     dopass(&E);			/* Do pass 1 to infer symbols */
     patch_symbols();
+    /* print_symtables(); */
   }
   doprint = 1;
   dopass(&E);			/* Do pass 2 to print it out */

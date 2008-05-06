@@ -1,8 +1,5 @@
 /* This code borrowed from 2.11BSD adb */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <ctype.h>
 #include "aout.h"
 
 extern void add_symbol(int addr, int type, int size);
