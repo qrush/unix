@@ -1,0 +1,87 @@
+Welcome to the 1st Edition UNIX repository. Here you will find the kernel
+source code and userland binaries which will allow you to run 1e UNIX on
+a PDP-11 simulator.
+
+Build Instructions
+------------------
+Unless otherwise noted, file and directory names refer to this repository.
+
+1. Download the source code for the Simh simulator from here:
+   http://simh.trailing-edge.com/. Unpack it somewhere.
+
+2. Copy misc/pdp11_ke.c into the Simh PDP11/ directory, and apply
+   the misc/KE.diff patch to the source code.
+
+3. Do make pdp11 to make the pdp11 simulator. Copy the pdp11 executable
+   into the tools/ directory.
+
+4. Go into tools/ and do a make. This should build tools/mkfs, tools/ml
+   and tools/apout/apout.
+
+5. You should now have the tools required to build the filesystems for
+   1e UNIX, and the kernel. Run tools/imgbuild, which builds the rf0.dsk
+   and rk0.dsk disk images. They should be size 483328 and 2490368.
+
+6. Run tools/assemv2 to create the kernel source with some necessary
+   patches in build/, to assemble it as build/a.out, and to build a
+   bootable Simh memory image as build/loadfile.
+
+Running 1st Edition UNIX
+------------------------
+
+1. Run ./simh.cfg which starts the pdp11 simulator. You should see this:
+
+   PDP-11 simulator V3.7-3
+   ./simh.cfg> #!tools/pdp11
+   Unknown command
+   Disabling CR
+   Disabling XQ
+   RF: buffering file in memory
+   TC0: 16b format, buffering file in memory
+   sim> 
+
+2. At the sim> prompt, type g <ENTER>. You will receive a login: prompt:
+
+3. Type in root followed by ctrl-J. You should receive a # prompt.
+
+4. Type in ls -l followed by ctrl-J. You should see something like this:
+
+   total    6
+    43 sdrwr-  2 root    620 Jan  1 00:00:00 bin
+    42 sdrwr-  2 root    250 Jan  1 00:00:00 dev
+   104 sdrwr-  2 root    110 Jan  1 00:00:00 etc
+   114 sdrwr-  2 root     50 Jan  1 00:00:00 tmp
+    41 sdrwr-  7 root     70 Jan  1 00:00:00 usr
+
+   Until we patch the kernel, all commands have to be entered with ctrl-J
+   and not the <ENTER> key.
+
+5. To shut the system down, enter ctrl-E to stop the compiler, and q to quit.
+   You do not need to sync the system before shutdown.
+
+Documentation
+-------------
+
+The manuals for 1st Edition UNIX are available here:
+http://www.bitsavers.org/pdf/bellLabs/unix/UNIX_ProgrammersManual_Nov71.pdf
+
+Some documentation of the internals of the 1st Edition UNIX are available here:
+http://www.bitsavers.org/pdf/bellLabs/unix/PreliminaryUnixImplementationDocument_Jun72.pdf
+
+The C compiler from 2nd Edition UNIX is also installed and works, but the
+language is a very early dialect of C. You may find the 2e manuals useful:
+http://www.bitsavers.org/pdf/bellLabs/unix/Unix_2nd_Edition_Manual_Jun72.pdf
+
+Repository Layout
+-----------------
+
+pages/		- OCR'd pages from the PreliminaryUnixImplementation document
+rebuilt/	- kernel source rebuilt from the OCR'd pages, as asm files
+patches/	- patches to rebuilt/ files to get kernel to run
+fs/		- userland binaries and files, used to make rf0.dsk and rk0.dsk
+src/		- source code for userland: there is not much available
+tools/		- tools and scripts to build the kernel and filesystem
+build/		- build area: patched kernel files, patched filesystems
+misc/		- misc. files, e.g. the Simh patch for KE11A support
+notes/		- notes on the work done to get 1e UNIX to run again
+diffs/		- not sure, can someone fill this in?
