@@ -23,7 +23,7 @@
 # $ cp b.out mymount
 #
 
-. tools/assemv2.cfg
+APOUT=tools/apout/apout
 APOUT_ROOT=fs/root
 export APOUT_ROOT
 $APOUT $APOUT_ROOT/bin/as "$@" && tools/fixaout.py

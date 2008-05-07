@@ -10,16 +10,7 @@ if [ ! -d build ]
 then mkdir build
 fi
 
-# settings;  should contain something like:
-#   APOUT=/tmp/apout2.3alpha2/apout
-
-if [ ! -f tools/assemv2.cfg ]
-then echo 'You need to create a tools/assemv2.cfg file which contains a line'
-     echo 'setting APOUT=full path to the apout binary'
-fi
-
-. tools/assemv2.cfg
-
+APOUT=../tools/apout/apout
 APOUT_ROOT=../fs/root
 export APOUT_ROOT
 
