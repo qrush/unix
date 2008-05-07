@@ -10,10 +10,12 @@ Unless otherwise noted, file and directory names refer to this repository.
    http://simh.trailing-edge.com/. Unpack it somewhere.
 
 2. Copy misc/pdp11_ke.c into the Simh PDP11/ directory, and apply
-   the misc/KE.diff patch to the source code.
+   the misc/KE.diff patch to the source code:
 
-3. Do make pdp11 to make the pdp11 simulator. Copy the pdp11 executable
-   into the tools/ directory.
+	patch -l < misc/KE.diff
+
+3. In Simh, make the BIN/ directory. Do make pdp11 to make the pdp11 simulator.
+   Copy the BIN/pdp11 executable into the tools/ directory.
 
 4. Go into tools/ and do a make. This should build tools/mkfs, tools/ml
    and tools/apout/apout. Now go back up to the top level.
@@ -38,9 +40,8 @@ Running 1st Edition UNIX
    Disabling XQ
    RF: buffering file in memory
    TC0: 16b format, buffering file in memory
-   sim> 
 
-2. At the sim> prompt, type g <RETURN>. You will receive a login: prompt:
+   You will receive a login: prompt:
 
 3. Type in root followed by <RETURN>. You should receive a # prompt.
 
