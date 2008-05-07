@@ -23,9 +23,14 @@ APOUT=../tools/apout/apout
 APOUT_ROOT=../fs/root
 export APOUT_ROOT
 
-# build sources from pages and generate patched sources in "build"
-# if "cold" is passed in, the "cold" option will be patched on.
-tools/rebuild "$@"
+# Build sources from pages and generate patched sources in "build".
+# Any command-line args are names of patch files in patches/, but without
+# the trailing .patch. If "nopatch" is the first command-line argument,
+# then no patches will be applied, and build/ is expected to already have
+# the patched kernel code.
+if [ ! "$1" = "nopatch" ]
+then tools/rebuild "$@"
+fi
 
 # assemble the kernel from patched sources and generate symbols
 # and build a simh loadable file.
