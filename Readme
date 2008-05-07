@@ -40,11 +40,11 @@ Running 1st Edition UNIX
    TC0: 16b format, buffering file in memory
    sim> 
 
-2. At the sim> prompt, type g <ENTER>. You will receive a login: prompt:
+2. At the sim> prompt, type g <RETURN>. You will receive a login: prompt:
 
-3. Type in root followed by ctrl-J. You should receive a # prompt.
+3. Type in root followed by <RETURN>. You should receive a # prompt.
 
-4. Type in ls -l followed by ctrl-J. You should see something like this:
+4. Type in an ls -l command. You should see something like this:
 
    total    6
     43 sdrwr-  2 root    620 Jan  1 00:00:00 bin
@@ -52,9 +52,6 @@ Running 1st Edition UNIX
    104 sdrwr-  2 root    110 Jan  1 00:00:00 etc
    114 sdrwr-  2 root     50 Jan  1 00:00:00 tmp
     41 sdrwr-  7 root     70 Jan  1 00:00:00 usr
-
-   Until we patch the kernel, all commands have to be entered with ctrl-J
-   and not the <ENTER> key.
 
 5. To shut the system down, enter ctrl-E to stop the compiler, and q to quit.
    You do not need to sync the system before shutdown.
