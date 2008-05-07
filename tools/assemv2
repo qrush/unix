@@ -6,9 +6,18 @@ if [ ! -d tools ]
 then echo 'No tools/ directory, are you running this in the correct dir?'
      exit 1
 fi
+if [ ! -d build ]
+then mkdir build
+fi
 
 # settings;  should contain something like:
 #   APOUT=/tmp/apout2.3alpha2/apout
+
+if [ ! -f tools/assemv2.cfg ]
+then echo 'You need to create a tools/assemv2.cfg file which contains a line'
+     echo 'setting APOUT=full path to the apout binary'
+fi
+
 . tools/assemv2.cfg
 
 APOUT_ROOT=../fs/root
