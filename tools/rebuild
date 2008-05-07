@@ -21,6 +21,13 @@ rebuild() {
     r init e12
 }
 
+corep() {
+    for x in ../patches/core/*.patch ; do
+        y=`basename $x .patch`
+        echo ' ' $y; patch -s -p1 < $x
+    done
+}
+
 p() { echo ' ' $1; patch -s -p1 <../patches/$1.patch; }
 
 patches() {
@@ -29,9 +36,7 @@ patches() {
     echo patching...
     cp rebuilt/* build
     cd build
-    p vec0407
-    # p fixV7div
-    p initorig
+    corep
     for x in "$@" ; do
         p $x
     done
