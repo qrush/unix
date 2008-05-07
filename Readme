@@ -43,9 +43,9 @@ Running 1st Edition UNIX
 
    You will receive a login: prompt:
 
-3. Type in root followed by <RETURN>. You should receive a # prompt.
+2. Type in root followed by <RETURN>. You should receive a # prompt.
 
-4. Type in an ls -l command. You should see something like this:
+3. Type in an ls -l command. You should see something like this:
 
    total    6
     43 sdrwr-  2 root    620 Jan  1 00:00:00 bin
@@ -54,7 +54,7 @@ Running 1st Edition UNIX
    114 sdrwr-  2 root     50 Jan  1 00:00:00 tmp
     41 sdrwr-  7 root     70 Jan  1 00:00:00 usr
 
-5. To shut the system down, enter ctrl-E to stop the compiler, and q to quit.
+4. To shut the system down, enter ctrl-E to stop the compiler, and q to quit.
    You do not need to sync the system before shutdown.
 
 Documentation
