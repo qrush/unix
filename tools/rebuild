@@ -30,7 +30,7 @@ patches() {
     cp rebuilt/* build
     cd build
     p vec0407
-    p fixV7div
+    # p fixV7div
     p initorig
     for x in "$@" ; do
         p $x
