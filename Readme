@@ -7,14 +7,20 @@ Build Instructions
 Unless otherwise noted, file and directory names refer to this repository.
 
 1. Download the source code for the Simh simulator from here:
-   http://simh.trailing-edge.com/. Unpack it somewhere.
+   http://simh.trailing-edge.com/. Unpack it somewhere. Make the
+   BIN/ directory in Simh at the top level.
 
 2. Copy misc/pdp11_ke.c into the Simh PDP11/ directory, and apply
    the misc/KE.diff patch to the source code:
 
 	patch -l < misc/KE.diff
 
-3. In Simh, make the BIN/ directory. Do make pdp11 to make the pdp11 simulator.
+   We have had some reports that to patch and compile on Ubuntu, you will
+   need to do this:
+       patch -p0 -l < misc/KE.diff
+       OSTYPE=macos make pdp11
+
+3. In Simh, do make pdp11 to make the pdp11 simulator in the BIN/ directory.
    Copy the BIN/pdp11 executable into the tools/ directory.
 
 4. Go into tools/ and do a make. This should build tools/mkfs, tools/ml
