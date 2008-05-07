@@ -38,7 +38,8 @@ ecore.patch
     C compiler will run.
 
 upcase.patch
-    Allow uppercase keyboard input and the } character.
+    Allow uppercase keyboard input and the } character. Also convert
+    ctrl-Ms into ctrl-Js so that <RETURN> works.
 
 fastout.patch
     Remove output delays for mechanical teletypes, so output goes faster.
