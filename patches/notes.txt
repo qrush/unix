@@ -1,3 +1,9 @@
+Patches in "core" are applied automatically.  Patches outside of "core"
+are optional and can be applied by passing their name to tools/rebuild
+or tools/assemv2.  You can also move patches in and out of the "core"
+directory to make them permanent or optional in your builds.
+
+
 cold.patch
     Sets the "cold" flag to one to build a kernel that bootstraps the
     root filesystem.
