@@ -11,6 +11,10 @@ then echo 'You need to compile Simh with the ke11 patch, and place the'
      echo 'resulting pdp11 executable into the tools/ directory.'
      exit 1
 fi
+if [ ! -f tools/apout/apout ]
+then echo 'You need to go into tools/apout/ and do a make to compile apout'
+     exit 1
+fi
 if [ ! -d build ]
 then mkdir build
 fi
