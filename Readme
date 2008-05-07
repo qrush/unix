@@ -90,4 +90,5 @@ tools/		- tools and scripts to build the kernel and filesystem
 build/		- build area: patched kernel files, patched filesystems
 misc/		- misc. files, e.g. the Simh patch for KE11A support
 notes/		- notes on the work done to get 1e UNIX to run again
-diffs/		- not sure, can someone fill this in?
+diffs/		- Differences between pages/* and the high quality OCR
+                  done by James Markevitch.  Includes headers and footers.
