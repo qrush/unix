@@ -16,7 +16,7 @@ Unless otherwise noted, file and directory names refer to this repository.
    into the tools/ directory.
 
 4. Go into tools/ and do a make. This should build tools/mkfs, tools/ml
-   and tools/apout/apout.
+   and tools/apout/apout. Now go back up to the top level.
 
 5. You should now have the tools required to build the filesystems for
    1e UNIX, and the kernel. Run tools/imgbuild, which builds the rf0.dsk
