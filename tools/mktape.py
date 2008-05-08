@@ -158,7 +158,7 @@ def wrFile(out, fn, d, mode, uid) :
 def wrEof(out) :
     wrFile(out, "", "", 0, 0)
     
-def copyFile(out, fn) :
+def copyFile(root, out, fn) :
     "copy file from local filesystem to tape."
     f = file(fn, 'rb')
     d = f.read()
@@ -172,12 +172,17 @@ def copyFile(out, fn) :
     if not fn in perms : print "making up mode"
     wrFile(out, fn, d, mode, uid)
 
-root = "/tmp/s2"
 def main() :
+    if len(sys.argv) < 2 :
+        print "usage: %s root files" % sys.argv[0]
+        raise SystemExit(1)
+    root = sys.argv[1]
+    files = sys.argv[2:]
+
     f = file("tape", "wb")
     f.write("\0" * (512 * 65))		# start at block 65
-    for fn in sys.argv[1:] :
-        copyFile(f, fn)
+    for fn in files :
+        copyFile(root, f, fn)
     wrEof(f)
     f.close()
 
