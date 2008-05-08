@@ -1,19 +1,19 @@
-	tat	param / are we substituting for $n
+	tst	param / are we substituting for $n
 	bne	2f/ yes
 	mov	inbufp,r1 / no, move normal input pointer to r1
 	cmp	r1,einbuf / end of input line?
 	bne	1f / no
-	jsr	pc,netbuf / vas. put next console line in buffer
-	br	gotc
+	jsr	pc,getbuf / yes, put next console line in buffer
+	br	getc
 1:
 	movb	(r1)+,r0 / move byte from input buffer to r0
 	mov	r1,inbufp / increment routine
 	bis	escap,r0 / if last character was \ this adds
 		         / 200 to current character
 	clr	escap / clear, so escap normally zero
-	cmp	r0,$’\\ / note that \\ is equal \ in as
+	cmp	r0,$'\\ / note that \\ is equal \ in as
 	beq	1f
-	cmp	r0,$’$ / is it $
+	cmp	r0,$'$ / is it $
 	beq	3f / yes
 	rts	pc / no
 1:
@@ -22,7 +22,7 @@
 2:
 	movb	*param,r0 / pick up substitution character put in
 		          / r0
-	beq	1f / if end of substitution arc, branch
+	beq	1f / if end of substitution arg, branch
 	inc	param / if not end, set for next character
 	rts	pc / return as though character in ro is normal
 		   / input
@@ -31,7 +31,7 @@
 	br	getc / get next char in normal input
 3:
 	jsr	pc,getc / get digit after $
-	sub	$’0,r0 / strip off zone bits
+	sub	$'0,r0 / strip off zone bits
 	cmp	r0,$9, / compare with digit 9 
 	clos	1f / less than or equal 9
 	mov	$9.,r0 / if larger than 9, force 9
@@ -42,15 +42,14 @@
 	cmp	r0,(r1) / is it less than # of args in this call
 	bge	getc / no, ignore it. so this $n is not replaced
 	asl	r0 / yes, multiply by 2 (to skip words)
-	add	r01,r0 / form pointer to aro pointer (-2)
-	mov	2(r0),param / more arg pointer to param
+	add	r01,r0 / form pointer to arg pointer (-2)
+	mov	2(r0),param / move arg pointer to param
 	br	getc / go to get substitution arg for $n
 getbuf:
-	mov	$inbuf,r0 / move inout buffer address
-	mov	r0,inbufp / to inout buffer pointer
+	mov	$inbuf,r0 / move input buffer address
+	mov	r0,inbufp / to input buffer pointer
 	mov	r0,einbuf / and initialize pointer to end of
 		          / character string
 	dec	r0 / decrement pointer so can utilize normal
-		   / l00p starting at If
-	mov	r0,0f / initialize address for readlng 1st char
-
+		   / 100p starting at 1f
+	mov	r0,0f / initialize address for reading 1st char

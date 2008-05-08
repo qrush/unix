@@ -1,26 +1,26 @@
 / sh -- command interpreter
 	mov	sp,r5
-	mov	r5.shel larg / save orig sp in shel larg
-	cdpb	B(r5),$'- / was this sh calleZd by init or loginx~
+	mov	r5,shellarg / save orig sp in shellarg
+	cmpb	8(r5),$'- / was this sh calleZd by init or loginx~
 	bne	2f / no
-	sys	intr; O / yes, turn off interrupts
-	sys	quit; O
+	sys	intr; 0 / yes, turn off interrupts
+	sys	quit; 0
 2:
 	sys	getuid / who is user
 	tst	r0 / is it superuser
 	bne	2f / no
 	movb	$'#,at / yes, set new prompt symbol
 2:
-	cmn	(r5),$l / tty input?
+	cmp	(r5),$1 / tty input?
 	ble	newline / yes, call with '-(or with no command
 		        / file name)
-	clr	rO / no, set ttv
+	clr	r0 / no, set ttv
 	sys	close / close it
 	mov	4(r5),0f / get new file name
-	sys	open; O:..; 0 / open it
+	sys	open; 0:..; 0 / open it
 	bec	1f / branch if no error
 	jsr	r5,error / error in file name
-		/<Input not found\n\O>: .even
+		<Input not found\n\0>: .even
 	sys	exit
 1:
 	clr	at / clear prompt character, if reading non-tty
@@ -28,10 +28,10 @@
 newline:
 	tst	at / is there a prompt symbol
 	beq	newcom / no
-	mov	$1,rO / yes
+	mov	$1,r0 / yes
 	sys	write; at; 2. / print prompt
 newcom:
-	mov	shellarq,sp /
+	mov	shellarg,sp /
 	mov	$parbuf,r3 / initialize command list area
 	mov	$parp,r4 / initialize command list pointers
 	clr	infile / initialize alternate input
@@ -41,10 +41,10 @@ newarg:
 	jsr	pc,blank / squeeze out leading blanks
 	jsr	r5,delim / is new character a ; \n or &
 		br 2f / yes
-	mov	r3,-(sp) I no, push arg pointer onto stack
-	cmp	rO,$'< / new input file?
+	mov	r3,-(sp) / no, push arg pointer onto stack
+	cmp	r0,$'< / new input file?
 	bne	1f / no
-	mov	(sp).infile / yes, save arg pointer
+	mov	(sp),infile / yes, save arg pointer
 	clr	(sp) / clear pointer
 	br	3f
 1:
@@ -53,4 +53,3 @@ newarg:
 	mov	(sp),outfile / yes, save arg pointer
 	clr	(sp) / clear pointer
 	br	3f
-

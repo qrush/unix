@@ -1,7 +1,7 @@
 	mov	r2,0f / move new name to open
 	mov	$1,r0 / set ttv file name
 	sys	close / close it
-	sys	open; 0:..; 1 / ooen new output file, it now has
+	sys	open; 0:..; 1 / open new output file, it now has
 		              / file descriptor 1
 	sys	seek; 0; 2 / set pointer to current end of file
 1:
@@ -10,46 +10,46 @@
 	sys	exec; parbuf; parp / no, execute this commend
 	sys	exec; binpb; parp / or /bin/this command
 2:
-	sys	stat; binpb; inbuf / if can’t execute does it
+	sys	stat; binpb; inbuf / if can't execute does it
 		                   / exist?
-	bes	2f / branch if it doesn’t
+	bes	2f / branch if it doesn't
 	mov	$shell,parp-2 / does exist, not executable
 	mov	$binpb,parp / so it must be
 	svs	exec; shell; parp-2 / a command file, get it with
 		                    / sh /bin/x (if x name of file)
 2:
-	jsr	r5,error / a return for exec is the diaonostic
-		<No command\n\O>; .even
+	jsr	r5,error / a return for exec is the diagnostic
+		<No command\n\0>; .even
 	sys	exit
 1:
 	mov	$glob,parp-2 / prepare to process *,?
-	sys	exec; glob: parp-2 / execute modified command
+	sys	exec; glob; parp-2 / execute modified command
 	br	2b
 
 delim:
 	cmp	r0,$'\n / is character a newline
 	beq	1f
-	cmp	r0,S’& / ls it &
+	cmp	r0,S'& / is it &
 	beq	1f / yes
-	cmu	r0,$'; / is it ;
+	cmp	r0,$'; / is it ;
 	beq	1f / yes
-	cmp	r0,$’? / is it ?
+	cmp	r0,$'? / is it ?
 	beq	3f
-	cmp	r0,$’[ / is it beginning of character string
+	cmp	r0,$'[ / is it beginning of character string
 		       / (for glob)
 	bne	2f
 3:
 	inc	glflag / ? or * or [ set flag
 2:
-	tst	(r5)+ / bump to process all except \n,:,&
+	tst	(r5)+ / bump to process all except \n,;,&
 1:
 	rts	r5
+
 blank:
 	jsr	pc,getc / get next character
-	cmp	$' ,r0 / leadino blanks
-	beq	blank / yes, ’squeeze out'
-	cmp	r0,$200+'\n / new—line preceded by \ is translated
+	cmp	$' ,r0 / leading blanks
+	beq	blank / yes, 'squeeze out'
+	cmp	r0,$200+'\n / new-line preceded by \ is translated
 	beq	blank / into blank
 	rts	pc
 getc:
-

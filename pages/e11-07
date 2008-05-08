@@ -1,32 +1,36 @@
 1:
 	inc	0f / this routine filles inbuf with line from
 		   / console - if there is cnc
-	clr	r0 / set for tty inout
-	sys	read; O:O; I / read next char into inbuf
+	clr	r0 / set for tty input
+	sys	read; 0:0; 1 / read next char into inbuf
 	bcs	xit1 / error exit
-	tst	r0 / a zero input is and of file
+	tst	r0 / a zero input is end of file
 	beq	xit1 / exit
 	inc	einbuf / eventually einbuf points to \n
-		       / (+1) or this line
-	cmp	0b,$1nbuf+256. / have we exceeded innut buffer size
+		       / (+1) of this line
+	cmp	0b,$inbuf+256. / have we exceeded input buffer size
 	bhis	xit1 / if so, exit assume some sort of binary
-	cmpb	*0b,$’\n / end of line?
+	cmpb	*0b,$'\n / end of line?
 	bne	1b / no, go to get next char
 	rts	pc / yes, return
+
 xit1:
 	sys	exit
+
 quest:
 	<?\n>
+
 at:
 	<@ >
+
 qchdir:
 	<chdir\0>
 glogin:
-	<login\0> -
+	<login\0>
 shell:
-	</bin/sh\0> .
+	</bin/sh\0>
 glob:
-	</etc/g10b\0>
+	</etc/glob\0>
 binpb:
 	</bin/>
 parbuf: .=.+1000.
