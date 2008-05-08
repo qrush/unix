@@ -53,7 +53,7 @@ e10-01 to e10-02 (2) - ux -
 e11-01 to e11-07 (7) - sh
    we have a binary for the sh already I think.  this may be optional
    assigned: johan beisser, complete
-   reviewed:
+   reviewed: tim newsham, complete
 e12-01 to e12-04 (4) - init 
    we have a binary for init already
    assigned: tim newsham, complete
@@ -262,16 +262,33 @@ e10-02
 e11-01
    - I'm using a whole bunch of guesswork on some of these. Keystrokes
      are highly faded, and have to be guessed. The OCR utterly failed.
+   - changed "shel larg" in 2nd asm line to "shellarg" to match the
+     variable defined in e11-07.
+   - changed "cdpb B(r5),$'-"  to "cmpb 8(r5),$'-" which seems like
+     what the code is trying to do.  Left the "calleZd" and "loginx~"
+     typos in the comments as is.
+   - uncommented string after "jsr r5, error" line since other calls to
+     error are followed by literal strings.
 e11-02
    - Line 15 has manual corrections, making it difficult to read what
      was added or subtracted.
+     chose "arg ptr to parp" as interpretation based on existance of
+     "parp" variable on last page.
 e11-03
+   - "dkip" in comment after 4: probably means "skip", but left as is.
 e11-04
    - First lines are horribly mangled. Guessed.
    - Line 7 has a typo, preserved
    - Line 8 has what resembles a "|", not sure if this is a screwup or
      not. Preserved, and assuming it's a "|".
+     - removed the "|" it looks like an extra chracter got inserted
+       that is not valid assembly.
    - line 21/22: I have no idea.
+     - removed additional extra tick characters at "rts" line.
+       but left the extra tick mark in the following comment.
+e11-06
+   - comment after "rts pc" uses "ro" instead of "r0", left as is.
+   - towards enf of page "add r01,r0"  what is this supposed to be?
 ---------------------
 e12-01
    - "rko5" in comments left as is (vs "rk05")
