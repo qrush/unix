@@ -120,17 +120,25 @@ init : init.s
 	@rm a.out
 	@mv b.out init
 
-# build sh from sources   XXX notyet
-# sh : sh.s
+# build sh from sources
+# XXX make fixaout.py overwrite a.out instead of write b.out
+sh : sh.s
+	@echo Building sh...
+	@$(AS) sh.s
+	@../tools/fixaout.py
+	@rm a.out
+	@mv b.out sh
 
 # build a prototype filesystems
-root usr protofs : init
+# XXX shell is not quite ready for prime time.  works partially but
+# not from login.
+root usr protofs : init sh
 	@echo Building filesystems...
 	@$(TREECOPY) ../fs/root .
 	@$(TREECOPY) ../fs/new/etc root
 	@$(TREECOPY) ../fs/usr .
-	@#cp init root/etc/init
-	@#cp sh root/etc/sh    XXX notyet
+	@cp init root/etc/init
+	@cp sh root/bin/xsh
 	@touch protofs
 
 # build filesystem images
@@ -151,7 +159,7 @@ clean :
 	rm -f $(ALLSRCS) patched *.orig
 	rm -f unix usyms
 	rm -rf usr root protofs
-	rm -f init
+	rm -f init sh
 	rm -f images
 
 # clean intermediate and target files

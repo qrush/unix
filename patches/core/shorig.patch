@@ -1,0 +1,9 @@
+--- rebuilt/sh.clean	2008-05-07 18:44:47.000000000 -1000
++++ build/sh.s	2008-05-07 18:50:26.000000000 -1000
+@@ -1,4 +1,6 @@
+ / sh -- command interpreter
++.. = 40014
++
+ 	mov	sp,r5
+ 	mov	r5,shellarg / save orig sp in shellarg
+ 	cmpb	8(r5),$'- / was this sh calleZd by init or loginx~
