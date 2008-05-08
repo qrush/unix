@@ -7,7 +7,7 @@
 	clr	r1 / set r1 to zero to dkip wait
 	rts	pc / and return
 2:
-	jsr	r5,chcom: qloqin / is command login?
+	jsr	r5,chcom; glogin / is command login?
 		br 2f / not loqin, go to fork
 	sys	exec; parbuf; parp / exec login
 	sys	exec; binpb; parp / or /bin/login

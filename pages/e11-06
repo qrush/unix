@@ -32,8 +32,8 @@
 3:
 	jsr	pc,getc / get digit after $
 	sub	$'0,r0 / strip off zone bits
-	cmp	r0,$9, / compare with digit 9 
-	clos	1f / less than or equal 9
+	cmp	r0,$9. / compare with digit 9 
+	blos	1f / less than or equal 9
 	mov	$9.,r0 / if larger than 9, force 9
 1:
 	mov	shellarg,r1 / get pointer to stack for
@@ -42,7 +42,7 @@
 	cmp	r0,(r1) / is it less than # of args in this call
 	bge	getc / no, ignore it. so this $n is not replaced
 	asl	r0 / yes, multiply by 2 (to skip words)
-	add	r01,r0 / form pointer to arg pointer (-2)
+	add	r1,r0 / form pointer to arg pointer (-2)
 	mov	2(r0),param / move arg pointer to param
 	br	getc / go to get substitution arg for $n
 getbuf:

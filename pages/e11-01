@@ -20,7 +20,7 @@
 	sys	open; 0:..; 0 / open it
 	bec	1f / branch if no error
 	jsr	r5,error / error in file name
-		<Input not found\n\0>: .even
+		<Input not found\n\0>; .even
 	sys	exit
 1:
 	clr	at / clear prompt character, if reading non-tty

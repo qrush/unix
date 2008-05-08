@@ -15,7 +15,7 @@
 	bes	2f / branch if it doesn't
 	mov	$shell,parp-2 / does exist, not executable
 	mov	$binpb,parp / so it must be
-	svs	exec; shell; parp-2 / a command file, get it with
+	sys	exec; shell; parp-2 / a command file, get it with
 		                    / sh /bin/x (if x name of file)
 2:
 	jsr	r5,error / a return for exec is the diagnostic
@@ -29,7 +29,7 @@
 delim:
 	cmp	r0,$'\n / is character a newline
 	beq	1f
-	cmp	r0,S'& / is it &
+	cmp	r0,$'& / is it &
 	beq	1f / yes
 	cmp	r0,$'; / is it ;
 	beq	1f / yes

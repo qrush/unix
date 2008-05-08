@@ -289,6 +289,7 @@ e11-04
 e11-06
    - comment after "rts pc" uses "ro" instead of "r0", left as is.
    - towards enf of page "add r01,r0"  what is this supposed to be?
+     I think this is "add r1,r0" based on surrounding code.  trying that.
 ---------------------
 e12-01
    - "rko5" in comments left as is (vs "rk05")

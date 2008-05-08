@@ -36,7 +36,7 @@ binpb:
 parbuf: .=.+1000.
 	.even
 param:	.=.+2
-glflaq:	.=.+2
+glflag:	.=.+2
 infile: .=.+2 
 outfile:.=.+2
 	.=.+2 / room for glob
