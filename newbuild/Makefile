@@ -15,7 +15,7 @@
 #	USECOREPATCHES - "yes" or "no", use the core set of patches
 #
 # Examples:
-#	make run
+#	make
 #		build disk images and unix and run unix in simh
 #	make unix tape EXTRAPATCHES=cold
 #		build a "cold" kernel and a tape to boot it with.
@@ -62,10 +62,6 @@ PAGES = ../pages/e00-01 ../pages/e00-02 ../pages/e00-03 ../pages/e00-04 \
 
 # make the important stuff
 all : $(ALL)
-
-# make the important stuff and run the emulator
-run : $(ALL)
-	@../tools/pdp11 simh.cfg
 
 # reconstitute sources from ocr'd pages
 $(CLEANSRCS) cleansrc : $(PAGES)
