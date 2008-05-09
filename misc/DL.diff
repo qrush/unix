@@ -1,0 +1,82 @@
+--- PDP11/pdp11_dl_orig.c	Fri Jul 14 15:32:12 2006
++++ PDP11/pdp11_dl.c	Fri May  9 23:02:54 2008
+@@ -48,11 +48,14 @@
+ #define TTIXBUF_RBRK    0020000
+ #define TTOXCSR_IMP     (CSR_DONE + CSR_IE)             /* terminal output */
+ #define TTOXCSR_RW      (CSR_IE)
++#define TTIXCSR_DCCD    004			/* DC-11 carrier detect bit */
++#define TTIXCSR_DLCD    04000			/* DL-11 carrier detect bit */
+ 
+ extern int32 int_req[IPL_HLVL];
+ extern int32 tmxr_poll;
+ 
+ uint16 ttix_csr[TTX_LINES] = { 0 };                     /* control/status */
++uint16 ttix_cdbits= 0;		/* any carrier detect bits to OR into csr */
+ uint16 ttix_buf[TTX_LINES] = { 0 };
+ uint32 ttix_ireq = 0;
+ uint16 ttox_csr[TTX_LINES] = { 0 };                     /* control/status */
+@@ -73,6 +76,8 @@
+ t_stat ttx_show_vec (FILE *st, UNIT *uptr, int32 val, void *desc);
+ t_stat ttx_set_lines (UNIT *uptr, int32 val, char *cptr, void *desc);
+ t_stat ttx_show_lines (FILE *st, UNIT *uptr, int32 val, void *desc);
++t_stat ttx_set_carrierdetect (UNIT *uptr, int32 val, char *cptr, void *desc);
++t_stat ttx_show_carrierdetect (FILE *st, UNIT *uptr, int32 val, void *desc);
+ void ttx_enbdis (int32 dis);
+ void ttix_clr_int (uint32 ln);
+ void ttix_set_int (int32 ln);
+@@ -114,12 +119,14 @@
+       NULL, &ttx_show, NULL },
+     { MTAB_XTD | MTAB_VDV | MTAB_NMO, 0, "STATISTICS", NULL,
+       NULL, &ttx_show, NULL },
+-    { MTAB_XTD|MTAB_VDV, 0, "ADDRESS", NULL,
++    { MTAB_XTD|MTAB_VDV, 020, "ADDRESS", "ADDRESS",
+       &set_addr, &show_addr, NULL },
+     { MTAB_XTD|MTAB_VDV, 0, "VECTOR", NULL,
+       &set_vec, &ttx_show_vec, NULL },
+-    { MTAB_XTD | MTAB_VDV, 0, "lines", "LINES",
++    { MTAB_XTD | MTAB_VDV, 0, "LINES", "LINES",
+       &ttx_set_lines, &ttx_show_lines },
++    { MTAB_XTD | MTAB_VDV, 0, "CARRIER", "CARRIER",
++      &ttx_set_carrierdetect, &ttx_show_carrierdetect },
+     { 0 }
+     };
+ 
+@@ -197,7 +204,7 @@
+ switch ((PA >> 1) & 03) {                               /* decode PA<2:1> */
+ 
+     case 00:                                            /* tti csr */
+-        *data = ttix_csr[ln] & TTIXCSR_IMP;
++        *data = (ttix_csr[ln] & TTIXCSR_IMP) | ttix_cdbits;
+         return SCPE_OK;
+ 
+     case 01:                                            /* tti buf */
+@@ -518,4 +525,29 @@
+ {
+ fprintf (st, "lines=%d", ttx_desc.lines);
+ return SCPE_OK;
++}
++
++/* Set carrier detect: argument is one of
++ *   OFF	do not assert the carrier detect flag in the CSR
++ *   DL		assert the DL-11 carrier detect flag, bit 12
++ *   DC		assert the DC-11 carrier detect flag, bit 2
++ */
++t_stat ttx_set_carrierdetect (UNIT *uptr, int32 val, char *cptr, void *desc)
++{
++  if (!strcmp(cptr, "OFF")) { ttix_cdbits= 0; return SCPE_OK; }
++  if (!strcmp(cptr, "DL")) { ttix_cdbits= TTIXCSR_DLCD; return SCPE_OK; }
++  if (!strcmp(cptr, "DC")) { ttix_cdbits= TTIXCSR_DCCD; return SCPE_OK; }
++  return SCPE_ARG;
++}
++
++/* Show status of carrier detect */
++t_stat ttx_show_carrierdetect (FILE *st, UNIT *uptr, int32 val, void *desc)
++{
++  fprintf (st, "carrier=");
++  switch (ttix_cdbits) {
++    case 0: 	       fprintf (st, "off"); break;
++    case TTIXCSR_DLCD: fprintf (st, "dl"); break;
++    case TTIXCSR_DCCD: fprintf (st, "dc"); break;
++  }
++  return SCPE_OK;
+ }
