@@ -1,7 +1,7 @@
 /* defines.h	- Definitions of things needed in all C files
  *
- * $Revision: 2.73 $
- * $Date: 2002/06/10 12:08:27 $
+ * $Revision: 2.74 $
+ * $Date: 2008/05/09 14:04:41 $
  */
 
 #include <sys/types.h>
@@ -68,7 +68,7 @@
 #endif
 
 #if !defined(__FreeBSD__) && !defined(__NetBSD__) && \
-    !defined(__OpenBSD__) && !defined(__linux__)
+    !defined(__OpenBSD__) && !defined(__linux__) && !defined(__APPLE__)
 # define NEED_INT_N
 #endif
 

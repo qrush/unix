@@ -1,7 +1,7 @@
 # Makefile for Apout PDP-11 application emulator
 #
-# $Revision: 1.29 $
-# $Date: 2002/06/10 11:49:48 $
+# $Revision: 1.30 $
+# $Date: 2008/05/09 14:04:51 $
 #
 # You will need gcc if you choose the optimised compile below
 CC=gcc
@@ -12,7 +12,7 @@ CC=gcc
 #
 # These flags for doing debugging
 CFLAGS= -Wall -g -DEMU211 -DEMUV1 -DNATIVES -DDEBUG -DZERO_MEMORY -DWRITEBASE
-LDFLAGS= -static -g
+LDFLAGS= -g
 
 # These flags for speed
 #CFLAGS= -DEMU211 -DNATIVES -DINLINE=inline -O2 -Winline -Wall \
