@@ -27,5 +27,5 @@ def write(fn, d) :
 
 d1 = words(read('a.out'))
 hdr = d1[:8]
-d = [0405, hdr[1], 0, 0, hdr[4], 0] + d1[8:]
+d = [0405, 12+hdr[1], 0, 0, hdr[4], 0] + d1[8:]
 write("b.out", unwords(d))
