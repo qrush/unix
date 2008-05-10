@@ -1,5 +1,5 @@
 
 all :
 	(cd tools; make)
-	(cd newbuild; make install)
+	(cd build; make install)
 
