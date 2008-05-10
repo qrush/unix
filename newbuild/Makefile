@@ -153,6 +153,10 @@ tape : protofs
 	@echo Building tape image...
 	@$(MKTAPE) root root/bin/* root/etc/*
 
+install : rf0.dsk rk0.dsk loadfile tape
+	@echo Installing...
+	@cp rf0.dsk rk0.dsk loadfile tape ../images
+	
 # clean intermediate files
 clean :
 	rm -f $(CLEANSRCS) cleansrc
