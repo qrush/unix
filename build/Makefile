@@ -145,7 +145,7 @@ root usr protofs : init sh
 rf0.dsk rk0.dsk images : protofs
 	@echo Building disk images...
 	@$(MKFS) -p ../fs/Readme root rf0.dsk rf
-	@$(MKFS) -p ../fs/Readme root rk0.dsk rk
+	@$(MKFS) -p ../fs/Readme usr rk0.dsk rk
 	@touch images
 
 # build a tape image
