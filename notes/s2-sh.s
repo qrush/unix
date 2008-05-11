@@ -167,9 +167,6 @@ chcom:
 40724:  BNE 40754
 40726:  JSR R5,40600		/ jsr error
 40732:  <"' imbalance\n\0>
-	/ XXX jun72's sh.s builds "40750: 000051" here!  why?
-	/ is there a padding error in the as we are using?
-	/ the rest of the assembly continues as here.
 40750:  JMP 40142		/ jmp newline
 40754:  CMP R0,(SP)
 40756:  BEQ 40770
