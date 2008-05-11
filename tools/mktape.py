@@ -116,6 +116,7 @@ urwr-  0  3678   34 Dec 31 04:08 /bin/tap		1887871165
 xrwr-  1   424  231 Feb  6 14:50 /etc/init		2081988977 
 """
 
+noisy = 0
 
 def uMode(s) :
     m = 0
@@ -150,7 +151,8 @@ def sMode(m) :
 
 def wrFile(out, fn, d, mode, uid) :
     "write out file."
-    print sMode(mode), uid, fn
+    if noisy :
+        print sMode(mode), uid, fn
     meta = pack("<HBB", len(d), mode, uid) + fn
     out.write(pad(meta))
     out.write(pad(d))
