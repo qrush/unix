@@ -8,7 +8,7 @@
 	cmp	r0,$'\n / is it end or line
 	bne	2f / no
 	jsr	r5,error / yes, indicate missing quote mark
-		<"' imbalance\n\0)>; .even
+		<"' imbalance\n\0>; .even
 	jmp	newline / ask for new line
 2:
 	cmp	r0,(sp) / is this closing quote mark
