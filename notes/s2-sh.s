@@ -24,7 +24,7 @@ but some changes appear to just be differences.
 40076:  TRAP 5		/ sys open
 40100:  ..
 40102:  0
-40104:  BCC 40136	/ XXX sh.s uses "bec" here, not "bcc"?!
+40104:  BCC 40136
 40106:  JSR R5,40600	/ jsr error
 40112:  <Input not found\n\0\0>
 40134:  TRAP 1		/ sys exit
@@ -105,7 +105,7 @@ docom:
 40452:  MOV 43656,40462	/ move parp+2 to ...
 40460:  TRAP 14		/ sys chdir
 40462:  ...
-40464:  BCC 40512	/ (XXX "bec" in sh.s)
+40464:  BCC 40512
 40466:  JSR R5,40600	/ jsr error
 40472:  <Bad directory\n\0\0>
 40512:  CLR R1
