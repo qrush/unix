@@ -138,7 +138,7 @@ root usr protofs : init sh
 	@$(TREECOPY) ../fs/new/etc root
 	@$(TREECOPY) ../fs/usr .
 	@cp init root/etc/init
-	@cp sh root/bin/sh
+	@cp sh root/bin/xsh
 	@touch protofs
 
 # build filesystem images
