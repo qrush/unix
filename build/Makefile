@@ -5,7 +5,6 @@
 #	all		- make kernel and disk images
 #	images		- make disk images
 #	tape		- make a tape image for a "cold" kernel
-#	loadfile	- make a simh loadfile containing the kernel
 #	unix		- make the kernel
 #	clean		- delete intermediate files
 #	clobber		- delete all generated files
@@ -24,8 +23,7 @@
 USECOREPATCHES = yes
 EXTRAPATCHES = 
 
-ALL = loadfile rf0.dsk rk0.dsk
-ML= ../tools/ml
+ALL = rf0.dsk rk0.dsk
 MKFS = ../tools/mkfs
 MKTAPE = ../tools/mktape.py
 APOUT_ROOT = ../fs/root
@@ -104,11 +102,10 @@ $(ALLSRCS) patched : $(CLEANSRCS)
 
 # build the unix kernel from the KSRCS using the v2 assembler.
 # XXX make ml take cmd line args for input and output file.
-unix loadfile usyms : $(KSRCS)
+unix usyms : $(KSRCS)
 	@echo Building kernel...
 	@$(AS) u?.s
 	@$(NM) a.out | sort > usyms
-	@$(ML)
 	@mv a.out unix
 
 # build a prototype filesystems
@@ -124,10 +121,15 @@ root usr protofs : init.0405 sh.0405
 	@touch protofs
 
 # build filesystem images
-rf0.dsk rk0.dsk images : protofs
+# installs kernel and bootloader on rf0, too.
+rf0.dsk rk0.dsk images : protofs unix
 	@echo Building disk images...
 	@$(MKFS) -p ../fs/Readme root rf0.dsk rf
 	@$(MKFS) -p ../fs/Readme usr rk0.dsk rk
+	@dd if=../boot/bos of=rf0.dsk bs=512 seek=960
+	@# we need to skip the a.out header...
+	@dd if=unix bs=1 skip=16 count=16384 | \
+	    dd of=rf0.dsk bs=512 seek=964
 	@touch images
 
 # build a tape image
@@ -135,9 +137,9 @@ tape : protofs
 	@echo Building tape image...
 	@$(MKTAPE) root root/bin/* root/etc/*
 
-install : rf0.dsk rk0.dsk loadfile tape
+install : rf0.dsk rk0.dsk tape
 	@echo Installing...
-	@cp rf0.dsk rk0.dsk loadfile tape ../images
+	@cp rf0.dsk rk0.dsk tape ../images
 	
 # clean intermediate files
 clean :
@@ -151,7 +153,6 @@ clean :
 # clean intermediate and target files
 clobber : clean
 	rm -f tape
-	rm -f loadfile
 	rm -f rf0.dsk rk0.dsk
 
 
