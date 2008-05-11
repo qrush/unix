@@ -218,6 +218,10 @@ int main(int argc, char *argv[])
 
 	verbose = 0;
 
+	if(argc > 1)
+		filename = argv[1];
+	if (argc > 2)
+		output_filename = argv[2];
 	if (process(filename, output_filename)) {
 		fprintf(stderr, "%s: failed?\n", filename);
 	}
