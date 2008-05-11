@@ -163,5 +163,4 @@ clobber : clean
 	@$(AS) $<
 	@../tools/fixaout.py
 	@mv a.out $@
-	@echo done $< $@
 
