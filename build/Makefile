@@ -156,12 +156,10 @@ clobber : clean
 
 
 # generic rule for assembling a .s into an 0405 a.out format.
-# XXX make fixaout.py overwrite a.out instead of write b.out
 .SUFFIXES : .s .0405
 .s.0405 :
 	@$(AS) $<
 	@../tools/fixaout.py
-	@rm a.out
-	@mv b.out $@
+	@mv a.out $@
 	@echo done $< $@
 
