@@ -1,0 +1,47 @@
+UNIX V1 bootstrap
+
+The UNIX V1 bootstrap procedure is described in UNIX_ProgammersManual_Nov71.pdf,
+section BOOT PROCEDURES (VII).
+
+To install the bootstrap and kernel, prior to running the V1 system, use
+the boot/installboot command.  This will install the bos program as well
+as the recently-built kernel from build/loadfile into the warm boot area
+of the rf0 disk:
+
+	boot/installboot
+
+The system can be warm booted with:
+
+	tools/pdp11 boot/simh.cfg
+
+Alternatively, everything can be installed while running under the V1 system
+using the following procedure:
+
+    First, build the support programs: bos and msys
+
+	chdir /usr/boot
+	sh run
+
+    Install the bootstrap and unix:
+
+	msys b bos
+	msys u wunix
+
+If you build a kernel under V1, then you can install it into the warm
+boot area with:
+
+	msys u name_of_kernel
+
+You can install it into the cold boot area (such as for testing) with:
+
+	msys 1 name_of_kernel
+
+The default installation does not copy an image into the cold boot area.
+However, if the cold boot area is being used for testing new kernels,
+then the kernel can be bootstrapped using:
+
+	tools/pdp11 boot/simh_cold.cfg
+
+NOTE: the 32W bootstrap normally resides at location 173700, but because the
+simulator does not have memory at that location, the current bootstrap is
+copied into 073700 in the simulator.  This does not change the behavior at all.

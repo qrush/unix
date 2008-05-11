@@ -1,0 +1,4 @@
+as bos.s
+mv a.out bos
+as msys.s
+mv a.out msys
