@@ -116,6 +116,7 @@ root usr protofs : init.0405 sh.0405
 	@$(TREECOPY) ../fs/root .
 	@$(TREECOPY) ../fs/new/etc root
 	@$(TREECOPY) ../fs/usr .
+	@$(TREECOPY) ../fs/new/usr .
 	@cp init.0405 root/etc/init
 	@cp sh.0405 root/bin/xsh
 	@touch protofs
