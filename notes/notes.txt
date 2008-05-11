@@ -267,6 +267,11 @@ e11-01
    - changed "cdpb B(r5),$'-"  to "cmpb 8(r5),$'-" which seems like
      what the code is trying to do.  Left the "calleZd" and "loginx~"
      typos in the comments as is.
+     - I compared this against the s2 binary for /bin/sh and the
+       code sequence looks similar.  This instruction is 
+       "cmpb  @2(R5),#55" which properly does what the comments say.
+       It reads argv[0][0] and compares with '-'.  Edited this
+       code to be in agreement.
    - uncommented string after "jsr r5, error" line since other calls to
      error are followed by literal strings.
 e11-02
