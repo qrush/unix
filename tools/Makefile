@@ -10,5 +10,5 @@ apout/apout:
 	(cd apout; make; rm *.o)
 
 clean:
-	rm mkfs ml
+	rm -f mkfs ml
 	(cd apout; make clean)
