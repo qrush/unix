@@ -111,34 +111,16 @@ unix loadfile usyms : $(KSRCS)
 	@$(ML)
 	@mv a.out unix
 
-# build init from sources
-# XXX make fixaout.py overwrite a.out instead of write b.out
-init : init.s
-	@echo Building init...
-	@$(AS) init.s
-	@../tools/fixaout.py
-	@rm a.out
-	@mv b.out init
-
-# build sh from sources
-# XXX make fixaout.py overwrite a.out instead of write b.out
-sh : sh.s
-	@echo Building sh...
-	@$(AS) sh.s
-	@../tools/fixaout.py
-	@rm a.out
-	@mv b.out sh
-
 # build a prototype filesystems
-# XXX shell is not quite ready for prime time.  works partially but
-# not from login.
-root usr protofs : init sh
+# XXX shell is not quite ready for prime time.  
+#   it doesn't do globbing properly.
+root usr protofs : init.0405 sh.0405
 	@echo Building filesystems...
 	@$(TREECOPY) ../fs/root .
 	@$(TREECOPY) ../fs/new/etc root
 	@$(TREECOPY) ../fs/usr .
-	@cp init root/etc/init
-	@cp sh root/bin/xsh
+	@cp init.0405 root/etc/init
+	@cp sh.0405 root/bin/xsh
 	@touch protofs
 
 # build filesystem images
@@ -163,7 +145,7 @@ clean :
 	rm -f $(ALLSRCS) patched *.orig
 	rm -f unix usyms
 	rm -rf usr root protofs
-	rm -f init sh
+	rm -f *.0405
 	rm -f images
 
 # clean intermediate and target files
@@ -171,4 +153,15 @@ clobber : clean
 	rm -f tape
 	rm -f loadfile
 	rm -f rf0.dsk rk0.dsk
+
+
+# generic rule for assembling a .s into an 0405 a.out format.
+# XXX make fixaout.py overwrite a.out instead of write b.out
+.SUFFIXES : .s .0405
+.s.0405 :
+	@$(AS) $<
+	@../tools/fixaout.py
+	@rm a.out
+	@mv b.out $@
+	@echo done $< $@
 
