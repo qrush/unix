@@ -1,21 +1,44 @@
-1a2,3
-> .. = 40014
-> 
-146a149,150
-> 	rts	r5
-> 
-235,242d238
-< 	sys	stat; binpb; inbuf / if can't execute does it
-< 		                   / exist?
-< 	bes	2f / branch if it doesn't
-< 	mov	$shell,parp-2 / does exist, not executable
-< 	mov	$binpb,parp / so it must be
-< 	sys	exec; shell; parp-2 / a command file, get it with
-< 		                    / sh /bin/x (if x name of file)
-< 2:
-259a256,257
-> 	cmp	r0,$'* / is it *
-> 	beq	3f
-362,363d359
-< shell:
-< 	</bin/sh\0>
+--- build/sh.clean	2008-05-11 10:41:44.000000000 -1000
++++ build/sh.s	2008-05-11 10:42:49.000000000 -1000
+@@ -142,6 +146,8 @@
+ 	inc	r5 / inc r5 to point to return
+ 	bic	$1,r5 / make it even
+ 	clr	r0 / set for input
++	rts	r5
++
+ 	sys	seek; 0; 2 / exit from runcom. skip to end of
+ 		           / input file
+ chcom: / has no effect if tty input
+@@ -232,14 +238,6 @@
+ 	sys	exec; parbuf; parp / no, execute this commend
+ 	sys	exec; binpb; parp / or /bin/this command
+ 2:
+-	sys	stat; binpb; inbuf / if can't execute does it
+-		                   / exist?
+-	bes	2f / branch if it doesn't
+-	mov	$shell,parp-2 / does exist, not executable
+-	mov	$binpb,parp / so it must be
+-	sys	exec; shell; parp-2 / a command file, get it with
+-		                    / sh /bin/x (if x name of file)
+-2:
+ 	jsr	r5,error / a return for exec is the diagnostic
+ 		<No command\n\0>; .even
+ 	sys	exit
+@@ -257,6 +255,8 @@
+ 	beq	1f / yes
+ 	cmp	r0,$'? / is it ?
+ 	beq	3f
++	cmp	r0,$'* / is it *
++	beq	3f
+ 	cmp	r0,$'[ / is it beginning of character string
+ 		       / (for glob)
+ 	bne	2f
+@@ -359,8 +359,6 @@
+ 	<chdir\0>
+ glogin:
+ 	<login\0>
+-shell:
+-	</bin/sh\0>
+ glob:
+ 	</etc/glob\0>
+ binpb:
