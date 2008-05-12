@@ -28,7 +28,9 @@ Unless otherwise noted, file and directory names refer to this repository.
    filesystems for 1e UNIX, and the kernel.  It will create kernel sources 
    with some necessary patches, assemble it and build a bootable Simh memory 
    image which is installed into images.  Finally it will build the rf0.dsk, 
-   rk0.dsk and tape images and install these in images.  
+   rk0.dsk and tape images and install these in the images directory. You
+   can also do a "make clean" to clean out the images/ and build/ directories.
+   A "make clobber" will clean out the images/, build/  and tools/ directories.
 
 Running 1st Edition UNIX
 ------------------------
@@ -93,6 +95,7 @@ fs/		- userland binaries and files, used to make rf0.dsk and rk0.dsk
 src/		- source code for userland: there is not much available
 tools/		- tools and scripts to build the kernel and filesystem
 build/		- build area: patched kernel files, patched filesystems
+images/		- final disk and tape images to be used by the Simh simulator
 misc/		- misc. files, e.g. the Simh patch for KE11A support
 notes/		- notes on the work done to get 1e UNIX to run again
 diffs/		- Differences between pages/* and the high quality OCR
