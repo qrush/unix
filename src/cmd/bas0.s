@@ -344,3 +344,4 @@ isymtab:
 	blo	1b
 	clr	(r0)+
 	rts	pc
+

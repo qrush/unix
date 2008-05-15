@@ -128,3 +128,4 @@ hshtab:	.=2*hshsiz+.
 
 symtab:
 esymtab = orig+16384.-300.
+

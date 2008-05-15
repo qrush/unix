@@ -97,3 +97,30 @@ err:
 	exit();
 }
 
+tio(a, f) {
+
+	a = open(a, f);
+	if (a>=0) {
+		close(a);
+		return(1);
+	}
+	return(0);
+}
+
+tcreat(a) {
+	return(1);
+}
+
+eq(a, b)
+char *a, *b;
+{
+	int i;
+
+	i = 0;
+l:
+	if(a[i] != b[i])
+		return(0);
+	if(a[i++] == '\0')
+		return(1);
+	goto l;
+}

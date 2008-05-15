@@ -32,11 +32,3 @@ chmerr:
 	sys	exit
 
 1:	<?\n>
-q	1f
-	jsr	pc,1b
-1:
-	mov	(sp)+,r0
-	add	$'0,r0
-	jsr	pc,putc
-	rts	pc
-

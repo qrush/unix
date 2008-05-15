@@ -449,27 +449,3 @@ wrlocsym:
 	tst	(sp)+
 	rts	r5
 
-dd	12(r4),r3	/ symbol value
-	mov	10(r4),r2
-	sub	$41,r2
-	bic	$!1,r0
-	bne	4f
-	tst	r2
-	beq	5f		/ not relative & relocatable
-	add	dotdot,r3
-	br	5f
-4:
-	tst	r2
-	bne	5f		/ relative & absolute
-	sub	dotdot,r3
-5:
-	asl	r2
-	bis	r2,r0
-	br	relrel
-/ absolute, text, data, or bss symbol
-3:
-	add	*reltab(r2),r3
-relrel:
-	bit	$1,r0
-	beq	1f
-	sub	rel
