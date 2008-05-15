@@ -1,9 +1,9 @@
 main(argc,argv)
-char argv[][];
+char **argv;
 {
 char buf[512];
 int fold, fnew, n;
-char p1[], p2[], bp[];
+char *p1, *p2, *bp;
 int mode;
 	if(argc != 3) {
 		write(1,"Usage: cp oldfile newfile\n",26);
