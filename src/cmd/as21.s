@@ -181,14 +181,3 @@ setbrk:
 1:
 	mov	(sp)+,r1
 	rts	pc
-
-
-	mov	a.tmp1,0f
-	sys	unlink; 0:..
-	mov	a.tmp2,0f
-	sys	unlink; 0:..
-	mov	a.tmp3,0f
-	sys	unlink; 0:..
-	sys	chmod; a.out; outmod: 37
-	sys	exit
-
