@@ -6,8 +6,8 @@
  * a.out header. If it matches any of the checksums below, it returns
  * the appropriate environment value. Otherwise, it returns IS_UNKNOWN.
  *
- * $Revision: 1.14 $
- * $Date: 2008/05/06 23:31:53 $
+ * $Revision: 1.15 $
+ * $Date: 2008/05/15 03:20:52 $
  */
 #include "defines.h"
 
@@ -118,6 +118,7 @@ int special_magic(u_int16_t *cptr)
 {
     u_int32_t cksum=0;
     int i;
+    char *unix_version;
 
     if (cptr==NULL) return(IS_UNKNOWN);
 				/* Calculate the checksum */
@@ -129,7 +130,20 @@ int special_magic(u_int16_t *cptr)
       return(S[i].environment);
     }
 
-   				/* None, return 0 */
+    				/* See if user tells us what version to use */
+    if ((unix_version = getenv("APOUT_UNIX_VERSION"))) {
+	if (!strcmp(unix_version, "V1")) return(IS_V1);
+	if (!strcmp(unix_version, "V2")) return(IS_V2);
+	if (!strcmp(unix_version, "V3")) return(IS_V3);
+	if (!strcmp(unix_version, "V4")) return(IS_V4);
+	if (!strcmp(unix_version, "V5")) return(IS_V5);
+	if (!strcmp(unix_version, "V6")) return(IS_V6);
+	if (!strcmp(unix_version, "V7")) return(IS_V7);
+	if (!strcmp(unix_version, "2.9BSD")) return(IS_29BSD);
+	if (!strcmp(unix_version, "2.11BSD")) return(IS_211BSD);
+    }
+
+   			/* We can't tell what version of Unix, give up */
     (void)printf("Apout - unknown magic in header: 0x%x\n",cksum);
     return(IS_UNKNOWN);
 }

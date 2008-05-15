@@ -1,7 +1,7 @@
 .\" Copyright Warren Toomey
 .\"
-.\" $Revision: 1.9 $
-.\" $Date: 2002/06/10 12:08:27 $
+.\" $Revision: 1.10 $
+.\" $Date: 2008/05/15 03:20:52 $
 .\"
 .Dd December, 2000
 .Dt APOUT 1
@@ -104,6 +104,17 @@ Note that you must set
 .Ev APOUT_ROOT
 before you can run 
 .Nm apout.
+.Pp
+There is one other optional environment variable:
+.Ev APOUT_UNIX_VERSION.
+This is mainly required for UNIX binaries that use the 0407 header,
+which was used across several versions of UNIX, each with a different set
+of system calls. If APOUT_UNIX_VERSION is set,
+.Nm apout
+will use the given version when it cannot determine which version of UNIX a
+binary belongs to. The available values are "V1", "V2", "V3", "V4", "V5", "V6",
+"V7", "2.9BSD" and "2.11BSD".
+.Pp
 .Sh EMULATED ENVIRONMENT VARIABLES
 Initially, PDP-11 binaries run via
 .Nm apout
