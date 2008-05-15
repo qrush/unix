@@ -22,6 +22,7 @@ echo as2; as as2?.s; mv a.out as2
 
 echo Not bas, missing source files
 echo Not dc, uses the mul instruction
+echo Not fed, uses the div instruction
 echo Not form, uses the ashc instruction
 
 echo You can rm ':' acct ar cat chmod chown
