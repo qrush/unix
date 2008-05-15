@@ -1,0 +1,13 @@
+The files in c/ come from the last1120c.tar.gz tape at
+http://www.tuhs.org/Archive/Applications/Early_C_Compilers/, and form
+a working C compiler for 2nd Edition UNIX.
+
+The files in lib/ come from the libc.sa file which is on the last1120c.tar.gz 
+tap(I) tape image, also at the same URL, and form the C library for the
+above compiler.
+
+The files in cmd/ are recreated from the text fragments found on the file
+s1-bits.gz at
+http://www.tuhs.org/Archive/PDP-11/Distributions/research/1972_stuff/
+These were reconstructed by Doug Merritt and Warren Toomey, and form
+the source code to some of the commands on 2nd Edition UNIX.
