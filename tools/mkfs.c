@@ -11,8 +11,8 @@
  *	 in the long run, have the ability to read from/write to
  *	 existing images, a la an ftp client.
  *
- * $Revision: 1.21 $
- * $Date: 2008/05/06 09:22:07 $
+ * $Revision: 1.22 $
+ * $Date: 2008/05/17 02:30:05 $
  */
 
 #include <sys/types.h>
@@ -33,6 +33,14 @@
 #define ROOTDIR_INUM	  41	/* Special i-number for / */
 #define NUMDIRECTBLKS      8	/* Only 8 direct blocks in an i-node */
 #define BLKSPERINDIRECT  256	/* 256 block pointers in an indirect block */
+
+/* V1 UNIX reserves 64 blocks on the end of RF11 for kernel images, then
+ * SWPSIZ blocks per process for swap areas.
+ */
+#define KERNBLKS	64	/* Hard coded in V1 kernel source */
+#define SWPSIZ		33	/* Was hard-coded to 17, now 33 for C compiler */
+#define	NPROC		16	/* Hard coded in V1 kernel source */
+#define RF_NOSWAPSIZE (RF_SIZE - KERNBLKS - (SWPSIZ*NPROC))
 
 struct v1inode {		/* Format of 1st edition i-node */
   uint16_t flags;
@@ -708,7 +716,7 @@ int main(int argc, char *argv[])
     fs_size = RK_SIZE;
   } else {
     disksize = RF_SIZE;
-    fs_size = RF_NOSAWPSIZE;
+    fs_size = RF_NOSWAPSIZE;
     makedevflag=1;
   }
 
