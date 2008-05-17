@@ -9,3 +9,15 @@
  
         4;4     / init by copy
         unkni;0 / " error
+@@ -159,9 +162,9 @@
+ 
+ 	mov    $1024.-64.,r1 / highest drum address; high 64 blks allocated
+                               / to UNIX
+-	mov    $p.dska,r2 / p.dska contains dis addresses for processes
++	mov    $p.dska,r2 / p.dska contains disk addresses for processes
+ 1 :
+-	sub    $17.,r1 / 17 blocks per process
++	sub    $33.,r1 / 33 blocks per process, allows 16K per process
+ 	mov    r1,(r2)+
+ 	cmp    r2,$p.dska+nproc+nproc
+ 	bne    1b
