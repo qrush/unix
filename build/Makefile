@@ -109,8 +109,6 @@ unix usyms : $(KSRCS)
 	@mv a.out unix
 
 # build a prototype filesystems
-# XXX shell is not quite ready for prime time.  
-#   it doesn't do globbing properly.
 root usr protofs : init.0405 sh.0405
 	@echo Building filesystems...
 	@$(TREECOPY) ../fs/root .
@@ -118,7 +116,7 @@ root usr protofs : init.0405 sh.0405
 	@$(TREECOPY) ../fs/usr .
 	@$(TREECOPY) ../fs/new/usr .
 	@cp init.0405 root/etc/init
-	@cp sh.0405 root/bin/xsh
+	@cp sh.0405 root/bin/sh
 	@touch protofs
 
 # build filesystem images
