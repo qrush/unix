@@ -48,6 +48,12 @@ v2_as.patch
     Defines mount as _mount, gtty as _gtty, so that these symbols will not
     conflict with the pre-defined symbols in the V2 assembler.
 
+shell.patch
+    A patch to the jun72 sh.s that adds back what appears to be a
+    missing "rts" and also allows "*" to be used for globbing.  It
+    appears these lines got dropped from the listing somehow but were
+    part of the shell.
+
 shell-s2.patch
     A patch to the jun72 sh.s sources to make it build an identical
     shell as the s2 /bin/sh (different only in the padding bytes).
