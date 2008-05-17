@@ -109,6 +109,7 @@ unix usyms : $(KSRCS)
 	@mv a.out unix
 
 # build a prototype filesystems
+# XXX has hack to fix our orig hack in sh.s and init.s
 root usr protofs : $(ALLSRCS) init.0405 sh.0405
 	@echo Building filesystems...
 	@$(TREECOPY) ../fs/root .
@@ -116,7 +117,8 @@ root usr protofs : $(ALLSRCS) init.0405 sh.0405
 	@$(TREECOPY) ../fs/usr .
 	@$(TREECOPY) ../fs/new/usr .
 	@$(TREECOPY) ../src usr
-	@cp init.s sh.s usr/src/cmd
+	@sed '/40014/d' < sh.s > usr/src/cmd/sh.s
+	@sed '/40014/d' < init.s > usr/src/cmd/init.s
 	@cp $(KSRCS) usr/sys
 	@cp init.0405 root/etc/init
 	@cp sh.0405 root/bin/sh

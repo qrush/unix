@@ -15,6 +15,7 @@ echo init.s; as init.s; mv a.out init
 echo ln.s; as ln.s; mv a.out ln
 echo login.s; as login.s; mv a.out login
 echo ls.s; as ls.s; mv a.out ls
+echo sh.s; as sh.s; mv a.out sh
 echo db; as db?.s; mv a.out db
 echo ld; as ld?.s; mv a.out ld
 echo as2; as as2?.s; mv a.out as2
@@ -30,4 +31,4 @@ echo ... install new "as" to build dc
 
 echo You can rm ':' acct ar cat chmod chown
 echo You can rm cmp date df dsw dusg fstrip getty
-echo You can rm init ln login ls as as2 db ld
+echo You can rm init ln login ls sh as as2 db ld
