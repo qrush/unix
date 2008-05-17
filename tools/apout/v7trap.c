@@ -1,8 +1,8 @@
 /* v7trap.c - Deal with V7 trap instructions. V5 and V6 syscalls are also
  * done here, because the syscall interface is nearly the same as V7.
  *
- * $Revision: 1.47 $
- * $Date: 2002/06/10 11:43:24 $
+ * $Revision: 1.48 $
+ * $Date: 2008/05/15 07:52:45 $
  */
 #include "defines.h"
 #include <sys/stat.h>
@@ -609,8 +609,8 @@ trap_gtty(u_int16_t fd, u_int16_t ucnt)
 	return i;
     CLR_CC_C();
     sgtb = (struct tr_sgttyb *) & dspace[ucnt];
-    sgtb->sg_ispeed = tios.c_ispeed;
-    sgtb->sg_ospeed = tios.c_ospeed;
+    sgtb->sg_ispeed = cfgetispeed(&tios); /* tios.c_ispeed; --gray */
+    sgtb->sg_ospeed = cfgetospeed(&tios); /* tios.c_ospeed; --gray */
     sgtb->sg_erase = tios.c_cc[VERASE];
     sgtb->sg_kill = tios.c_cc[VKILL];
     sgtb->sg_flags = 0;
@@ -644,8 +644,8 @@ trap_stty(u_int16_t fd, u_int16_t ucnt)
 
     if (ucnt != 0) {
 	sgtb = (struct tr_sgttyb *) & dspace[ucnt];
-	tios.c_ispeed = sgtb->sg_ispeed;
-	tios.c_ospeed = sgtb->sg_ospeed;
+	cfsetispeed(&tios, sgtb->sg_ispeed); 
+	cfsetospeed(&tios, sgtb->sg_ospeed);
 	tios.c_cc[VERASE] = sgtb->sg_erase;
 	tios.c_cc[VKILL] = sgtb->sg_kill;
 	if (sgtb->sg_flags & TR_XTABS)

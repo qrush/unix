@@ -1,7 +1,7 @@
 /* fp.c - PDP-11 floating point operations
  *
- * $Revision: 2.23 $
- * $Date: 1999/12/30 02:11:16 $
+ * $Revision: 2.24 $
+ * $Date: 2008/05/15 07:52:45 $
  */
 
 /* The floating-point emulation code here is just enough to allow
@@ -13,7 +13,11 @@
  */
 #include "defines.h"
 #include <math.h>
+#ifdef HAVE_POWF
 float powf(float x, float y);	/* FreeBSD 3.X no longer defines this */
+#else
+# define powf(x,y) (float)pow((double)x, (double)y)
+#endif
 
 #define XUL	170141163178059628080016879768632819712.0 /* Biggest float */
 

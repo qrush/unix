@@ -1,8 +1,8 @@
 /* cpu.c - this holds the main loop for the emulator, plus generic
  * functions to deal with exceptional instructions and events
  *
- * $Revision: 1.25 $
- * $Date: 2002/06/10 11:41:40 $
+ * $Revision: 1.26 $
+ * $Date: 2008/05/15 07:52:45 $
  */
 #include "defines.h"
 #include <unistd.h>
@@ -69,6 +69,7 @@ void run() {
 		regs[0], regs[1], regs[2], regs[3],
 		regs[4], regs[5], regs[6]));
 	   TrapDebug((dbg_file, "NZVC1 %d%d%d%d\n",CC_N,CC_Z,CC_V,CC_C));
+	   fflush(dbg_file);
 	}
 	regs[PC] += 2; itab[ir >> 6] ();
 	if ((Sighead!=NULL) && (sigrunner!=NULL)) (void) (*sigrunner)();
