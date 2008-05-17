@@ -109,12 +109,15 @@ unix usyms : $(KSRCS)
 	@mv a.out unix
 
 # build a prototype filesystems
-root usr protofs : init.0405 sh.0405
+root usr protofs : $(ALLSRCS) init.0405 sh.0405
 	@echo Building filesystems...
 	@$(TREECOPY) ../fs/root .
 	@$(TREECOPY) ../fs/new/etc root
 	@$(TREECOPY) ../fs/usr .
 	@$(TREECOPY) ../fs/new/usr .
+	@$(TREECOPY) ../src usr
+	@cp init.s sh.s usr/src/cmd
+	@cp $(KSRCS) usr/sys
 	@cp init.0405 root/etc/init
 	@cp sh.0405 root/bin/sh
 	@touch protofs
