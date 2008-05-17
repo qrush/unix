@@ -1,6 +1,6 @@
-/* pdp11_ke.c: 
+/* pdp11_ke.c: PDP-11/20 extended arithmetic element
 
-   Copyright (c) 1993-2005, Robert M Supnik
+   Copyright (c) 1993-2008, Robert M Supnik
 
    Permission is hereby granted, free of charge, to any person obtaining a
    copy of this software and associated documentation files (the "Software"),
@@ -16,281 +16,333 @@
    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
    ROBERT M SUPNIK BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-   IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+   IN AN ke_ACTION OF CONTRke_ACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    Except as contained in this notice, the name of Robert M Supnik shall not be
    used in advertising or otherwise to promote the sale, use or other dealings
    in this Software without prior written authorization from Robert M Supnik.
 
-   Some of this code is lifted directly from Tim Shoppa's KE11A code in apout,
-   Brad Parker <brad@heeltoe.com> 5/2008
+   This code draws on prior work by Tim Shoppa and Brad Parker. My thanks for
+   to them for letting me use their work.
 
-   01-May-08    JBP     cloned from pdp11_pt.c
+   EAE          PDP-11/20 extended arithmetic element
 */
 
 #include "pdp11_defs.h"
-//#define PT_DIS          0
-extern int32 int_req[IPL_HLVL];
 
-static int32 AC;
-static int32 MQ;
-static int32 SC;
-static int32 SR;
+#define GET_SIGN_L(v)   (((v) >> 31) & 1)
+#define GET_SIGN_W(v)   (((v) >> 15) & 1)
+#define GET_SIGN_B(v)   (((v) >> 7) & 1)
+
+/* KE11A I/O address offsets 0177300 - 0177316 */
+
+#define KE_DIV          000                             /* divide */
+#define KE_AC	        002                             /* accumulator */
+#define KE_MQ	        004                             /* MQ */
+#define KE_MUL	        006                             /* multiply */
+#define KE_SC	        010                             /* step counter */
+#define KE_NOR	        012                             /* normalize */
+#define KE_LSH	        014                             /* logical shift */
+#define KE_ASH	        016                             /* arithmetic shift */
+
+/* Status register */
+
+#define KE_SR_C         0001                            /* carry */
+#define KE_SR_SXT       0002                            /* AC<15:0> = MQ<15> */
+#define KE_SR_Z         0004                            /* AC = MQ = 0 */
+#define KE_SR_MQZ       0010                            /* MQ = 0 */
+#define KE_SR_ACZ       0020                            /* AC = 0 */
+#define KE_SR_ACM1      0040                            /* AC = 177777 */
+#define KE_SR_N         0100                            /* last op negative */
+#define KE_SR_NXV       0200                            /* last op ovf XOR N */
+#define KE_SR_DYN       (KE_SR_SXT|KE_SR_Z|KE_SR_MQZ|KE_SR_ACZ|KE_SR_ACM1)
+
+/* Visible state */
+
+uint32 ke_AC = 0;
+uint32 ke_MQ = 0;
+uint32 ke_SC = 0;
+uint32 ke_SR = 0;
 
 DEVICE ke_dev;
 t_stat ke_rd (int32 *data, int32 PA, int32 access);
 t_stat ke_wr (int32 data, int32 PA, int32 access);
-t_stat ke_svc (UNIT *uptr);
 t_stat ke_reset (DEVICE *dptr);
-t_stat ke_attach (UNIT *uptr, char *ptr);
-t_stat ke_detach (UNIT *uptr);
-
+uint32 ke_set_SR (void);
 
 DIB ke_dib = { IOBA_KE, IOLN_KE, &ke_rd, &ke_wr, 0 };
 
 UNIT ke_unit = {
-	UDATA (&ke_svc, UNIT_DISABLE, 0)
+	UDATA (NULL, UNIT_DISABLE, 0)
     };
 
 REG ke_reg[] = {
-      { ORDATA (KE_AC, AC, 16) },
-      { ORDATA (KE_MQ, MQ, 16) },
-      { ORDATA (KE_SC, SC, 16) },
-      { ORDATA (KE_SR, SR, 16) },
+    { ORDATA (AC, ke_AC, 16) },
+    { ORDATA (MQ, ke_MQ, 16) },
+    { ORDATA (SC, ke_SC, 6) },
+    { ORDATA (SR, ke_SR, 8) },
     { NULL }
     };
 
 MTAB ke_mod[] = {
     { MTAB_XTD|MTAB_VDV, 0, "ADDRESS", NULL,
       NULL, &show_addr, NULL },
-    { MTAB_XTD|MTAB_VDV, 0, "VECTOR", NULL,
-      NULL, &show_vec, NULL },
     { 0 }
     };
 
 DEVICE ke_dev = {
     "KE", &ke_unit, ke_reg, ke_mod,
-    1, 10, 31, 1, DEV_RDX, 8,
+    1, 10, 31, 1, 8, 8,
     NULL, NULL, &ke_reset,
-    NULL, &ke_attach, &ke_detach,
-    &ke_dib, DEV_DISABLE | /*PT_DIS |*/ DEV_UBUS | DEV_QBUS
+    NULL, NULL, NULL,
+    &ke_dib, DEV_DISABLE | DEV_DIS | DEV_UBUS
     };
 
-/* KE11A I/O address offsets 0177300 - 0177316 */
-
-#define KE_DIV	000/* Divide */
-#define KE_AC	002/* Accumulator */
-#define KE_MQ	004/* MQ */
-#define KE_MUL	006/* Multiply */
-#define KE_SC	010/* Step counter */
-#define KE_SR	011/* Status register */
-#define KE_NOR	012/* Normalize */
-#define KE_LSH	014/* Logical shift */
-#define KE_ASH	016/* Arithmetic shift */
-
-/* Stolen from Tim Shoppa's KE11A in apout */
-void set_SR(void)
-{
-SR = SR & 0301;/* clear the result bits we can set here */
-if (((MQ & 0100000) == 0) && (AC == 0)) SR = SR | 002;
-if (((MQ & 0100000) == 0100000) && (AC == 0177777)) SR = SR | 002;
-
-if ((AC == 0) && (MQ == 0)) SR = SR | 0004;
-if (MQ == 0) SR = SR | 0010;
-if (AC == 0) SR = SR | 0020;
-if (AC == 0177777) SR = SR | 0040;
-}
+/* KE read - reads are always 16b, to even addresses */
 
 t_stat ke_rd (int32 *data, int32 PA, int32 access)
-{
-switch (PA & 077) {                               /* decode PA<5:0> */
+{  
+switch (PA & 016) {                                     /* decode PA<3:1> */
 
-    case KE_AC:
-        *data = AC;
-        return SCPE_OK;
-    case KE_MQ:
-        *data = MQ;
-        return SCPE_OK;
-    case KE_NOR:
-        *data = SC;
-        return SCPE_OK;
-    case KE_SC:
-        set_SR();
-        *data = (SR << 8) | SC;
-        return SCPE_OK;
-    case KE_SR:
-        set_SR();
-        *data = (SR << 8);
-        return SCPE_OK;
+    case KE_AC:                                         /* AC */
+        *data = ke_AC;
+        break;
 
-    case KE_DIV:
-    case KE_MUL:
-    case KE_LSH:
-    case KE_ASH:
+    case KE_MQ:                                         /* MQ */
+        *data = ke_MQ;
+        break;
+
+    case KE_NOR:                                        /* norm (SC) */
+        *data = ke_SC;
+        break;
+
+    case KE_SC:                                         /* SR/SC */
+        *data = (ke_set_SR () << 8) | ke_SC;
+        break;
+
+    default:
         *data = 0;
-        return SCPE_OK;
+        break;
         }
 
-return SCPE_NXM;                                        /* can't get here */
+return SCPE_OK;
 }
+
+/* KE write - writes trigger actual arithmetic */
 
 t_stat ke_wr (int32 data, int32 PA, int32 access)
 {
-  int32 divisor, quotient, remainder;
-  int32 dividend, product;
-  int32 oldMQ;
+int32 quo, t32, sout, sign;
+uint32 absd, absr;
 
-switch (PA & 077) {                               /* decode PA<5:0> */
+switch (PA & 017) {                                     /* decode PA<3:0> */
 
-    case KE_DIV:
-      SC = 0;
-      dividend = (AC << 16) | MQ;
-      divisor = data;
-      if (divisor >> 15) divisor = divisor | ~077777;
-      quotient = dividend / divisor;
-      MQ = quotient & 0177777;
-      remainder = dividend % divisor;
-      AC = remainder & 0177777;
-      SR = SR & 076;
-      if ((quotient > 32767) || (quotient < -32768)) {	/* did we overflow? */
-	if (dividend < 0) SR = SR | 0100;
-	else SR = SR | 0200;
-      } else {
-	if (quotient < 0) SR = SR | 0300;
-      }
-      return SCPE_OK;
+    case KE_DIV:                                        /* divide */
+        if ((access == WRITEB) && GET_SIGN_B (data))    /* byte write? */
+            data |= 0177400;                            /* sext data to 16b */
+        ke_SR = 0;                                      /* N = V = C = 0 */
+        t32 = (ke_AC << 16) | ke_MQ;                    /* 32b divd */
+        if (GET_SIGN_W (ke_AC))                         /* sext (divd) */
+            t32 = t32 | ~017777777777;
+        if (GET_SIGN_W (data))                          /* sext (divr) */
+            data = data | ~077777;
+        absd = abs (t32);
+        absr = abs (data);
+        if ((absd >> 16) >= absr) {                     /* divide fails? */
 
-    case KE_AC:
-      AC = data;
-      if ((access == WRITEB) & (data >> 7))
-	AC = AC | 0177400;
-      return SCPE_OK;
+/* Based on the documentation, here's what has happened:
 
-    case KE_AC + 1:
-      printf("write to AC+1; data=%o", data);
-      AC = (AC & 0377) | (data << 8);
-      return SCPE_OK;
+   SC = 16.
+   SR<c> = (AC<15> == data<15>)
+   AC'MQ = (AC'MQ << 1) | SR<c>
+   AC = SR<c>? AC - data: AC + data
+   SR<c> = (AC<15> == data<15>)
+   SC = SC - 1
+   stop
+*/
 
-    case KE_MQ:
-      MQ = data;
-      if ((access == WRITEB) & (data >> 7)) MQ = MQ | 0177400;
-      if (MQ >> 15) AC = 0177777;
-      else AC = 0;
-      return SCPE_OK;
+            sign = GET_SIGN_W (ke_AC ^ data) ^ 1;       /* 1 if signs match */
+            ke_AC = (ke_AC << 1) | (ke_MQ >> 15);
+            ke_AC = (sign? ke_AC - data: ke_AC + data) & DMASK;
+            ke_MQ = ((ke_MQ << 1) | sign) & DMASK;
+            if (GET_SIGN_W (ke_AC ^ data) == 0)         /* 0 if signs match */
+                ke_SR |= KE_SR_C;            
+            ke_SC = 15;                                 /* SC clocked once */
+            ke_SR |= KE_SR_NXV;                         /* set overflow */
+           }
+        else {
+            ke_SC = 0;
+            quo = t32 / data;
+            ke_MQ = quo & DMASK;                        /* MQ has quo */
+            ke_AC = (t32 % data) & DMASK;               /* AC has rem */
+            if ((quo > 32767) || (quo < -32768))        /* quo overflow? */
+                ke_SR |= KE_SR_NXV;                     /* set overflow */
+            }
+        if (GET_SIGN_W (ke_MQ))                         /* result negative? */
+            ke_SR ^= (KE_SR_N | KE_SR_NXV);             /* N = 1, compl NXV */
+        break;
 
-    case KE_MQ + 1:
-      printf("write to MQ+1; data=%o", data);
-      MQ = (MQ & 0377) | (data << 8);
-      if (MQ >> 15) AC = 0177777;
-      else AC = 0;
-      return SCPE_OK;
+    case KE_AC:                                         /* AC */
+        if ((access == WRITEB) && GET_SIGN_B (data))    /* byte write? */
+            data |= 0177400;                            /* sext data to 16b */
+        ke_AC = data;
+        break;
 
-    case KE_MUL:
-      SC = 0;
-      if (data >> 15) data = data | ~077777;
-      if (MQ >> 15) MQ = MQ | ~077777;
-      product = MQ * data;
-      MQ = product & 0177777;
-      AC = (product >> 16) & 0177777;
-      SR = SR & 076;
-      if (AC >> 15) SR = SR | 0300;	/* set sign bit if necessary */
-      return SCPE_OK;
+    case KE_AC + 1:                                     /* AC odd byte */
+        ke_AC = (ke_AC & 0377) | (data << 8);
+        break;
 
-    case KE_SC:
-      if (access == WRITEB) return SCPE_OK;/* byte writes are no-ops */
-      SR = (data >> 8) & 0177777;
-      SC = data & 0000077;
-      return SCPE_OK;
+    case KE_MQ:                                         /* MQ */
+        if ((access == WRITEB) && GET_SIGN_B (data))    /* byte write? */
+            data |= 0177400;                            /* sext data to 16b */
+        ke_MQ = data;
+        if (GET_SIGN_W (ke_MQ))                         /* sext MQ to AC */
+            ke_AC = 0177777;
+        else ke_AC = 0;
+        break;
 
-    case KE_SR:
-      return SCPE_OK;			/* this is a No-op */
+    case KE_MQ + 1:                                     /* MQ odd byte */
+        ke_MQ = (ke_MQ & 0377) | (data << 8);
+        if (GET_SIGN_W (ke_MQ))                         /* sext MQ to AC */
+            ke_AC = 0177777;
+        else ke_AC = 0;
+        break;
 
-    case KE_NOR:			/* Normalize */
-      MQ = (AC << 16) | MQ;		/* 32-bit number to normalize in MQ */
-      for (SC = 0; SC < 31; SC++) {
-	if (MQ == (0140000 << 16))
-	  break;
-	if ((((MQ >> 30) & 3) == 1) || (((MQ >> 30) & 3) == 2))
-	  break;
-	MQ = MQ << 1;
-      }
-      printf("SC = %o\r\n", SC);
-      AC = (MQ >> 16) & 0177777;
-      MQ = MQ & 0177777;
-      return SCPE_OK;
+    case KE_MUL:                                        /* multiply */
+        if ((access == WRITEB) && GET_SIGN_B (data))    /* byte write? */
+            data |= 0177400;                            /* sext data to 16b */
+        ke_SC = 0;
+        if (GET_SIGN_W (data))                          /* sext operands */
+            data |= ~077777;
+        t32 = ke_MQ;
+        if (GET_SIGN_W (t32))
+            t32 |= ~077777;
+        t32 = t32 * data;
+        ke_AC = (t32 >> 16) & DMASK;
+        ke_MQ = t32 & DMASK;
+        if (GET_SIGN_W (ke_AC))                         /* result negative? */
+            ke_SR = KE_SR_N | KE_SR_NXV;                /* N = 1, V = C = 0 */
+        else ke_SR = 0;                                 /* N = 0, V = C = 0 */
+        break;
 
-    case KE_LSH:			/* Logical shift */
-       MQ=(AC<<16)|MQ; 			/* Form a temporary 32-bit entity */
-       oldMQ=MQ & 0x80000000;		/* Save the sign bit for later */
-       SR=SR&0176; 			/* Clear overflow & carry bits */
-       data=data & 077;			/* Convert data from 6-bit */
-       if (data>31) {		
-	 data=64-data;			/* Shift in a -ve direction */
-         SR=SR|((MQ>>(data-1))&1);	/* Get the bit that went off the end */
-         MQ=MQ>>data; 			/* and do the right shift */
-       } else {				/* Else left shift */
-	 if ((MQ<<(data-1))&0x80000000) SR|=1; /* Get the bit off the end */
-	 MQ=MQ<<data;			/* and do the left shift */
-       }
-       oldMQ= oldMQ ^ MQ;		/* Any difference in sign bit? */
-       if (oldMQ & 0x80000000) SR|=0200;/* Yes, set the overflow bit */
-       AC=(MQ>>16)&0177777;		/* Save result in AC and MQ */
-       MQ=MQ&0177777;
-       set_SR();
+    case KE_SC:                                         /* SC */
+        if (access == WRITEB)                           /* ignore byte writes */
+            return SCPE_OK;
+        ke_SR = (data >> 8) & (KE_SR_NXV|KE_SR_N|KE_SR_C);
+        ke_SC = data & 077;
+        break;
+
+    case KE_NOR:                                        /* normalize */
+        for (ke_SC = 0; ke_SC < 31; ke_SC++) {          /* max 31 shifts */
+	        if (((ke_AC == 0140000) && (ke_MQ == 0)) || /* special case? */
+                (GET_SIGN_W (ke_AC ^ (ke_AC << 1))))    /* AC<15> != AC<14>? */
+	            break;
+            ke_AC = ((ke_AC << 1) | (ke_MQ >> 15)) & DMASK;
+            ke_MQ = (ke_MQ << 1) & DMASK;
+            }
+        if (GET_SIGN_W (ke_AC))                         /* result negative? */
+            ke_SR = KE_SR_N | KE_SR_NXV;                /* N = 1, V = C = 0 */
+        else ke_SR = 0;                                 /* N = 0, V = C = 0 */
+        break;
+
+    case KE_LSH:                                        /* logical shift */
+        ke_SC = 0;
+        ke_SR = 0;                                      /* N = V = C = 0 */
+        data = data & 077;                              /* 6b shift count */
+        if (data != 0) {
+            t32 = (ke_AC << 16) | ke_MQ;                /* 32b operand */
+            if (sign = GET_SIGN_W (ke_AC))              /* sext operand */
+                t32 = t32 | ~017777777777;
+            if (data < 32) {                            /* [1,31] - left */
+                sout = (t32 >> (32 - data)) | (-sign << data);
+                t32 = ((uint32) t32) << data;           /* do shift (zext) */
+                if (sout != (GET_SIGN_L (t32)? -1: 0))  /* bits lost = sext? */
+                    ke_SR |= KE_SR_NXV;                 /* no, V = 1 */
+                if (sout & 1)                           /* last bit lost = 1? */
+                    ke_SR |= KE_SR_C;                   /* yes, C = 1 */
+                }
+            else {                                      /* [32,63] = -32,-1 */
+                if ((t32 >> (63 - data)) & 1)           /* last bit lost = 1? */
+                    ke_SR |= KE_SR_C;                   /* yes, C = 1*/
+                t32 = (data != 32)? ((uint32) t32) >> (64 - data): 0;
+                }
+           ke_AC = (t32 >> 16) & DMASK;
+           ke_MQ = t32 & DMASK;
+           }
+       if (GET_SIGN_W (ke_AC))                          /* result negative? */
+           ke_SR ^= (KE_SR_N | KE_SR_NXV);              /* N = 1, compl NXV */
+       break;
+
+/* EAE ASH differs from EIS ASH and cannot use the same overflow test */
+
+    case KE_ASH:                                        /* arithmetic shift */
+        ke_SC = 0;
+        ke_SR = 0;                                      /* N = V = C = 0 */
+        data = data & 077;                              /* 6b shift count */
+        if (data != 0) {
+            t32 = (ke_AC << 16) | ke_MQ;                /* 32b operand */
+            if (sign = GET_SIGN_W (ke_AC))              /* sext operand */
+                t32 = t32 | ~017777777777;
+            if (data < 32) {                            /* [1,31] - left */
+                sout = (t32 >> (31 - data)) | (-sign << data);
+                t32 = (t32 & 020000000000) | ((t32 << data) & 017777777777);
+                if (sout != (GET_SIGN_L (t32)? -1: 0))  /* bits lost = sext? */
+                    ke_SR |= KE_SR_NXV;                 /* no, V = 1 */
+                if (sout & 1)                           /* last bit lost = 1? */
+                    ke_SR |= KE_SR_C;                   /* yes, C = 1 */
+                }
+            else {                                      /* [32,63] = -32,-1 */
+                if ((t32 >> (63 - data)) & 1)           /* last bit lost = 1? */
+                    ke_SR |= KE_SR_C;                   /* yes, C = 1 */
+                t32 = (data != 32)?                     /* special case 32 */
+                    (((uint32) t32) >> (64 - data)) | (-sign << (data - 32)):
+                    -sign;
+                }
+           ke_AC = (t32 >> 16) & DMASK;
+           ke_MQ = t32 & DMASK;
+           }
+       if (GET_SIGN_W (ke_AC))                          /* result negative? */
+           ke_SR ^= (KE_SR_N | KE_SR_NXV);              /* N = 1, compl NXV */
+       break;
+
+    default:                                            /* all others ignored */
        return SCPE_OK;
+    }                                                   /* end switch PA */
 
-    case KE_ASH:			/* Arithmetic shift */
-       MQ=(AC<<16)|MQ; 			/* Form a temporary 32-bit entity */
-       oldMQ=MQ & 0x80000000;		/* Save the sign bit for later */
-       SR=SR&0176; 			/* Clear overflow & carry bits */
-       data=data & 077;			/* Convert data from 6-bit */
-       if (data>31) {		
-	 data=64-data;			/* Shift in a -ve direction */
-	 divisor=1 << data;		/* Work out the dividing factor */
-         SR=SR|((MQ>>(data-1))&1);	/* Get the bit that went off the end */
-         MQ=MQ/divisor; 		/* and do the right shift */
-       } else {				/* Else left shift */
-	 product=1 << data;		/* Work out the multiplying factor */
-	 if ((MQ<<(data-1))&0x80000000) SR|=1; /* Get the bit off the end */
-	 MQ=MQ*product;			/* and do the left shift */
-       }
-       oldMQ= oldMQ ^ MQ;		/* Any difference in sign bit? */
-       if (oldMQ & 0x80000000) SR|=0200;/* Yes, set the overflow bit */
-       AC=(MQ>>16)&0177777;		/* Save result in AC and MQ */
-       MQ=MQ&0177777;
-       set_SR();
-       return SCPE_OK;
-
-    }                                               /* end switch PA */
-
-return SCPE_NXM;                                        /* can't get here */
-}
-
-/* service */
-
-t_stat ke_svc (UNIT *uptr)
-{
+ke_set_SR ();
 return SCPE_OK;
 }
 
-/* support routines */
+/* Update status register based on current AC, MQ */
+
+uint32 ke_set_SR (void)
+{
+ke_SR &= ~KE_SR_DYN;                                    /* clr dynamic bits */
+if (ke_MQ == 0)                                         /* MQ == 0? */
+    ke_SR |= KE_SR_MQZ;
+if (ke_AC == 0) {                                       /* AC == 0? */
+    ke_SR |= KE_SR_ACZ;
+    if (GET_SIGN_W (ke_MQ) == 0)                        /* MQ positive? */
+        ke_SR |= KE_SR_SXT;
+    if (ke_MQ == 0)                                     /* MQ zero? */
+        ke_SR |= KE_SR_Z;
+    }
+if (ke_AC == 0177777) {                                 /* AC == 177777? */
+    ke_SR |= KE_SR_ACM1;
+    if (GET_SIGN_W (ke_MQ) == 1)                        /* MQ negative? */
+        ke_SR |= KE_SR_SXT;
+    }
+return ke_SR;
+}
+
+/* Reset routine */
 
 t_stat ke_reset (DEVICE *dptr)
 {
-ke_unit.buf = 0;
-sim_cancel (&ke_unit);                                 /* deactivate unit */
+ke_SR = 0;
+ke_SC = 0;
+ke_AC = 0;
+ke_MQ = 0;
 return SCPE_OK;
-}
-
-t_stat ke_attach (UNIT *uptr, char *cptr)
-{
-t_stat reason;
-reason = attach_unit (uptr, cptr);
-return reason;
-}
-
-t_stat ke_detach (UNIT *uptr)
-{
-return detach_unit (uptr);
 }
