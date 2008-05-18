@@ -141,9 +141,9 @@ tape : protofs
 	@echo Building tape image...
 	@$(MKTAPE) root root/bin/* root/etc/*
 
-install : rf0.dsk rk0.dsk tape
+install : rf0.dsk rk0.dsk
 	@echo Installing...
-	@cp rf0.dsk rk0.dsk tape ../images
+	@cp rf0.dsk rk0.dsk ../images
 	
 # clean intermediate files
 clean :
