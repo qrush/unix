@@ -1,0 +1,1188 @@
+
+
+
+
+
+
+
+
+
+      AA TTuuttoorriiaall IInnttrroodduuccttiioonn ttoo tthhee UUNNIIXX TTeexxtt EEddiittoorr
+
+
+
+                      _B_. _W_. _K_e_r_n_i_g_h_a_n
+
+           Bell Laboratories, Murray Hill, N. J.
+
+
+IInnttrroodduuccttiioonn
+
+     _E_d  is  a ``text editor'', that is, an interactive pro-
+gram for creating and modifying ``text'',  using  directions
+provided by a user at a terminal.  The text is often a docu-
+ment like this one, or a program or perhaps data for a  pro-
+gram.
+
+     This  introduction  is  meant  to simplify learning _e_d_.
+The recommended way to learn _e_d is to  read  this  document,
+simultaneously using _e_d to follow the examples, then to read
+the description in section I of the  UNIX  manual,  all  the
+while  experimenting  with _e_d_.  (Solicitation of advice from
+experienced users is also useful.)
+
+     Do the exercises!  They cover material  not  completely
+discussed  in  the  actual text.  An appendix summarizes the
+commands.
+
+DDiissccllaaiimmeerr
+
+     This is an introduction and a tutorial.  For this  rea-
+son,  no  attempt  is  made to cover more than a part of the
+facilities that _e_d offers (although this  fraction  includes
+the  most useful and frequently used parts).  Also, there is
+not enough space to explain basic UNIX procedures.  We  will
+assume  that  you  know  how to log on to UNIX, and that you
+have at least a vague understanding of what a file is.
+
+     You must also know what character to type as  the  end-
+of-line  on your particular terminal.  This is a ``newline''
+on Model  37  Teletypes,  and  ``return''  on  most  others.
+Throughout, we will refer to this character, whatever it is,
+as ``newline''.
+
+GGeettttiinngg SSttaarrtteedd
+
+     We'll assume that you have logged in to UNIX and it has
+just said ``%''.  The easiest way to get _e_d is to type
+   ed   (followed by a newline)
+You  are  now ready to go - _e_d is waiting for you to tell it
+what to do.
+
+
+
+
+
+
+
+
+
+                             -2-
+
+
+CCrreeaattiinngg TTeexxtt -- tthhee AAppppeenndd ccoommmmaanndd ````aa''''
+
+     As our first problem, suppose we want  to  create  some
+text  starting from scratch.  Perhaps we are typing the very
+first draft of a paper; clearly it will have to start  some-
+where,  and  undergo modifications later.  This section will
+show how to get some text in, just to  get  started.   Later
+we'll talk about how to change it.
+
+     When  _e_d  is  first  started, it is rather like working
+with a blank piece of paper - there is no text  or  informa-
+tion present.  This must be supplied by the person using _e_d_;
+it is usually done by typing in the text, or by  reading  it
+into  _e_d from a file.  We will start by typing in some text,
+and return shortly to how to read files.
+
+     First a bit of terminology.  In  _e_d  jargon,  the  text
+being  worked  on is said to be ``kept in a buffer.''  Think
+of the buffer as a work space, if you like, or simply as the
+information that you are going to be editing.  In effect the
+buffer is like the piece of paper, on which  we  will  write
+things, then change some of them, and finally file the whole
+thing away for another day.
+
+     The user tells _e_d what to do  to  his  text  by  typing
+instructions  called ``commands.''  Most commands consist of
+a single letter, which must be typed in  lower  case.   Each
+command is typed on a separate line.  (Sometimes the command
+is preceded by information about what line or lines of  text
+are  to  be  affected  - we will discuss these shortly.)  _E_d
+makes no response to most commands - there is  no  prompting
+or typing of messages like ``ready''.  (This silence is pre-
+ferred by experienced users,  but  sometimes  a  hangup  for
+beginners.)
+
+     The first command is _a_p_p_e_n_d_, written as the letter
+   a
+all by itself.  It means ``append (or add) text lines to the
+buffer, as I type them in.''  Appending is rather like writ-
+ing fresh material on a piece of paper.
+
+     So to enter lines of text into the buffer, we just type
+an ``a'' followed by a newline, followed  by  the  lines  of
+text we want, like this:
+   a
+   Now is the time
+   for all good men
+   to come to the aid of their party.
+   ..
+
+     The  only  way to stop appending is to type a line that
+contains only a period.  The ``..'' is used to tell  _e_d  that
+we  have finished appending.  (Even experienced users forget
+that terminating  ``..''   sometimes.   If  _e_d  seems  to  be
+
+
+
+
+
+
+
+
+
+                             -3-
+
+
+ignoring you, type an extra line with just ``..'' on it.  You
+may then find you've added some garbage lines to your  text,
+which you'll have to take out later.)
+
+     After the append command has been done, the buffer will
+contain the three lines
+   Now is the time
+   for all good men
+   to come to the aid of their party.
+The ``a'' and ``..'' aren't there, because they are not text.
+
+     To  add  more  text to what we already have, just issue
+another ``a'' command, and continue typing.
+
+EErrrroorr MMeessssaaggeess -- ````??''''
+
+     If at any time you make an error in  the  commands  you
+type to _e_d_, it will tell you by typing
+   ?
+This  is  about  as cryptic as it can be, but with practice,
+you can usually figure out how you goofed.
+
+WWrriittiinngg tteexxtt oouutt aass aa ffiillee -- tthhee WWrriittee ccoommmmaanndd ````ww''''
+
+     It's likely that we'll want to save our text for  later
+use.   To  write out the contents of the buffer onto a file,
+we use the _w_r_i_t_e command
+   w
+followed by the filename we want to  write  on.   This  will
+copy the buffer's contents onto the specified file (destroy-
+ing any previous information on the file).  To save the text
+on a file named ``junk'', for example, type
+   w junk
+Leave  a  space  between  ``w''  and the file name.  _E_d will
+respond by printing the number of characters it  wrote  out.
+In our case, _e_d would respond with
+   68
+(Remember  that  blanks and the newline character at the end
+of each line are included in the character count.)   Writing
+a file just makes a copy of the text - the buffer's contents
+are not disturbed, so we can go on adding lines to it.  This
+is an important point.  _E_d at all times works on a copy of a
+file, not the file itself.  No change in the contents  of  a
+file  takes  place until you give a ``w'' command.  (Writing
+out the text onto a file from time to time as  it  is  being
+created  is  a  good idea, since if the system crashes or if
+you make some horrible mistake, you will lose all  the  text
+in  the  buffer but any text that was written onto a file is
+relatively safe.)
+
+LLeeaavviinngg eedd -- tthhee QQuuiitt ccoommmmaanndd ````qq''''
+
+     To terminate a session with _e_d_, save  the  text  you're
+working  on  by  writing  it  onto  a  file  using the ``w''
+
+
+
+
+
+
+
+
+
+                             -4-
+
+
+command, and then type the command
+   q
+which stands for _q_u_i_t_.  The system will respond with  ``%''.
+At this point your buffer vanishes, with all its text, which
+is why you want to write it out before quitting.
+
+EExxeerrcciissee 11::
+
+     Enter _e_d and create some text using
+   a
+   ...li
+   ..
+Write it out using ``w''.  Then leave _e_d with the ``q'' com-
+mand,  and  print  the  file, to see that everything worked.
+(To print a file, say
+   pr filename
+or
+   cat filename
+in response to ``%''.  Try both.)
+
+RReeaaddiinngg tteexxtt ffrroomm aa ffiillee -- tthhee EEddiitt ccoommmmaanndd ````ee''''
+
+     A common way to get text into the buffer is to read  it
+from a file in the file system.  This is what you do to edit
+text that you saved with the ``w''  command  in  a  previous
+session.  The _e_d_i_t command ``e'' fetches the entire contents
+of a file into the buffer.  So if we  had  saved  the  three
+lines  ``Now is the time'', etc., with a ``w'' command in an
+earlier session, the _e_d command
+   e junk
+would fetch the entire contents of the  file  ``junk''  into
+the buffer, and respond
+   68
+which  is the number of characters in ``junk''.  _I_f _a_n_y_t_h_i_n_g
+_w_a_s _a_l_r_e_a_d_y _i_n _t_h_e _b_u_f_f_e_r_, _i_t _i_s _d_e_l_e_t_e_d _f_i_r_s_t_.
+
+     If we use the ``e'' command to read  a  file  into  the
+buffer,  then we need not use a file name after a subsequent
+``w'' command; _e_d remembers the last file name  used  in  an
+``e''  command,  and  ``w'' will write on this file.  Thus a
+common way to operate is
+   ed
+   e file
+   [editing session]
+   w
+   q
+
+     You can find out at any  time  what  file  name  _e_d  is
+remembering  by typing the _f_i_l_e command ``f''.  In our case,
+if we typed
+   f
+_e_d would reply
+   junk
+
+
+
+
+
+
+
+
+
+
+                             -5-
+
+
+RReeaaddiinngg tteexxtt ffrroomm aa ffiillee -- tthhee RReeaadd ccoommmmaanndd ````rr''''
+
+     Sometimes we want to read a file into the buffer  with-
+out destroying anything that is already there.  This is done
+by the _r_e_a_d command ``r''.  The command
+   r junk
+will read the file ``junk'' into the buffer; it adds  it  to
+the end of whatever is already in the buffer.  So if we do a
+read after an edit:
+   e junk
+   r junk
+the buffer will contain _t_w_o copies of the text (six  lines).
+   Now is the time
+   for all good men
+   to come to the aid of their party.
+   Now is the time
+   for all good men
+   to come to the aid of their party.
+Like  the  ``w'' and ``e'' commands, ``r'' prints the number
+of characters read in, after the reading operation  is  com-
+plete.
+
+     Generally speaking, ``r'' is much less used than ``e''.
+
+EExxeerrcciissee 22::
+
+     Experiment with the ``e'' command  -  try  reading  and
+printing  various  files.  You may get an error ``?'', typi-
+cally because you spelled the file name wrong.   Try  alter-
+nately  reading  and  appending  to see that they work simi-
+larly.  Verify that
+   ed filename
+is exactly equivalent to
+   ed
+   e filename
+What does
+   f filename
+do?
+
+PPrriinnttiinngg tthhee ccoonntteennttss ooff tthhee  bbuuffffeerr  --  tthhee  PPrriinntt  ccoommmmaanndd
+````pp''''
+
+     To  _p_r_i_n_t  or list the contents of the buffer (or parts
+of it) on the terminal, we use the print command
+   p
+The way this is done is as follows.  We  specify  the  lines
+where we want printing to begin and where we want it to end,
+separated by a comma, and  followed  by  the  letter  ``p''.
+Thus  to  print the first two lines of the buffer, for exam-
+ple, (that is, lines 1 through 2) we say
+   1,2p (starting line=1, ending line=2 p)
+_E_d will respond with
+   Now is the time
+   for all good men
+
+
+
+
+
+
+
+
+
+                             -6-
+
+
+     Suppose we want to print _a_l_l the lines in  the  buffer.
+We could use ``1,3p'' as above if we knew there were exactly
+3 lines in the buffer.  But in general, we  don't  know  how
+many  there  are, so what do we use for the ending line num-
+ber?  _E_d provides a shorthand symbol for  ``line  number  of
+last  line in buffer'' - the dollar sign ``$''.  Use it this
+way:
+   1,$p
+This will print _a_l_l the lines in the buffer (line 1 to  last
+line.)   If  you want to stop the printing before it is fin-
+ished, push the DEL or Delete key; _e_d will type
+   ?
+and wait for the next command.
+
+     To print the _l_a_s_t line of the buffer, we could use
+   $,$p
+but _e_d lets us abbreviate this to
+   $p
+We can print any single line by typing the line number  fol-
+lowed by a ``p''.  Thus
+   1p
+produces the response
+   Now is the time
+which is the first line of the buffer.
+
+     In  fact,  _e_d  lets  us abbreviate even further: we can
+print any single line by typing _j_u_s_t the line  number  -  no
+need to type the letter ``p''.  So if we say
+   $
+_e_d will print the last line of the buffer for us.
+
+     We can also use ``$'' in combinations like
+   $-1,$p
+which  prints  the last two lines of the buffer.  This helps
+when we want to see how far we got in typing.
+
+EExxeerrcciissee 33::
+
+     As before, create some text using  the  append  command
+and  experiment  with the ``p'' command.  You will find, for
+example, that you can't print line 0 or a  line  beyond  the
+end  of  the  buffer, and that attempts to print a buffer in
+reverse order by saying
+   3,1p
+don't work.
+
+TThhee ccuurrrreenntt lliinnee -- ````DDoott'''' oorr ````..''''
+
+     Suppose our buffer still  contains  the  six  lines  as
+above, that we have just typed
+   1,3p
+and _e_d has printed the three lines for us.  Try typing just
+   p    (no line numbers).
+This will print
+
+
+
+
+
+
+
+
+
+                             -7-
+
+
+   to come to the aid of their party.
+which  is  the  third line of the buffer.  In fact it is the
+last (most recent) line that we  have  done  anything  with.
+(We  just  printed  it!)   We  can repeat this ``p'' command
+without line numbers, and it will continue to print line  3.
+
+     The  reason  is  that _e_d maintains a record of the last
+line that we did anything to (in this case, line 3, which we
+just  printed) so that it can be used instead of an explicit
+line number.  This most recent line is referred  to  by  the
+shorthand symbol
+   ..    (pronounced ``dot'').
+Dot is a line number in the same way that ``$'' is; it means
+exactly ``the current line'', or loosely, ``the line we most
+recently  did something to.''  We can use it in several ways
+- one possibility is to say
+   ..,$p
+This will print all the lines from (including)  the  current
+line  to the end of the buffer.  In our case these are lines
+3 through 6.
+
+     Some commands change the value of dot, while others  do
+not.   The  print command sets dot to the number of the last
+line printed; by our last command, we  would  have  ``..''  =
+``$'' = 6.
+
+     Dot  is most useful when used in combinations like this
+one:
+   ..+1  (or equivalently, ..+1p)
+This means ``print the next line'' and gives us a handy  way
+to step slowly through a buffer.  We can also say
+   ..-1  (or ..-1p )
+which  means  ``print  the  line  _b_e_f_o_r_e the current line.''
+This enables us to go backwards if we wish.  Another  useful
+one is something like
+   ..-3,..-1p
+which prints the previous three lines.
+
+     Don't forget that all of these change the value of dot.
+You can find out what dot is at any time by typing
+   ..=
+_E_d will respond by printing the value of dot.
+
+     Let's summarize some things about the ``p'' command and
+dot.   Essentially  ``p'' can be preceded by 0, 1, or 2 line
+numbers.  If there is no line number given,  it  prints  the
+``current  line'', the line that dot refers to.  If there is
+one line number given (with or without the letter ``p''), it
+prints  that  line  (and dot is set there); and if there are
+two line numbers, it prints all the lines in that range (and
+sets dot to the last line printed.)  If two line numbers are
+specified the first can't be bigger  than  the  second  (see
+Exercise 2.)
+
+
+
+
+
+
+
+
+
+
+                             -8-
+
+
+     Typing a single newline will cause printing of the next
+line - it's equivalent to ``..+1p''.   Try  it.   Try  typing
+``^'' - it's equivalent to ``..-1p''.
+
+DDeelleettiinngg lliinneess:: tthhee ````dd'''' ccoommmmaanndd
+
+     Suppose  we want to get rid of the three extra lines in
+the buffer.  This is done by the _d_e_l_e_t_e command
+   d
+Except that ``d'' deletes lines instead  of  printing  them,
+its  action  is  similar  to that of ``p''.  The lines to be
+deleted are specified for ``d''  exactly  as  they  are  for
+``p'':
+   _s_t_a_r_t_i_n_g _l_i_n_e_, _e_n_d_i_n_g _l_i_n_e d
+Thus the command
+   4,$d
+deletes  lines 4 through the end.  There are now three lines
+left, as we can check by using
+   1,$p
+And notice that ``$'' now is line 3!  Dot is set to the next
+line  after  the  last  line  deleted,  unless the last line
+deleted is the last line in the buffer.  In that  case,  dot
+is set to ``$''.
+
+EExxeerrcciissee 44::
+
+     Experiment  with ``a'', ``e'', ``r'', ``w'', ``p'', and
+``d'' until you are sure that you know  what  they  do,  and
+until  you  understand  how dot, ``$'', and line numbers are
+used.
+
+     If you are adventurous, try  using  line  numbers  with
+``a'',  ``r'',  and ``w'' as well.  You will find that ``a''
+will append lines _a_f_t_e_r the line  number  that  you  specify
+(rather  than  after  dot); that ``r'' reads a file in _a_f_t_e_r
+the line number you specify (not necessarily at the  end  of
+the buffer); and that ``w'' will write out exactly the lines
+you specify, not necessarily the whole buffer.  These varia-
+tions  are  sometimes  handy.  For instance you can insert a
+file at the beginning of a buffer by saying
+   0r filename
+and you can enter lines at the beginning of  the  buffer  by
+saying
+   0a
+   ...li
+   ..
+Notice that ``..w'' is _v_e_r_y different from
+   ..
+   w
+
+MMooddiiffyyiinngg tteexxtt:: tthhee SSuubbssttiittuuttee ccoommmmaanndd ````ss''''
+
+     We  are  now  ready to try one of the most important of
+all commands - the substitute command
+
+
+
+
+
+
+
+
+
+                             -9-
+
+
+   s
+This is the command that is used to change individual  words
+or  letters  within a line or group of lines.  It is what we
+use, for example, for correcting spelling mistakes and  typ-
+ing errors.
+
+     Suppose that by a typing error, line 1 says
+   Now is th time
+-  the ``e'' has been left off ``the''.  We can use ``s'' to
+fix this up as follows:
+   1s/th/the/
+This says: ``in line 1, substitute for the  characters  `th'
+the  characters  `the'.''   To verify that it works (_e_d will
+not print the result automatically) we say
+   p
+and get
+   Now is the time
+which is what we wanted.  Notice that dot must have been set
+to  the  line  where  the substitution took place, since the
+``p'' command printed that line.  Dot is always set this way
+with the ``s'' command.
+
+     The general way to use the substitute command is
+   _s_t_a_r_t_i_n_g_-_l_i_n_e_, _e_n_d_i_n_g_-_l_i_n_e s/_c_h_a_n_g_e _t_h_i_s/_t_o _t_h_i_s/
+Whatever  string  of characters is between the first pair of
+slashes is replaced by whatever is between the second  pair,
+in  _a_l_l  the  lines  between  starting line and ending line.
+Only the first occurrence on each line is changed,  however.
+If you want to change _e_v_e_r_y occurrence, see Exercise 5.  The
+rules for line numbers are the  same  as  those  for  ``p'',
+except that dot is set to the last line changed.  (But there
+is a trap for the unwary: if no substitution took place, dot
+is _n_o_t changed.  This causes an error ``?'' as a warning.)
+
+     Thus we can say
+   1,$s/speling/spelling/
+and  correct  the first spelling mistake on each line in the
+text.  (This is useful for people who  are  consistent  mis-
+spellers!)
+
+     If no line numbers are given, the ``s'' command assumes
+we mean ``make the substitution on line dot'', so it changes
+things  only  on  the  current line.  This leads to the very
+common sequence
+   s/something/something else/p
+which makes some correction on the current  line,  and  then
+prints  it, to make sure it worked out right.  If it didn't,
+we can try again.  (Notice that we put a  print  command  on
+the same line as the substitute.  With few exceptions, ``p''
+can follow any command; no  other  multi-command  lines  are
+legal.)
+
+     It's also legal to say
+   s/ . . . //
+
+
+
+
+
+
+
+
+
+                            -10-
+
+
+which means ``change the first string of characters to _n_o_t_h_-
+_i_n_g'', i.e., remove them.  This is useful for deleting extra
+words  in  a line or removing extra letters from words.  For
+instance, if we had
+   Nowxx is the time
+we can say
+   s/xx//p
+to get
+   Now is the time
+Notice that ``//''  here  means  ``no  characters'',  not  a
+blank.  There _i_s a difference!  (See below for another mean-
+ing of ``//''.)
+
+EExxeerrcciissee 55::
+
+     Experiment with the substitute command.  See what  hap-
+pens  if you substitute for some word on a line with several
+occurrences of that word.  For example, do this:
+   a
+   the other side of the coin
+   ..
+   s/the/on the/p
+You will get
+   on the other side of the coin
+A substitute command changes only the  first  occurrence  of
+the  first string.  You can change all occurrences by adding
+a ``g'' (for ``global'') to the ``s'' command, like this:
+   s/ . . . / . . . /gp
+Try other characters instead of slashes to delimit  the  two
+sets  of  characters  in the ``s'' command - anything should
+work except blanks or tabs.
+
+     (If you get funny results using any of the characters
+   ^    ..    $    [    *    \
+read the section on ``Special Characters''.)
+
+CCoonntteexxtt sseeaarrcchhiinngg -- ````// .. .. .. //''''
+
+     With the substitute command mastered, we can move on to
+another highly important idea of _e_d - context searching.
+
+     Suppose  we  have  our  original three line text in the
+buffer:
+   Now is the time
+   for all good men
+   to come to the aid of their party.
+Suppose we want to find the line that contains ``their''  so
+we  can  change it to ``the''.  Now with only three lines in
+the buffer, it's pretty easy to keep track of what line  the
+word  ``their''  is on.  But if the buffer contained several
+hundred lines, and we'd been making  changes,  deleting  and
+rearranging lines, and so on, we would no longer really know
+what this line number would be.  Context searching is simply
+a  method of specifying the desired line, regardless of what
+
+
+
+
+
+
+
+
+
+                            -11-
+
+
+its number is, by specifying some context on it.
+
+     The way we say ``search for a line that  contains  this
+particular string of characters'' is to type
+   /_s_t_r_i_n_g _o_f _c_h_a_r_a_c_t_e_r_s _w_e _w_a_n_t _t_o _f_i_n_d/
+For example, the _e_d line
+   /their/
+is  a context search which is sufficient to find the desired
+line - it will locate the next occurrence of the  characters
+between  slashes (``their'').  It also sets dot to that line
+and prints the line for verification:
+   to come to the aid of their party.
+``Next occurrence'' means that _e_d  starts  looking  for  the
+string  at  line ``..+1'', searches to the end of the buffer,
+then continues at line 1 and searches to  line  dot.   (That
+is,  the search ``wraps around'' from ``$'' to 1.)  It scans
+all the lines in  the  buffer  until  it  either  finds  the
+desired line or gets back to dot again.  If the given string
+of characters can't be found in any line, _e_d types the error
+message
+   ?
+Otherwise it prints the line it found.
+
+     We  can  do  both the search for the desired line _a_n_d a
+substitution all at once, like this:
+   /their/s/their/the/p
+which will yield
+   to come to the aid of the party.
+There were three parts to that last command: context  search
+for the desired line, make the substitution, print the line.
+
+     The expression ``/their/'' is a context search  expres-
+sion.   In  their  simplest form, all context search expres-
+sions are like this - a string of characters  surrounded  by
+slashes.   Context  searches  are  interchangeable with line
+numbers, so they can be used by themselves to find and print
+a  desired  line, or as line numbers for some other command,
+like ``s''.  We used them both ways in the examples above.
+
+     Suppose the buffer contains the three familiar lines
+   Now is the time
+   for all good men
+   to come to the aid of their party.
+Then the _e_d line numbers
+   /Now/+1
+   /good/
+   /party/-1
+are all context search expressions, and they  all  refer  to
+the  same  line  (line  2).   To make a change in line 2, we
+could say
+   /Now/+1s/good/bad/
+or
+   /good/s/good/bad/
+or
+
+
+
+
+
+
+
+
+
+                            -12-
+
+
+   /party/-1s/good/bad/
+The choice is dictated only by convenience.  We could  print
+all three lines by, for instance
+   /Now/,/party/p
+or
+   /Now/,/Now/+2p
+or  by any number of similar combinations.  The first one of
+these might be better if we don't know how  many  lines  are
+involved.  (Of course, if there were only three lines in the
+buffer, we'd use
+   1,$p
+but not if there were several hundred.)
+
+     The basic rule is: a context search expression  is  _t_h_e
+_s_a_m_e  _a_s  a  line  number, so it can be used wherever a line
+number is needed.
+
+EExxeerrcciissee 66::
+
+     Experiment with context searching.  Try a body of  text
+with  several  occurrences of the same string of characters,
+and scan through it using the same context search.
+
+     Try using context searches as line numbers for the sub-
+stitute,  print and delete commands.  (They can also be used
+with ``r'', ``w'', and ``a''.)
+
+     Try  context  searching  using  ``?text?''  instead  of
+``/text/''.  This scans lines in the buffer in reverse order
+rather than normal.  This is sometimes useful if you go  too
+far  while  looking  for some string of characters - it's an
+easy way to back up.
+
+     (If you get funny results with any of the characters
+   ^    ..    $    [    *    \
+read the section on ``Special Characters''.)
+
+     _E_d provides a shorthand for repeating a context  search
+for the same string.  For example, the _e_d line number
+   /string/
+will  find the next occurrence of ``string''.  It often hap-
+pens that this is not the desired line, so the  search  must
+be repeated.  This can be done by typing merely
+   //
+This  shorthand  stands for ``the most recently used context
+search expression.''  It can  also  be  used  as  the  first
+string of the substitute command, as in
+   /string1/s//string2/
+which  will  find  the  next  occurrence  of ``string1'' and
+replace it by ``string2''.  This can save a lot  of  typing.
+Similarly
+   ??
+means ``scan backwards for the same expression.''
+
+
+
+
+
+
+
+
+
+
+                            -13-
+
+
+CChhaannggee aanndd IInnsseerrtt -- ````cc'''' aanndd ````ii''''
+
+     This section discusses the _c_h_a_n_g_e command
+   c
+which  is  used  to change or replace a group of one or more
+lines, and the _i_n_s_e_r_t command
+   i
+which is used for inserting a group of one or more lines.
+
+     ``Change'', written as
+   c
+is used to replace a number of lines with  different  lines,
+which  are typed in at the terminal.  For example, to change
+lines ``..+1'' through ``$'' to something else, type
+    .+1,$c
+    . . . _t_y_p_e _t_h_e _l_i_n_e_s _o_f _t_e_x_t _y_o_u _w_a_n_t _h_e_r_e . . .
+    ..
+The lines you type between the ``c'' command and  the  ``..''
+will take the place of the original lines between start line
+and end line.  This is most useful in replacing  a  line  or
+several lines which have errors in them.
+
+     If  only  one  line  is specified in the ``c'' command,
+then just that line is replaced.  (You can type in  as  many
+replacement  lines as you like.)  Notice the use of ``..'' to
+end the input - this works just like the ``..'' in the append
+command and must appear by itself on a new line.  If no line
+number is given, line dot is replaced.  The value of dot  is
+set to the last line you typed in.
+
+     ``Insert'' is similar to append - for instance
+   /string/i
+   ...li
+   ..
+will  insert  the  given text _b_e_f_o_r_e the next line that con-
+tains ``string''.  The  text  between  ``i''  and  ``..''  is
+_i_n_s_e_r_t_e_d  _b_e_f_o_r_e  the  specified line.  If no line number is
+specified dot  is  used.   Dot  is  set  to  the  last  line
+inserted.
+
+EExxeerrcciissee 77::
+
+     ``Change''  is rather like a combination of delete fol-
+lowed by insert.  Experiment to verify that
+   _s_t_a_r_t_, _e_n_d d
+   i
+    _. _. _. _t_e_x_t _. _. _.
+   ..
+is almost the same as
+   _s_t_a_r_t_, _e_n_d c
+    _. _. _. _t_e_x_t _. _. _.
+   ..
+These are not _p_r_e_c_i_s_e_l_y the same if line ``$'' gets deleted.
+Check this out.  What is dot?
+
+
+
+
+
+
+
+
+
+                            -14-
+
+
+     Experiment  with  ``a'' and ``i'', to see that they are
+similar, but not the same.  You will observe that
+   _l_i_n_e_-_n_u_m_b_e_r a
+   ...li
+   ..
+appends _a_f_t_e_r the given line, while
+   _l_i_n_e_-_n_u_m_b_e_r i
+   ...li
+   ..
+inserts _b_e_f_o_r_e it.  Observe that if no line number is given,
+``i''  inserts  before  line  dot, while ``a'' appends after
+line dot.
+
+MMoovviinngg tteexxtt aarroouunndd:: tthhee ````mm'''' ccoommmmaanndd
+
+     The move command ``m'' is used for cutting and  pasting
+-  it  lets  you  move  a  group  of lines from one place to
+another in the buffer.  Suppose we want  to  put  the  first
+three  lines  of the buffer at the end instead.  We could do
+it by saying:
+   1,3w temp
+   $r temp
+   1,3d
+(Do you see why?)  but we can do it a lot  easier  with  the
+``m'' command:
+   1,3m$
+The general case is
+   _s_t_a_r_t _l_i_n_e_, _e_n_d _l_i_n_e m _a_f_t_e_r _t_h_i_s _l_i_n_e
+Notice  that  there  is  a  third line to be specified - the
+place where the moved stuff gets put.  Of course  the  lines
+to be moved can be specified by context searches; if we had
+   First paragraph
+   ..end of first paragraph.
+   Second paragraph
+   ..end of second paragraph.
+we could reverse the two paragraphs like this:
+   /Second/,/second/m/First/-1
+Notice  the ``-1'' - the moved text goes _a_f_t_e_r the line men-
+tioned.  Dot gets set to the last line moved.
+
+TThhee gglloobbaall ccoommmmaannddss ````gg'''' aanndd ````vv''''
+
+     The _g_l_o_b_a_l command ``g'' is used to execute one or more
+_e_d commands on all those lines in the buffer that match some
+specified string.  For example
+   g/peling/p
+prints all lines that contain ``peling''.  More usefully,
+   g/peling/s//pelling/gp
+makes the substitution everywhere on the line,  then  prints
+each corrected line.  Compare this to
+   1,$s/peling/pelling/gp
+which only prints the last line substituted.  Another subtle
+difference is that the ``g'' command does not give  a  ``?''
+if ``peling'' is not found where the ``s'' command will.
+
+
+
+
+
+
+
+
+
+                            -15-
+
+
+     There  may  be several commands (including ``a'', ``c''
+``i'' ``r'', ``w'', but not ``g''); in that case, every line
+except the last must end with a backslash ``\'':
+   g/xxx/..-1s/abc/def/\
+   ..+2s/ghi/jkl/\
+   ..-2,..p
+makes  changes  in the lines before and after each line that
+contains ``xxx'', then prints all three lines.
+
+     The ``v'' command is the same as ``g'', except that the
+commands  are executed on every line that does _n_o_t match the
+string following ``v'':
+   v/ /d
+deletes every line that does not contain a blank.
+
+SSppeecciiaall CChhaarraacctteerrss
+
+     You may have noticed that things just don't work  right
+when  you used some characters like ``.'', ``*'', ``$'', and
+others in context searches and the substitute command.   The
+reason  is  rather  complex,  although  the  cure is simple.
+Basically, _e_d treats these characters as special, with  spe-
+cial  meanings.   For  instance,  _i_n _a _c_o_n_t_e_x_t _s_e_a_r_c_h _o_r _t_h_e
+_f_i_r_s_t _s_t_r_i_n_g _o_f _t_h_e _s_u_b_s_t_i_t_u_t_e _c_o_m_m_a_n_d _o_n_l_y_, ..  means  ``any
+character,'' not a period, so
+   /x..y/
+means  ``a  line  with  an  x, _a_n_y _c_h_a_r_a_c_t_e_r_, and a y,'' _n_o_t
+just ``a line with an x, a period, and a  y.''~  A  complete
+list of the special characters that can cause trouble is the
+following:
+   ^    ..    $    [    *    \
+_W_a_r_n_i_n_g_: The backslash character \ is special  to  _e_d_.   For
+safety's  sake, avoid it where possible.  If you have to use
+one of the special characters in a substitute  command,  you
+can  turn  off its magic meaning temporarily by preceding it
+with the backslash.  Thus
+   s/\\\..\*/backslash dot star/
+will change ``\..*'' into ``backslash dot star''.
+
+     Here is a hurried synopsis of the other special charac-
+ters.  First, the circumflex `` ^ '' signifies the beginning
+of a line.  Thus
+   /^string/
+finds ``string'' only if it is at the beginning of  a  line:
+it will find
+   string
+but not
+   the string...
+The  dollar-sign  ``$''  is just the opposite of the circum-
+flex; it means the end of a line:
+   /string$/
+will only find an occurrence of ``string'' that  is  at  the
+end of some line.  This implies, of course, that
+   /^string$/
+
+
+
+
+
+
+
+
+
+                            -16-
+
+
+will find only a line that contains just ``string'', and
+   /^..$/
+finds a line containing exactly one character.
+
+     The  character  ``..'',  as  we mentioned above, matches
+anything;
+   /x..y/
+matches any of
+   x+y
+   x-y
+   x y
+   x..y
+This is useful in conjunction with ``*'', which is a repeti-
+tion  character;  ``a*''  is a shorthand for ``any number of
+a's,'' so ``..*'' matches any number of anythings.   This  is
+used like this:
+   s/..*/stuff/
+which changes an entire line, or
+   s/..*,//
+which deletes all characters in the line up to and including
+the last comma.  (Since ``..*'' finds  the  longest  possible
+match, this goes up to the last comma.)
+
+     ``['' is used with ``]'' to form ``character classes'';
+for example,
+   /[1234567890]/
+matches any single digit _ any one of the characters  inside
+the braces will cause a match.
+
+     Finally,  the ``&'' is another shorthand character - it
+is used only on the right-hand part of a substitute  command
+where  it  means  ``whatever  was  matched  on the left-hand
+side''.  It is used to save  typing.   Suppose  the  current
+line contained
+   Now is the time
+and  we  wanted to put parentheses around it.  We could just
+retype the line, but this is tedious.  Or we could say
+   s/^/(/
+   s/$/)/
+using our knowledge of ``^'' and ``$''.  But the easiest way
+uses the ``&'':
+   s/..*/(&)/
+This  says  ``match the whole line, and replace it by itself
+surrounded by parens.''~ The ``&'' can be used several times
+in a line; consider using
+   s/..*/&?  &!!/
+to produce
+   Now is the time?  Now is the time!!
+
+     We  don't  have  to match the whole line, of course: if
+the buffer contains
+   the end of the world
+we could type
+   /world/s//& is at hand/
+
+
+
+
+
+
+
+
+
+                            -17-
+
+
+to produce
+   the end of the world is at hand
+Observe this expression carefully, for it illustrates how to
+take advantage of _e_d to save typing.  The string ``/world/''
+found the desired line; the shorthand ``//'' found the  same
+word  in  the  line;  and  the ``&'' saved us from typing it
+again.
+
+     The ``&''  is  a  special  character  only  within  the
+replacement text of a substitute command, and has no special
+meaning elsewhere.  We can turn off the special  meaning  of
+``&'' by preceding it with a ``\'':
+   s/ampersand/\&/
+will  convert the word ``ampersand'' into the literal symbol
+``&'' in the current line.
+
+
+
+SSuummmmaarryy ooff CCoommmmaannddss aanndd LLiinnee NNuummbbeerrss
+
+     The general form of _e_d commands is  the  command  name,
+perhaps  preceded  by  one  or two line numbers, and, in the
+case of _e_, _r and _w_, followed by a file name.  Only one  com-
+mand  is  allowed  per  line, but a _p command may follow any
+other command (except for _e_, _r_, _w and _q_)_.
+
+_a _(_a_p_p_e_n_d_) Add lines to the buffer (at line  dot,  unless  a
+different  line  is  specified).  Appending  continues until
+``..''  is typed on a new line.  Dot is set to the last  line
+appended.
+_c  _(_c_h_a_n_g_e_) Change the specified lines to the new text which
+follows.  The new lines are terminated by a  ``..''.   If  no
+lines  are  specified, replace line dot.  Dot is set to last
+line changed.
+_d _(_d_e_l_e_t_e_) Delete the lines specified.  If none  are  speci-
+fied,  delete  line  dot.  Dot is set to the first undeleted
+line, unless ``$'' is deleted, in which case dot is  set  to
+``$''.
+_e _(_e_d_i_t_) Edit new file.  Any previous contents of the buffer
+are thrown away, so issue a _w beforehand if you want to save
+them.
+_f _(_f_i_l_e_) Print remembered filename.  If a name follows _f the
+remembered name will be set to it.
+_g _(_g_l_o_b_a_l_) _g_/_-_-_-_/_c_o_m_m_a_n_d_s will execute the commands on those
+lines  that contain ``---'', which can be any context search
+expression.
+_i _(_i_n_s_e_r_t_) Insert lines before specified line (or dot) until
+a  ``..''  is  typed  on a new line.  Dot is set to last line
+inserted.
+_m _(_m_o_v_e_) Move lines specified to after the line named  after
+_m_.  Dot is set to the last line moved.
+_p  _(_p_r_i_n_t_)  Print specified lines.  If none specified, print
+line dot.  A single line number is equivalent to ``line-num-
+ber p''.  A single newline prints ``..+1'', the next line.
+
+
+
+
+
+
+
+
+
+                            -18-
+
+
+_q _(_q_u_i_t_) Exit from ed.  Wipes out all text in buffer!!
+_r  _(_r_e_a_d_)  Read  a file into buffer (at end unless specified
+elsewhere.) Dot set to last line read.
+_s _(_s_u_b_s_t_i_t_u_t_e_) _s_/_s_t_r_i_n_g_1_/_s_t_r_i_n_g_2_/ will substitute the  char-
+acters of `string2' for `string1' in specified lines.  If no
+line is specified, make substitution in line  dot.   Dot  is
+set  to  last line in which a substitution took place, which
+means that  if  no  substitution  took  place,  dot  is  not
+changed.   _s changes only the first occurrence of string1 on
+a line; to change all of them, type a ``g'' after the  final
+slash.
+_v  _(_e_x_c_l_u_d_e_)  _v_/_-_-_-_/_c_o_m_m_a_n_d_s  executes ``commands'' on those
+lines that _d_o _n_o_t contain ``---''.
+_w _(_w_r_i_t_e_) Write out buffer onto a file.  Dot is not changed.
+_P_r_i_n_t  _v_a_l_u_e  _o_f  _d_o_t_.  (``='' by itself prints the value of
+``$''.)
+_! _(_t_e_m_p_o_r_a_r_y _e_s_c_a_p_e_)
+   Execute this line as a UNIX command.
+_/_-_-_-_-_-_/ Context search.  Search for next line which contains
+this  string  of  characters.  Print it.  Dot is set to line
+where string found.  Search starts at ``..+1'', wraps  around
+from ``$'' to 1, and continues to dot, if necessary.
+_?_-_-_-_-_-_?   Context search in reverse direction.  Start search
+at ``..-1'', scan to 1, wrap around to ``$''.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
