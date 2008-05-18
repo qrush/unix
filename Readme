@@ -58,7 +58,10 @@ Running 1st Edition UNIX
    114 sdrwr-  2 root     50 Jan  1 00:00:00 tmp
     41 sdrwr-  7 root     70 Jan  1 00:00:00 usr
 
-4. To shut the system down, enter ctrl-E to stop the simulator, and q to quit.
+4. To change directories, use chdir, e.g. chdir /usr. The only editor installed
+   is `ed'. You can find an ed tutorial in notes/edtut.txt.
+
+5. To shut the system down, enter ctrl-E to stop the simulator, and q to quit.
    You do not need to sync the system before shutdown.
 
 Documentation
