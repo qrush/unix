@@ -14,6 +14,9 @@ The system can be warm booted with:
 
 	tools/pdp11 boot/simh.cfg
 
+NOTE: For using kernels built using the V2 assembler, all of the following
+should refer to msys2, instead of msys.
+
 Alternatively, everything can be installed while running under the V1 system
 using the following procedure:
 
