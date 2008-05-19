@@ -1,8 +1,8 @@
 /* v7trap.c - Deal with V7 trap instructions. V5 and V6 syscalls are also
  * done here, because the syscall interface is nearly the same as V7.
  *
- * $Revision: 1.48 $
- * $Date: 2008/05/15 07:52:45 $
+ * $Revision: 1.49 $
+ * $Date: 2008/05/19 13:24:35 $
  */
 #include "defines.h"
 #include <sys/stat.h>
@@ -71,6 +71,7 @@ v7trap()
     long larg;
     char *buf, *buf2;
     char *fmode;		/* used with fdopen only */
+    time_t tim;
 
     struct stat stbuf;		/* used in STAT */
     struct tr_v7stat *t;	/* used in STAT */
@@ -160,13 +161,14 @@ v7trap()
 #endif
 	break;
     case S_TIME:
-	i = time(&larg);
+	tim= larg;
+	i = time(&tim);
 	
 	if ((Binary==IS_A68 || Binary==IS_V6) || (Binary==IS_V5)) {
-	  fixv6time(&larg);	/* Fix annoying bug in V5/V6 ctime() */
+	  fixv6time(&tim);	/* Fix annoying bug in V5/V6 ctime() */
 	}
-	regs[1] = larg & 0xffff;
-	i = larg >> 16;
+	regs[1] = tim & 0xffff;
+	i = tim >> 16;
 	break;
     case S_ALARM:
 	i = alarm(uarg1); break;
@@ -206,7 +208,7 @@ v7trap()
 	i = i >> 16;
 	break;
     case S_READ:
-	buf = &dspace[uarg2];
+	buf = (char *)&dspace[uarg2];
 #ifdef STREAM_BUFFERING
 	if (ValidFD(sarg1) && stream[sarg1])
 	    i = fread(buf, 1, uarg3, stream[sarg1]);
@@ -216,17 +218,17 @@ v7trap()
         TrapDebug((dbg_file, " on fd %d return %d ",sarg1,i)); 
 	break;
     case S_LINK:
-	buf = xlate_filename(&dspace[uarg1]);
-	buf2 = xlate_filename(&dspace[uarg2]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
+	buf2 = xlate_filename((char *)&dspace[uarg2]);
 	if (!strcmp(buf, buf2)) i=0;	/* Happens on mkdir(1) */
 	else i = link(buf, buf2);
 	break;
     case S_ACCESS:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = access(buf, sarg2);
 	break;
     case S_WRITE:
-	buf = &dspace[uarg2];
+	buf = (char *)&dspace[uarg2];
 #ifdef STREAM_BUFFERING
 	if (ValidFD(sarg1) && stream[sarg1])
 	    i = fwrite(buf, 1, uarg3, stream[sarg1]);
@@ -260,7 +262,7 @@ v7trap()
 	}
 	break;
     case S_FTIME:
-	buf = &dspace[uarg1];
+	buf = (char *)&dspace[uarg1];
 	tb = (struct tr_timeb *) buf;
 	i = gettimeofday(&tv, &tz);
 	if (i == -1) break;
@@ -275,15 +277,15 @@ v7trap()
 	tb->dstflag = tz.tz_dsttime;
 	break;
     case S_STAT:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	if (buf[0]=='\0') buf=".";		/* Not documented anywhere */
 	if (uarg1==0) buf=".";
-	buf2 = &dspace[uarg2];
+	buf2 = (char *)&dspace[uarg2];
 	i = stat(buf, &stbuf);
         TrapDebug((dbg_file, " on %s return %d ",buf,i));
 	goto dostat;
     case S_FSTAT:
-	buf2 = &dspace[uarg2];
+	buf2 = (char *)&dspace[uarg2];
 	i = fstat(sarg1, &stbuf);
         TrapDebug((dbg_file, " on fd %d return %d ",sarg1,i));
 
@@ -346,7 +348,7 @@ dostat:
 	utv[0].tv_usec = utv[1].tv_usec = 0;
 	copylong(dspace[uarg2], utv[0].tv_sec);
 	copylong(dspace[uarg2+4], utv[1].tv_sec);
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 #if 0
 	buf2 = &dspace[uarg2];
 	buf3 = (char *) &(utv[0].tv_sec);
@@ -359,10 +361,10 @@ dostat:
 
 	i = utimes(buf, utv); break;
     case S_UNLINK:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = unlink(buf); break;
     case S_OPEN:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 
 	i = stat(buf, &stbuf);	/* If file is a directory */
 	if (i == 0 && (stbuf.st_mode & S_IFDIR)) {
@@ -392,7 +394,7 @@ dostat:
 #endif
 	break;
     case S_MKNOD:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 
 	if ((uarg2 & 077000) ==	040000) {
 		/* It's a directory creation */
@@ -401,12 +403,12 @@ dostat:
 		i = mknod(buf, uarg2, sarg3);
 	break;
     case S_CHMOD:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = chmod(buf, uarg2); break;
     case S_KILL:
 	i = kill(sarg1, sarg2); break;
     case S_CHOWN:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = chown(buf, sarg2, sarg3); break;
     case S_PIPE:
 	i = pipe(pfd);
@@ -423,15 +425,15 @@ dostat:
 #endif
 	i = pfd[0]; regs[1] = pfd[1]; break;
     case S_CHROOT:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	if (buf == NULL) { i=-1; errno=ENOENT; break; }
 	set_apout_root(buf);
 	i=0; break;
     case S_CHDIR:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = chdir(buf); break;
     case S_CREAT:
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = creat(buf, sarg2);
 #ifdef STREAM_BUFFERING
 	if (i==-1) break;
@@ -517,7 +519,7 @@ trap_exec(int want_env)
     u_int16_t cptr, cptr2;
     char *buf, *name, *origpath;
 
-    origpath = strdup(&dspace[uarg1]);
+    origpath = strdup((char *)&dspace[uarg1]);
     name = xlate_filename(origpath);
     TrapDebug((dbg_file, "%s Execing %s ", progname, name));
 
@@ -530,7 +532,7 @@ trap_exec(int want_env)
 	ll_word(cptr, cptr2);
 	if (cptr2 == 0)
 	    break;
-	buf = &dspace[cptr2];
+	buf = (char *)&dspace[cptr2];
 	Argv[Argc++] = strdup(buf);
 	cptr += 2;
 	TrapDebug((dbg_file, "%s ", buf));
@@ -544,7 +546,7 @@ trap_exec(int want_env)
 	    ll_word(cptr, cptr2);
 	    if (cptr2 == 0)
 		break;
-	    buf = &dspace[cptr2];
+	    buf = (char *)&dspace[cptr2];
 	    Envp[Envc++] = strdup(buf);
 	    cptr += 2;
 	}
@@ -589,7 +591,7 @@ open_dir(char *name)
 
     while ((dent = readdir(d)) != NULL) {
 	odent.d_ino = dent->d_fileno;
-	strncpy(odent.d_name, dent->d_name, 14);
+	strncpy((char *)odent.d_name, dent->d_name, 14);
 	write(i, &odent, 16);
     }
     closedir(d);

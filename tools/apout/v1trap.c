@@ -1,7 +1,7 @@
 /* v1trap.c - Deal with 1st Edition trap instructions.
  *
- * $Revision: 1.15 $
- * $Date: 2002/06/10 11:43:24 $
+ * $Revision: 1.16 $
+ * $Date: 2008/05/19 13:26:42 $
  */
 #ifdef EMUV1
 #include "defines.h"
@@ -133,7 +133,7 @@ void v1trap()
 #define EPOCH71	31536000		/* # seconds from 1970 to 1971 */
 #define EPOCH72	63072000		/* # seconds from 1970 to 1972 */
     case V1_SMDATE:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       if (buf[0] == '\0') buf = ".";	/* Not documented anywhere */
       if (uarg1 == 0) buf = ".";	/* Who knows? for V1 */
       i = stat(buf, &stbuf);
@@ -187,7 +187,7 @@ void v1trap()
       regs[0] = i;
       break;
     case V1_READ:
-      buf = &dspace[uarg2];
+      buf = (char *)&dspace[uarg2];
 #ifdef STREAM_BUFFERING
       if (ValidFD(sarg1) && stream[sarg1])
 	i = fread(buf, 1, sarg3, stream[sarg1]);
@@ -197,12 +197,12 @@ void v1trap()
       TrapDebug((dbg_file, " on fd %d return %d ", sarg1, i));
       regs[0] = i; break;
     case V1_LINK:
-      buf = xlate_filename(&dspace[uarg1]);
-      buf2 = xlate_filename(&dspace[uarg2]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
+      buf2 = xlate_filename((char *)&dspace[uarg2]);
       i = link(buf, buf2);
       regs[0] = i; break;
     case V1_WRITE:
-      buf = &dspace[uarg2];
+      buf = (char *)&dspace[uarg2];
 #ifdef STREAM_BUFFERING
       if (ValidFD(sarg1) && stream[sarg1])
 	i = fwrite(buf, 1, sarg3, stream[sarg1]);
@@ -223,15 +223,15 @@ void v1trap()
       TrapDebug((dbg_file, " on fd %d return %d ", sarg1, i));
       break;
     case V1_STAT:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       if (buf[0] == '\0') buf = ".";	/* Not documented anywhere */
       if (uarg1 == 0) buf = ".";	/* Who knows? for V1 */
-      buf2 = &dspace[uarg2];
+      buf2 = (char *)&dspace[uarg2];
       i = stat(buf, &stbuf);
       TrapDebug((dbg_file, " on %s return %d ", buf, i));
       goto dostat;
     case V1_FSTAT:
-      buf2 = &dspace[uarg2];
+      buf2 = (char *)&dspace[uarg2];
       i = fstat(sarg1, &stbuf);
       TrapDebug((dbg_file, " on fd %d return %d ", sarg1, i));
 
@@ -258,11 +258,11 @@ void v1trap()
       larg = sectosixty(stbuf.st_mtime); copylong(t1->mtime, larg);
       break;
     case V1_UNLINK:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       i = unlink(buf);
       break;
     case V1_OPEN:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
 
       i = stat(buf, &stbuf);	/* If file is a directory */
       if (i == 0 && (stbuf.st_mode & S_IFDIR)) {
@@ -283,7 +283,7 @@ void v1trap()
       }
       regs[0] = i;
 
-      if (ValidFD(i) && !strncmp(&dspace[uarg1],"/dev/",5)) {
+      if (ValidFD(i) && !strncmp((char *)&dspace[uarg1],"/dev/",5)) {
 	TrapDebug((dbg_file, " (device file) "));
 	isdev[i]=1;
       }
@@ -301,7 +301,7 @@ void v1trap()
 #endif
       break;
     case V1_CHMOD:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       mode = 0;
       if (uarg2 & V1_ST_SETUID)    mode |= S_ISUID;
       if (uarg2 & V1_ST_EXEC)      mode |= S_IXUSR | S_IXGRP | S_IXOTH;
@@ -312,7 +312,7 @@ void v1trap()
       i = chmod(buf, mode);
       break;
     case V1_MKDIR:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       mode = 0;
       if (uarg2 & V1_ST_SETUID)    mode |= S_ISUID;
       if (uarg2 & V1_ST_EXEC)      mode |= S_IXUSR | S_IXGRP | S_IXOTH;
@@ -323,17 +323,17 @@ void v1trap()
       i = mkdir(buf, mode);
       break;
     case V1_CHOWN:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       uarg2&= 0x3fff;			/* Why are uids > 16384? */
       i = chown(buf, uarg2, 0);
       TrapDebug((dbg_file, " %d on %s return %d",uarg2,buf,i));
       break;
     case V1_CHDIR:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       i = chdir(buf);
       break;
     case V1_CREAT:
-      buf = xlate_filename(&dspace[uarg1]);
+      buf = xlate_filename((char *)&dspace[uarg1]);
       mode = 0;
       if (uarg2 & V1_ST_SETUID)    mode |= S_ISUID;
       if (uarg2 & V1_ST_EXEC)      mode |= S_IXUSR | S_IXGRP | S_IXOTH;
@@ -432,7 +432,7 @@ static int v1trap_exec(void)
   u_int16_t cptr, cptr2;
   char *buf, *name, *origpath;
 
-  origpath = strdup(&dspace[uarg1]);
+  origpath = strdup((char *)&dspace[uarg1]);
   name = xlate_filename(origpath);
   TrapDebug((dbg_file, "%s Execing %s ", progname, name));
 
@@ -443,7 +443,7 @@ static int v1trap_exec(void)
     ll_word(cptr, cptr2);
     if (cptr2 == 0)
       break;
-    buf = &dspace[cptr2];
+    buf = (char *)&dspace[cptr2];
     Argv[Argc++] = strdup(buf);
     cptr += 2;
     TrapDebug((dbg_file, "%s ", buf));
@@ -491,7 +491,7 @@ static int v1open_dir(char *name)
   while ((dent = readdir(d)) != NULL) {
     v1dent.d_ino = dent->d_fileno & 0x7fff;
     if (v1dent.d_ino<41) v1dent.d_ino+=100;
-    strncpy(v1dent.d_name, dent->d_name, 8);
+    strncpy((char *)v1dent.d_name, dent->d_name, 8);
     write(i, &v1dent, 10);
   }
   closedir(d);

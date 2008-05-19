@@ -1,7 +1,7 @@
 /* bsdtrap.c - Deal with 2.11BSD trap instructions.
  *
- * $Revision: 1.65 $
- * $Date: 2002/06/10 11:43:24 $
+ * $Revision: 1.66 $
+ * $Date: 2008/05/19 13:26:42 $
  */
 #ifdef EMU211
 
@@ -191,7 +191,7 @@ bsdtrap()
 	}
     case S_READ:				/* DONE */
         TrapDebug((dbg_file, "%d bytes on %d ",uarg3,sarg1));
-	buf = &dspace[uarg2];
+	buf = (char *)&dspace[uarg2];
 #ifdef STREAM_BUFFERING
         if (ValidFD(sarg1) && stream[sarg1])
             i = fread(buf, 1, uarg3, stream[sarg1]);
@@ -199,31 +199,31 @@ bsdtrap()
 #endif
 	i = read(sarg1, buf, uarg3); break;
     case S_LINK:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
-	buf2 = xlate_filename(&dspace[uarg2]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
+	buf2 = xlate_filename((char *)&dspace[uarg2]);
 	i = link(buf, buf2); break;
     case S_SYMLINK:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
-	buf2 = xlate_filename(&dspace[uarg2]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
+	buf2 = xlate_filename((char *)&dspace[uarg2]);
 	i = symlink(buf, buf2); break;
     case S_RENAME:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
-	buf2 = xlate_filename(&dspace[uarg2]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
+	buf2 = xlate_filename((char *)&dspace[uarg2]);
 	i = rename(buf, buf2); break;
     case S_READLINK:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
-	i = readlink(buf, &dspace[uarg2], sarg3); break;
+	buf = xlate_filename((char *)&dspace[uarg1]);
+	i = readlink(buf, (char *)&dspace[uarg2], sarg3); break;
     case S_ACCESS:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = access(buf, sarg2); break;
     case S_MKDIR:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = mkdir(buf, sarg2); break;
     case S_RMDIR:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = rmdir(buf); break;
     case S_ACCT:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = acct(buf); break;
     case S_WRITEV:				/* DONE */
     case S_READV:				/* DONE */
@@ -240,7 +240,7 @@ bsdtrap()
 	free(ivec);
 	break;
     case S_WRITE:				/* DONE */
-	buf = &dspace[uarg2];
+	buf = (char *)&dspace[uarg2];
         TrapDebug((dbg_file, "%d bytes on %d ",uarg3,sarg1));
 #ifdef STREAM_BUFFERING
         if (ValidFD(sarg1) && stream[sarg1])
@@ -268,13 +268,13 @@ bsdtrap()
     case S_FLOCK:
 	i = flock(sarg1,sarg2); break;
     case S_LSTAT:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	tr_stbuf = (struct tr_stat *) &dspace[uarg2];
 	i = lstat(buf, &stbuf);
         TrapDebug((dbg_file, "on %s ",buf));
 	goto dostat;
     case S_STAT:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	tr_stbuf = (struct tr_stat *) &dspace[uarg2];
 	i = stat(buf, &stbuf);
         TrapDebug((dbg_file, "on %s ",buf));
@@ -313,7 +313,7 @@ dostat:
 	}
 	break;
     case S_UTIMES:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	tr_del = (struct tr_timeval *) &dspace[uarg2];
 	tr_oldel = (struct tr_timeval *) &dspace[uarg4];
 	i= utimes(buf, utv);
@@ -377,10 +377,10 @@ dostat:
 	copylong(tr_oltval->it_value.tv_usec,	 oltval.it_value.tv_usec);
 	break;
     case S_UNLINK:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = unlink(buf); break;
     case S_OPEN:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 
 	i = stat(buf, &stbuf);	/* If file is a directory */
 	if (i == 0 && (stbuf.st_mode & S_IFDIR)) {
@@ -413,15 +413,15 @@ dostat:
 #endif
 	break;
     case S_MKNOD:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = mknod(buf, sarg2, sarg3); break;
     case S_CHMOD:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = chmod(buf, sarg2); break;
     case S_FCHMOD:				/* DONE */
 	i = fchmod(sarg1, sarg2); break;
     case S_TRUNCATE:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	larg1 = (sarg2 << 16) | uarg3;
 	i = truncate(buf, larg1); break;
     case S_FTRUNCATE:				/* DONE */
@@ -432,7 +432,7 @@ dostat:
     case S_KILLPG:				/* DONE */
 	i = killpg(sarg1, sarg2); break;
     case S_CHOWN:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = chown(buf, sarg2, sarg3); break;
     case S_PIPE:				/* DONE */
 	i = pipe(pfd);
@@ -449,28 +449,28 @@ dostat:
 	if (i == -1) break;
 	i = pfd[0]; regs[1] = pfd[1]; break;
     case S_CHROOT:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	if (buf == NULL) {
 	    errno=ENOENT; i=-1; break;
 	}
 	set_apout_root(buf);
 	i=0; break;
     case S_CHDIR:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = chdir(buf); break;
     case S_FCHDIR:				/* DONE */
 	i = fchdir(sarg1); break;
 
 #ifndef NO_CHFLAGS
     case S_CHFLAGS:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = chflags(buf,uarg2); break;
     case S_FCHFLAGS:				/* DONE */
 	i = fchflags(sarg1,uarg2); break;
 #endif
 
     case S_CREAT:				/* DONE */
-	buf = xlate_filename(&dspace[uarg1]);
+	buf = xlate_filename((char *)&dspace[uarg1]);
 	i = creat(buf, sarg2);
 #ifdef STREAM_BUFFERING
         if (ValidFD(i)) {
@@ -550,10 +550,10 @@ dostat:
 	*shortptr= pfd[1];
 	break;
     case S_RECV:				/* DONE */
-	buf = &dspace[uarg2];
+	buf = (char *)&dspace[uarg2];
 	i = recv(sarg1, buf, sarg3, sarg4); break;
     case S_SEND:				/* DONE */
-	buf = &dspace[uarg2];
+	buf = (char *)&dspace[uarg2];
 	i = send(sarg1, buf, sarg3, sarg4); break;
     case S_ACCEPT:				/* DONE */
 	tr_sock= (struct tr_sockaddr *)&dspace[uarg2];
@@ -563,7 +563,7 @@ dostat:
 	sock.sa_len=len;
 #endif
 	memcpy(sock.sa_data, tr_sock->sa_data, len);
-	i= accept(sarg1, &sock, &len);
+	i= accept(sarg1, &sock, (socklen_t *)&len);
 	if (i != -1) {
 	    sl_word(uarg3,len);
 	    memcpy(tr_sock->sa_data, sock.sa_data, len);
@@ -577,7 +577,7 @@ dostat:
 	sock.sa_len=len;
 #endif
 	memcpy(sock.sa_data, tr_sock->sa_data, len);
-	i= getpeername(sarg1, &sock, &len);
+	i= getpeername(sarg1, &sock, (socklen_t *)&len);
 	if (i != -1) {
 	    sl_word(uarg3,len);
 	    memcpy(tr_sock->sa_data, sock.sa_data, len);
@@ -591,7 +591,7 @@ dostat:
 	sock.sa_len=len;
 #endif
 	memcpy(sock.sa_data, tr_sock->sa_data, len);
-	i= getsockname(sarg1, &sock, &len);
+	i= getsockname(sarg1, &sock, (socklen_t *)&len);
 	if (i != -1) {
 	    sl_word(uarg3,len);
 	    memcpy(tr_sock->sa_data, sock.sa_data, len);
@@ -625,8 +625,8 @@ dostat:
 	sock.sa_len=len;
 #endif
 	memcpy(sock.sa_data, tr_sock->sa_data, len);
-	buf = &dspace[uarg2];
-	i= recvfrom(sarg1, buf, sarg3, sarg4, &sock, &len);
+	buf = (char *)&dspace[uarg2];
+	i= recvfrom(sarg1, buf, sarg3, sarg4, &sock, (socklen_t *)&len);
 	if (i != -1) {
 	    sl_word(uarg6,len);
 	    memcpy(tr_sock->sa_data, sock.sa_data, len);
@@ -721,7 +721,7 @@ trap_execve(int want_env)
     u_int16_t cptr, cptr2;
     char *buf, *name, *origpath;
 
-    origpath = strdup(&dspace[uarg1]);
+    origpath = strdup((char *)&dspace[uarg1]);
     name = xlate_filename(origpath);
     TrapDebug((dbg_file, "%s Execing %s (%s) ", progname, name, origpath));
 
@@ -733,7 +733,7 @@ trap_execve(int want_env)
 	ll_word(cptr, cptr2);
 	if (cptr2 == 0)
 	    break;
-	buf = &dspace[cptr2];
+	buf = (char *)&dspace[cptr2];
 	Argv[Argc++] = strdup(buf);
 	cptr += 2;
 	TrapDebug((dbg_file, "%s ", buf));
@@ -747,7 +747,7 @@ trap_execve(int want_env)
 	  ll_word(cptr, cptr2);
 	  if (cptr2 == 0)
 	    break;
-	  buf = &dspace[cptr2];
+	  buf = (char *)&dspace[cptr2];
 	  Envp[Envc++] = strdup(buf);
 	  cptr += 2;
         }
