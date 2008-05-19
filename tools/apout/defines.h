@@ -1,11 +1,12 @@
 /* defines.h	- Definitions of things needed in all C files
  *
- * $Revision: 2.74 $
- * $Date: 2008/05/09 14:04:41 $
+ * $Revision: 2.75 $
+ * $Date: 2008/05/19 13:42:39 $
  */
 
 #include <sys/types.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

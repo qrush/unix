@@ -1,8 +1,8 @@
 /* aout.h - parse and load the contents of a UNIX a.out file, for
  * several flavours of PDP-11 UNIX
  *
- * $Revision: 1.4 $
- * $Date: 2000/08/11 07:07:35 $
+ * $Revision: 1.5 $
+ * $Date: 2008/05/19 13:42:39 $
  */
 #include <unistd.h>
 #define EIGHT_K		 8192
@@ -16,7 +16,9 @@
 #define BSD_ROVERLAY	0431	/* 2.11BSD overlay, separate */
 #define ANY_SCRIPT	020443	/* Shell script, i.e #! */
 #define A68_MAGIC	0	/* Algol68 binaries have these magic nums */
-#define A68_DATA       0107116	/* Algol68 binaries have these magic nums */
+#define A68_DATA        0107116	/* Algol68 binaries have these magic nums */
+#define V1_RAW          0104421 /* V1 'raw' binary: rm, ln, chmod from s2
+				   archive. */
 
 #define UNKNOWN_AOUT   034567	/* An unknown a.out header */
 

@@ -1,8 +1,8 @@
 /* aout.c - parse and load the contents of a UNIX a.out file, for
  * several flavours of PDP-11 UNIX
  *
- * $Revision: 1.50 $
- * $Date: 2002/06/10 11:43:24 $
+ * $Revision: 1.51 $
+ * $Date: 2008/05/19 13:42:39 $
  */
 #include "defines.h"
 #include "aout.h"
@@ -85,8 +85,8 @@ int load_aout_header(FILE * zin, struct exec * E)
   				/* We can deal with this a.out, so */
   				/* read in the rest of the header */
   cptr = (char *) &(E->a_text);
-  if (fread(cptr, sizeof(struct exec) - sizeof(u_int16_t), 1, zin) != 1)
-    								return (-1);
+  if (fread(cptr, 1, sizeof(struct exec) - sizeof(u_int16_t), zin)
+		< 16 - sizeof (u_int16_t)) return (-1);
 
   switch (E->a_magic) {
     case A68_MAGIC: if (E->a_data==A68_DATA) return(IS_A68);
@@ -189,6 +189,9 @@ int load_a_out(const char *file, const char *origpath, int want_env)
 #ifdef EMU211
   int j;
 #endif
+#ifdef RUN_V1_RAW
+  struct stat stb;
+#endif
 
   for (i=0;i<Argc;i++)
     TrapDebug((dbg_file, "In load_a_out Argv[%d] is %s\n", i, Argv[i]));
@@ -238,10 +241,23 @@ int load_a_out(const char *file, const char *origpath, int want_env)
     (void) fclose(zin);
     execv(file, Argv);		/* envp[] is the one Apout's main() got */
     TrapDebug((dbg_file, "Nope, didn't work\n"));
-    (void) fprintf(stderr, "Apout - unknown a.out file %s\n", file);
-    return (-1);
-  }
 #endif
+
+#ifdef RUN_V1_RAW
+				/* Try to run it as a V1 raw binary */
+#ifdef DEBUG
+    TrapDebug((dbg_file, "About to try PDP-11 raw exec on %s\n", file));
+    fflush(dbg_file);
+#endif /* DEBUG */
+    if ((zin = fopen(file, "r"))==NULL)        /* reopen the file */
+      return (-1);
+    e.a_magic = V1_RAW;
+    Binary = IS_V1;
+#else
+     (void) fprintf(stderr, "Apout - unknown a.out file %s\n", file);
+     return (-1);
+#endif /* RUN_V1_RAW */
+  }
   					/* Now we know what environment to
 					 * create, set up the memory areas
 					 * according to the magic numbers
@@ -259,6 +275,28 @@ int load_a_out(const char *file, const char *origpath, int want_env)
 #endif
 
   switch (e.a_magic) {
+#ifdef RUN_V1_RAW
+    case V1_RAW:
+      if (fseek(zin, 0, SEEK_SET) != 0) {
+       (void) fclose(zin); return (-1);
+      }
+      ispace = dspace = darray;
+      ibase = &(ispace[V12_MEMBASE]);	/* Load & run the binary starting */
+      dbase = ibase;			/* at address 16384 (040000) */
+      dwrite_base = 0;
+      e.a_entry = V12_MEMBASE;
+      /* Reset the exec header fields to make loading code below
+       * work properly
+       */
+      if (stat(file, &stb)) {
+       fprintf(stderr, "Apout - cannot stat %s\n", file);
+       return -1;
+      }
+      e.a_text = stb.st_size;
+      bbase = &(ispace[V12_MEMBASE + e.a_text]);
+      e.a_data = 0;
+      break;
+#endif
 #ifdef EMUV1
     case V1_NORMAL:			/* V1 a.out binary looks like */
       e.a_bss = e.a_syms;		/* 0405			      */
