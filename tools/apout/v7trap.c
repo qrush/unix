@@ -1,8 +1,8 @@
 /* v7trap.c - Deal with V7 trap instructions. V5 and V6 syscalls are also
  * done here, because the syscall interface is nearly the same as V7.
  *
- * $Revision: 1.49 $
- * $Date: 2008/05/19 13:24:35 $
+ * $Revision: 1.50 $
+ * $Date: 2008/05/19 13:45:58 $
  */
 #include "defines.h"
 #include <sys/stat.h>
@@ -125,7 +125,7 @@ v7trap()
     case S_LOCK:
     case S_STIME:
     case S_BREAK:
-	i=0; break;
+	i=sarg1; break;
     case S_SYNC:
 	sync(); i=0; break;
 
