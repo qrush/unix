@@ -171,6 +171,18 @@ int guess_jsr_r5(int addr)
   }
 }
 
+void printquoted(char *str) 
+{
+  while(*str) {
+    switch(*str) {
+    case '\n': printf("\\n"); break;
+    case '\r': printf("\\r"); break;
+    case '\b': printf("\\b"); break;
+    default: printf("%c", *str);
+    }
+    str++;
+  }
+}
 
 /*
  * Print out an operand. Return any increment to skip to reach the next
@@ -216,7 +228,9 @@ int paddr(char *str, int addr, int a, int lastr)
 	    jsrr5_skip= s->size;
 	    if (s->type==SYM_JSRTEXT) {
 	      char *str= (char *)&ispace[addr+4];
-	      printf("; <%s>; .even", str);
+	      printf("; <");
+              printquoted(str);
+              printf(">; .even");
 	    } else {
   	       u_int16_t var2= ispace[addr + 4] + (ispace[addr + 5] << 8);
 	      printf("; 0%o", var2);
