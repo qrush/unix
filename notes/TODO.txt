@@ -1,27 +1,19 @@
-    - get sh.s building and tested
-    - integrate building init.s and sh.s into the build process
     - consider writing a mount.s?
     - can we get fpsym?  What would its function be?
-    - push ke changes to simh back into mainline tree.
     - get dc-11 support into simh.  started but lots to be done
-    - we should investigate the original boot process and see how
-      much of it would be possible to restore and determine if its
-      worth the effort.
-      - I think James Markevitch might have some of this done already.
-    - there's a bunch of file fragments in the 1972_stuff that might
-      prove useful.  It sounds like Warren has started to think about
-      how to triage these.  This might be a bit of effort.
-    - at some point we should probably put together some kind of package
-      for others who want to run the system in simh.  I'm not really
-      sure what this should look like and perhaps its a bit early to talk
-      about it...  Maybe two sets - a set of rf0 and rk0 images with
-      a kernel that can run instantly, and a set with a cold kernel,
-      a normal kernel and a tape image?
-      - the current tree is a lot cleaner and a long ways towards this.
+      - bob supnik is doing this now.
+    - roll up a set of images and place on site for download
+    - roll up a tree snapshot and place on site for download
+    - place patched simh up for download until official release is out
+    - disassemble the s2 binaries into an assemblable form.
+      - perform some comparisons with existing sources
+    - try to track down people involved in jun72 kernel printout 
 
 Done
     - 0407 binaries supported through a patch.
-    - old init lives.  not yet integrated into normal build process.
+    - init and sh built from sources
+    - bob supnik replaced our ke patches with his own official version
     - got Early_C_Compiler working with some kernel patches to support
       larger core size and 0407 binaries
+    - we have reconstructed fragments from 1972_stuff
 
