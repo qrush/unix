@@ -47,7 +47,24 @@ J. F. Maranzano, S. R. Bourne, "A Tutorial Introduction to ADB", may 1977
    project management.  He received his MS in electrical engineering from
    New York University.  He's a member of the IEEE and a Bell Labs fellow.
    Contact him at 63 Pomeroy Rd, Madison, NJ 07940; jfm@att.net"
+   http://home.att.net/~jfm/
+   Sent email may 20 2008.
 
+J. E. Ritacco, T. J. Pedersen, J. A. Santillo "Software development tools"
+   at&t bell laboratories tecnical journal, 1985 vol 64 no 1 pp 287-304
+
+Berkeley Tague
+   Interview: http://www.princeton.edu/~mike/unixhistory
+   neat article mentions him (interview with lions!)
+   http://www.ais.org/~jrh/acn/Back_Issues/Back_Issues%5B1993-1997%5D/ACN6-1.pdf
+
+Linda S. Wright.
+   http://portal.acm.org/citation.cfm?id=1041716
+
+G. L. Baldwin
+   1973 letter cited by http://portal.acm.org/citation.cfm?id=800025.1198417
+S. K. Tewksbury, N. Linde, V. D. Archer, C-Y Kao and G. L. Baldwin, "A high speed, partially asynchronous code converter for digital signal processing in telephony," (1980).
+S. K. Tewksbury and G. L. Baldwin, "Partially asynchronous interface with compressed-linear code conversions," (1977).
 
 
 ------------------
