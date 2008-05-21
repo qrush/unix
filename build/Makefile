@@ -143,7 +143,7 @@ tape : protofs
 
 install : rf0.dsk rk0.dsk
 	@echo Installing...
-	@cp rf0.dsk rk0.dsk ../images
+	@cp rf0.dsk rk0.dsk ../boot/m792low.load ../images
 	
 # clean intermediate files
 clean :
