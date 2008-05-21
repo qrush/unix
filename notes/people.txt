@@ -57,6 +57,7 @@ Berkeley Tague
    Interview: http://www.princeton.edu/~mike/unixhistory
    neat article mentions him (interview with lions!)
    http://www.ais.org/~jrh/acn/Back_Issues/Back_Issues%5B1993-1997%5D/ACN6-1.pdf
+   head Unix Support Group at the labs, formed sept 1973
 
 Linda S. Wright.
    http://portal.acm.org/citation.cfm?id=1041716
