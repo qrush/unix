@@ -74,3 +74,29 @@ S. K. Tewksbury and G. L. Baldwin, "Partially asynchronous interface with compre
 jun 20 1972
 J. DeFelice
 
+Jim DeFelice, also author of kernel subroutine descriptions mar72.
+"ISSUE D  DATE 2/7/72  ID UNIX  SEC H.0  PAGE 6"
+about a month before "ID IMO.1-1" "UNIX IMPLEMENTATION".
+
+Same contents as the typewritten sections H0-H9 of the later document.
+Possibly the source for the type written document.
+The cover sheet mentions more sections, but we only have "H":
+
+    A symbol table (not done)
+    B memory map
+    C routine jump network
+    D
+    E listings
+    F general description of system
+    G description of data names
+    H routine descriptions
+
+
+140 Centennial Ave
+Rm G155
+R. R9-463-4004
+From MH 165-<di_tt_n>-4004
+            garbled
+
+"Here's a copy of our current UNIX documentation"
+
