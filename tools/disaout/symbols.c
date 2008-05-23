@@ -34,7 +34,9 @@ void add_symbol(int addr, int type, int size)
   struct symbol *s;
 
   /* See if we have a symbol already defined at this address */
-  if (symtypelist[type].table[addr] != NULL) return;
+  /* If there is one and its type is >= ours, don't put a new one in */
+  if ((symtypelist[type].table[addr] != NULL) &&
+      (symtypelist[type].table[addr]->type >= type)) return;
 
   /* No, so create one */
   s= malloc(sizeof(struct symbol));

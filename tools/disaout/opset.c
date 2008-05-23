@@ -166,6 +166,8 @@ int guess_jsr_r5(int addr)
     add_symbol(addr, SYM_JSRDATA, 2);
     return(2);
   } else {
+    /* Ensure length is word-aligned */
+    if ((addr+len)%2) len++;
     add_symbol(addr, SYM_JSRTEXT, len);
     return(len);
   }
@@ -182,6 +184,7 @@ void printquoted(char *str)
     }
     str++;
   }
+  printf("\\0");
 }
 
 /*
