@@ -7,43 +7,36 @@ Build Instructions
 Unless otherwise noted, file and directory names refer to this repository.
 
 1. Download the source code for the Simh simulator from here:
-   http://simh.trailing-edge.com/. Unpack it somewhere. Make the
-   BIN/ directory in Simh at the top level.
+   http://simh.trailing-edge.com/. Make sure that you download
+   version 3.8-0 or later; earlier versions need patches to work.
 
-2. Copy misc/pdp11_ke.c into the Simh PDP11/ directory, and apply
-   the misc/KE.diff patch to the source code:
+2. Unpack Simh somewhere. Make the BIN/ directory in Simh at the top level.
+   Do make pdp11 to make the pdp11 simulator in the BIN/ directory. Copy
+   the BIN/pdp11 executable into the tools/ directory.
 
-	patch -l < misc/KE.diff
-
-   We have had some reports that to patch and compile on Ubuntu, you will
-   need to do this:
-       patch -p0 -l < misc/KE.diff
-       OSTYPE=macos make pdp11
-
-3. In Simh, do make pdp11 to make the pdp11 simulator in the BIN/ directory.
-   Copy the BIN/pdp11 executable into the tools/ directory.
-
-4. Do a make.  This will do several things.  It will build tools/mkfs, 
-   tools/ml and tools/apout/apout. These tools are required to build the 
-   filesystems for 1e UNIX, and the kernel.  It will create kernel sources 
-   with some necessary patches, assemble it and build a bootable Simh memory 
-   image which is installed into images.  Finally it will build the rf0.dsk, 
-   rk0.dsk and tape images and install these in the images directory. You
-   can also do a "make clean" to clean out the images/ and build/ directories.
-   A "make clobber" will clean out the images/, build/  and tools/ directories.
+2. Return to the 1st Edition top-level directory. Do a make. This will do
+   several things.  It will build tools/mkfs, tools/ml and tools/apout/apout.
+   These tools are required to build the filesystems for 1e UNIX, and the
+   kernel. It will create kernel sources with some necessary patches, assemble
+   the kernel and build a bootable Simh memory image which is installed into
+   the images directory.  Finally, the make will build the rf0.dsk, rk0.dsk
+   and tape images and install these in the images directory. You can also do
+   a "make clean" to clean out the images/ and build/ directories. A "make
+   clobber" will clean out the images/, build/  and tools/ directories.
 
 Running 1st Edition UNIX
 ------------------------
 
 1. Run ./simh.cfg which starts the pdp11 simulator. You should see this:
 
-   PDP-11 simulator V3.7-3
-   ./simh.cfg> #!tools/pdp11
-   Unknown command
-   Disabling CR
-   Disabling XQ
-   RF: buffering file in memory
-   TC0: 16b format, buffering file in memory
+     PDP-11 simulator V3.8-0
+     ./simh2.cfg> #!tools/pdp11
+     Unknown command
+     Disabling CR
+     Disabling XQ
+     RF: buffering file in memory
+     TC0: 16b format, buffering file in memory
+     Listening on port 5555 (socket 7)
 
    You will receive a login: prompt:
 
@@ -63,6 +56,18 @@ Running 1st Edition UNIX
 
 5. To shut the system down, enter ctrl-E to stop the simulator, and q to quit.
    You do not need to sync the system before shutdown.
+
+Running 1st Edition UNIX in Multiuser Mode
+------------------------------------------
+
+After doing a "make" for the first time and verifying that you can boot
+and run 1e UNIX, edit the file build/init.s. Around lines 160 on, remove
+the forward slashes from the lines '0 through to '4: this removes the
+comments and enables init to listen on extra serial ports. Do a "make" to
+rebuild the disk images.
+
+Run ./simh.cfg to reboot the system and login. You should now be able to
+Telnet to port 5555 on your localhost, and login multiple times.
 
 Documentation
 -------------
