@@ -54,20 +54,11 @@ Running 1st Edition UNIX
 4. To change directories, use chdir, e.g. chdir /usr. The only editor installed
    is `ed'. You can find an ed tutorial in notes/edtut.txt.
 
-5. To shut the system down, enter ctrl-E to stop the simulator, and q to quit.
+5. To log in multiple times, telnet to localhost port 5555.  The system
+   is configured to allow 8 remote logins.
+
+6. To shut the system down, enter ctrl-E to stop the simulator, and q to quit.
    You do not need to sync the system before shutdown.
-
-Running 1st Edition UNIX in Multiuser Mode
-------------------------------------------
-
-After doing a "make" for the first time and verifying that you can boot
-and run 1e UNIX, edit the file build/init.s. Around lines 160 on, remove
-the forward slashes from the lines '0 through to '4: this removes the
-comments and enables init to listen on extra serial ports. Do a "make" to
-rebuild the disk images.
-
-Run ./simh.cfg to reboot the system and login. You should now be able to
-Telnet to port 5555 on your localhost, and login multiple times.
 
 Documentation
 -------------
