@@ -1,4 +1,5 @@
-build
+build/*
+!build/Makefile
 images
 tools/apout/apout
 tools/mkfs
