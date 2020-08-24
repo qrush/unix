@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 Convert an 0407 binary into an 0405 binary, under the assumption
 that the code starts at 040014 (by ".. = 40014").

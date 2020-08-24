@@ -1,0 +1,8 @@
+build/*
+!build/Makefile
+images
+tools/apout/apout
+tools/mkfs
+tools/ml
+tools/pdp11
+

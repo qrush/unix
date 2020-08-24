@@ -134,7 +134,7 @@ rf0.dsk rk0.dsk images : protofs unix
 	@# we need to skip the a.out header...
 	@dd if=unix bs=1 skip=16 count=16384 | \
 	    dd of=rf0.dsk bs=512 seek=964
-	@touch images
+	@mkdir ../images
 
 # build a tape image
 tape : protofs
@@ -152,7 +152,7 @@ clean :
 	rm -f unix usyms
 	rm -rf usr root protofs
 	rm -f *.0405
-	rm -f images
+	rm -f ../images
 
 # clean intermediate and target files
 clobber : clean
