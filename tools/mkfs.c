@@ -598,7 +598,7 @@ void add_files(char *basedir, char *dir, struct directory *parent)
  * 
  * First 5 chars represent x=executable, u=setuid, r=read, w=write. Spaces
  * separate the permissions and the decimal userid. Then we look for a /
- * which begins the full pathname. Spaces seperate the full pathname and the
+ * which begins the full pathname. Spaces separate the full pathname and the
  * timestamp which is in 1/60th of a second since the beginning of the year.
  */
 void read_permsfile(char *file)
