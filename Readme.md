@@ -1,9 +1,15 @@
-Welcome to the 1st Edition UNIX repository. Here you will find the kernel
+**Welcome to the 1st Edition UNIX repository. Here you will find the kernel
 source code and userland binaries which will allow you to run 1e UNIX on
-a PDP-11 simulator.
+a PDP-11 simulator.**
 
-Build Instructions
-------------------
+### Contents
+- [Build Instructions](https://github.com/qrush/unix#Build-Instructions)
+- [Running 1st Edition UNIX](https://github.com/qrush/unix#Running-1st-Edition-UNIX)
+- [Documentation](https://github.com/qrush/unix#Documentation)
+- [Repository Layout](https://github.com/qrush/unix#Repository-Layout)
+
+
+## Build Instructions
 Unless otherwise noted, file and directory names refer to this repository.
 
 1. Download the source code for the Simh simulator from here:
@@ -24,8 +30,7 @@ Unless otherwise noted, file and directory names refer to this repository.
    a "make clean" to clean out the images/ and build/ directories. A "make
    clobber" will clean out the images/, build/  and tools/ directories.
 
-Running 1st Edition UNIX
-------------------------
+## Running 1st Edition UNIX
 
 1. Run ./simh.cfg which starts the pdp11 simulator. You should see this:
 
@@ -60,8 +65,7 @@ Running 1st Edition UNIX
 6. To shut the system down, enter ctrl-E to stop the simulator, and q to quit.
    You do not need to sync the system before shutdown.
 
-Documentation
--------------
+## Documentation
 
 The manuals for 1st Edition UNIX are available here:
 https://www.bell-labs.com/usr/dmr/www/1stEdman.html, and
@@ -83,8 +87,7 @@ The userland binaries come from a period somewhere between the 1st and 2nd
 Edition of UNIX. You may find the 2e manuals useful too:
 http://www.bitsavers.org/pdf/bellLabs/unix/Unix_2nd_Edition_Manual_Jun72.pdf
 
-Repository Layout
------------------
+## Repository Layout
 
 pages/		- OCR'd pages from the PreliminaryUnixImplementation document
 rebuilt/	- kernel source rebuilt from the OCR'd pages, as asm files
