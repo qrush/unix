@@ -3,10 +3,10 @@ source code and userland binaries which will allow you to run 1e UNIX on
 a PDP-11 simulator.**
 
 ### Contents
-- [Build Instructions](https://github.com/qrush/unix/blob/master/Readme#Build-Instructions)
-- [Running 1st Edition UNIX](https://github.com/qrush/unix/blob/master/Readme#Running-1st-Edition-UNIX)
-- [Documentation](https://github.com/qrush/unix/blob/master/Readme#Documentation)
-- [Repository Layout](https://github.com/qrush/unix/blob/master/Readme#Repository-Layout)
+- [Build Instructions](https://github.com/qrush/unix#Build-Instructions)
+- [Running 1st Edition UNIX](https://github.com/qrush/unix#Running-1st-Edition-UNIX)
+- [Documentation](https://github.com/qrush/unix#Documentation)
+- [Repository Layout](https://github.com/qrush/unix#Repository-Layout)
 
 
 ## Build Instructions
